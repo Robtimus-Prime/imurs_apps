@@ -1,0 +1,760 @@
+* {
+	background-color: #202020;
+	color: Gainsboro;
+	font-family: Garamond;
+}
+
+.dialog {
+	color: rgb(179, 179, 179);
+}
+
+div.top-space {
+	margin-top: 10px;
+}
+
+div.bottom-space {
+	margin-bottom: 10px;
+}
+
+div.bottom-pad {
+	padding-bottom: 10px;
+}
+
+span.top-line,
+div.top-line {
+	border-top: 2px solid #404040;
+    padding-top: 10px;
+    margin-top: 10px;
+}
+
+div.top-line-bold {
+	border-top: 1px solid gainsboro;
+    padding-top: 10px;
+    margin-top: 10px;
+}
+
+/* ##############################################
+	IMURS Logo 
+############################################## */
+
+h1 {
+	font-family: Arial;
+	font-weight: bold;
+	font-size: 30;
+	color: white;
+	border: 3px solid white;
+	margin: 10px;
+	padding: 3px;
+	display: inline-block;
+	float: right;
+}
+
+
+/* ##############################################
+	Labels 
+############################################## */
+
+.dialog label {
+	font-weight: bold;
+	font-size: 12pt;
+	display: inline-block;
+	width: 90px;
+	padding-left: 3px;
+}
+
+.dialog label.longlabel {
+	width: 130px;
+}
+
+.dialog label.col2 {
+	width: 75px;
+}
+
+.dialog label.inline {
+	width: auto;
+}
+
+.dialog label.col2-right {
+	width: 70px;
+	padding-left: 15px;
+	padding-right: 5px;
+}
+
+.dialog label.potion-short {
+	width: 35px;
+	font-size: 10pt;
+}
+
+.dialog label.potion-long {
+	width: 55px;
+	font-size: 10pt;
+}
+
+.dialog label.nowidth {
+	width: inherit;
+}
+
+.dialog div.skillname {
+	margin-top: 8px;
+}
+
+.dialog div.skillname > label {
+	width: 170px;
+	font-size: 14pt;
+	margin-bottom: 0px;
+	vertical-align: middle;
+	color: white;
+}
+
+.dialog div.skillname > label.reflex {
+	width: 110px;
+}
+
+.dialog div.skillname > label.legendary {
+	width: 300px;
+}
+
+.dialog div.skillname > label.skillnamecombat {
+	width: 150px;
+	font-size: 14pt;
+	margin-bottom: 0px;
+}
+
+.dialog div.skillname > label > span.ability {
+	font-size: 13pt;
+}
+
+.dialog div.skillname > label > span.skill-attribute {
+	font-size: 8pt;
+}
+
+.dialog label.skillapp {
+	font-weight: bold;
+	width: 112px;
+}
+
+.dialog label.skillapp.longname {
+	font-size: 10pt;
+}
+
+.dialog label.skillappcombat {
+	font-weight: bold;
+	width: 230px;
+}
+
+.dialog div.weapon {
+	margin-left: 20px;
+}
+
+.dialog div.weapon > label {
+	font-size: 10pt;
+	font-weight: normal;
+	width: 55px;
+}
+
+.dialog label.tierpool {
+	font-weight: normal;
+	width: 30px;
+	padding-left: 5px;
+	padding-right: 0px;
+}
+
+.dialog div.explode {
+	float: right;
+}
+
+.dialog div.damage-resistance > label {
+	font-weight: normal;
+	width: 70px;
+	padding-left: 10px;
+	padding-right: 0px;
+}
+
+.dialog div.full-width {
+	width: 100%;
+}
+
+.section-header {
+	font-size: 12pt;
+	font-weight: bold;
+	color: Gainsboro;
+	background-color: #400060;
+    height: 20px;
+    vertical-align: middle;
+    padding-left: 5px;
+	margin-bottom: 5px;
+}
+
+.dialog .section-header label {
+	font-weight: inherit;
+	font-size: inherit;
+	color: inherit;
+	background-color: inherit;
+	width: inherit;
+}
+
+.dialog .section-header label.right-third {
+	float: right;
+	padding-right: 180px;
+}
+
+.dialog .section-header label.right-two-thirds {
+	float: right;
+	padding-right: 430px;
+}
+
+.section-header div {
+	display: inline-block;
+	color: inherit;
+	background-color: inherit;
+	font-weight: inherit;
+	font-size: inherit;
+}
+
+.ui-dialog .charsheet div.monstrous-boon {
+	float: left;
+}
+
+
+/* ##############################################
+	Inputs 
+############################################## */
+
+.ui-dialog .charsheet input {
+	font-family: Tahoma;
+	font-size: 8pt;
+	width: 30px;
+	text-align: right;
+	border: 1px solid darkgray;
+	color: Gainsboro;
+	background-color: #181818;
+}
+
+.ui-dialog .charsheet input.longnumber {
+	width: 50px;
+}
+
+.ui-dialog .charsheet input.longtext {
+	width: 200px;
+}
+
+.ui-dialog .charsheet input.weapon {
+	width: 185px;
+}
+
+.ui-dialog .charsheet input.custom {
+	width: 150px;
+	text-align: left;
+}
+
+.ui-dialog .charsheet input.custom-long {
+	width: 330px;
+	text-align: left;
+}
+
+.ui-dialog .charsheet input[readonly] {
+	color: Gainsboro;
+	background-color: #404040;
+	border: 2px solid #9000B0;
+	cursor: inherit;
+}
+
+.ui-dialog .charsheet input[readonly].recovery {
+	width: 18px;
+}
+
+.ui-dialog .charsheet textarea {
+	width: 100%;
+	height: 147px;
+	text-align: left;
+	color: Gainsboro;
+	background-color: #181818;
+	font-family: Tahoma;
+	font-size: 8pt;
+}
+
+.ui-dialog .charsheet textarea.legendary {
+	width: 350px;
+	height: 38px;
+}
+
+.ui-dialog .charsheet textarea.large {
+	width: 350px;
+	height: 95px;
+}
+
+.ui-dialog .charsheet textarea.boons-banes {
+	height: 234px;
+}
+
+/* For addons */
+.ui-dialog .charsheet div.input-group {
+	display: inline-flex;
+	align-content: stretch;
+	width: 30px;
+	margin-right: 30px;
+}
+
+.ui-dialog .charsheet div.input-group > input {
+	flex: 1 0 auto;
+	width: inherit;
+	border-radius: 3px 0px 0px 3px;
+	border-right: 0px;
+}
+
+.ui-dialog .charsheet span.input-group-addon {
+	background: #404040;
+	border: 1px solid dimgray;
+	border-radius: 0px 3px 3px 0px;
+	color: Gainsboro;
+	padding: 0.4em 1.5em 0.3em 0.5em;
+	width: 70%;
+}
+
+.ui-dialog .charsheet span.input-group-addon > span {
+	background: #404040;
+}
+
+
+/* ##############################################
+	Checkboxes 
+############################################## */
+
+/* Hide the browser's default checkbox */
+.ui-dialog .charsheet input[type=checkbox] {
+	position: absolute;
+	opacity: 0;
+	cursor: pointer;
+	height: 0;
+	width: 0;
+}
+
+.ui-dialog .charsheet div.magic-type-container {
+	margin-bottom: 15px;
+}
+
+/* Customize the label (the container) */
+.ui-dialog .charsheet label.skill-tem-container,
+.ui-dialog .charsheet label.magic-type-container {
+	position: relative;
+	cursor: pointer;
+	width: 15px;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+.ui-dialog .charsheet label.magic-type-container-right {
+	left: 100px;
+}
+
+.ui-dialog .charsheet label.magic-type-container-secondary {
+	left: 90px;
+}
+
+.ui-dialog .charsheet label.combat-action-container-right {
+	left: 100px;
+}
+
+.ui-dialog .charsheet label.combat-action-container-far-right {
+	left: 200px;
+}
+
+.ui-dialog .charsheet label.magic-type-container {
+	position: relative;
+	cursor: pointer;
+	width: 15px;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+/* Create a custom checkbox (skill training) */
+.ui-dialog .charsheet span.skill-tem {
+	position: absolute;
+    top: -5.5px;
+    left: 1px;
+    height: 21px;
+    width: 57px;
+	background-color: inherit;
+	border: 1px solid #B3B3B3;
+	border-radius: 3px;
+	padding-left: 5px;
+	padding-top: 3px;
+	font-size: 10pt;
+}
+.ui-dialog .charsheet span.skill-tem.magic-focus {
+    width: 110px;
+    margin-left: 1px;
+}
+
+/* Create a custom checkbox (area & damage types) */
+.ui-dialog .charsheet span.magic-type {
+	position: absolute;
+    top: -5.5px;
+    left: 1px;
+    height: 23px;
+    width: 100px;
+	background-color: inherit;
+	border: 1px solid #B3B3B3;
+	border-radius: 3px;
+	padding: 5px 0px 0px 5px;
+}
+
+.ui-dialog .charsheet span.magic-type.secondary {
+	width: 65px;
+	font-size: 10pt;
+}
+
+.ui-dialog .charsheet span.gm-rolls {
+	width: 70px;
+	margin-top: -2px;
+}
+
+.ui-dialog .charsheet span.combat-action {
+	width: 120px;
+}
+
+.ui-dialog .charsheet label.magic-type-container input.show-rage ~ span.magic-type.combat-action {
+	display: none;
+}
+
+.ui-dialog .charsheet label.magic-type-container input.show-rage[value="true"] ~ span.magic-type.combat-action {
+	display: block;
+}
+
+/* On mouse-over, add a dark gray background color */
+.ui-dialog .charsheet label.skill-tem-container:hover input[type=checkbox] ~ span.skill-tem,
+.ui-dialog .charsheet label.magic-type-container:hover input[type=checkbox] ~ span.magic-type {
+	background-color: #404040;
+}
+
+/* When the checkbox is checked, add a purple background */
+.ui-dialog .charsheet label.skill-tem-container input[type=checkbox]:checked ~ span.skill-tem,
+.ui-dialog .charsheet label.magic-type-container input[type=checkbox]:checked ~ span.magic-type {
+	background-color: #600080;
+}
+
+/* On mouse-over when the checkbox is checked, add a lighter purple background color */
+.ui-dialog .charsheet label.skill-tem-container:hover input[type=checkbox]:checked ~ span.skill-tem,
+.ui-dialog .charsheet label.magic-type-container:hover input[type=checkbox]:checked ~ span.magic-type {
+	background-color: #8000A0;
+}
+
+/* Create the checkmark/indicator (hidden when not checked) */
+.ui-dialog .charsheet span.skill-tem:after,
+.ui-dialog .charsheet span.magic-type:after {
+	position: absolute;
+	padding: 3px 5px;
+}
+
+/* Show the checkmark when checked */
+.ui-dialog .charsheet label.skill-tem-container input[type=checkbox]:checked ~ span.skill-tem:after,
+.ui-dialog .charsheet label.magic-type-container input[type=checkbox]:checked ~ span.magic-type:after {
+	display: block;
+}
+
+
+
+/* ##############################################
+	Hide/Show Elements 
+############################################## */
+
+.ui-dialog .charsheet div input.show-replacement-attribute ~ span.replacement-attribute {
+	display: none;
+}
+
+.ui-dialog .charsheet div input.show-replacement-attribute[value="true"] ~ span.replacement-attribute {
+	display: inline;
+}
+
+.ui-dialog .charsheet div input.show-replacement-attribute[value="true"] ~ span.default-attribute {
+	text-decoration: line-through;
+	color: DimGray;
+}
+
+.ui-dialog .charsheet div input.show-break-newline[value="true"] ~ span.break-space,
+.ui-dialog .charsheet div input.show-break-newline ~ span.break-newline {
+	display: none;
+}
+
+.ui-dialog .charsheet div input.show-break-newline ~ span.break-space,
+.ui-dialog .charsheet div input.show-break-newline[value="true"] ~ span.break-newline {
+	display: inline;
+}
+
+.ui-dialog .charsheet div input.show-ep-0 ~ span.ep-0 {
+	display: none;
+}
+
+.ui-dialog .charsheet div input.show-ep-0[value="true"] ~ span.ep-0 {
+	display: inline;
+}
+
+.ui-dialog .charsheet div input.show-ep-5 ~ span.ep-5 {
+	display: none;
+}
+
+.ui-dialog .charsheet div input.show-ep-5[value="true"] ~ span.ep-5 {
+	display: inline;
+}
+
+.ui-dialog .charsheet div input.show-ep-10 ~ span.ep-10 {
+	display: none;
+}
+
+.ui-dialog .charsheet div input.show-ep-10[value="true"] ~ span.ep-10 {
+	display: inline;
+}
+
+.ui-dialog .charsheet div input.show-ep-20 ~ span.ep-20 {
+	display: none;
+}
+
+.ui-dialog .charsheet div input.show-ep-20[value="true"] ~ span.ep-20 {
+	display: inline;
+}
+
+.ui-dialog .charsheet div input.show-ep-30 ~ span.ep-30 {
+	display: none;
+}
+
+.ui-dialog .charsheet div input.show-ep-30[value="true"] ~ span.ep-30 {
+	display: inline;
+}
+
+.ui-dialog .charsheet div input.show-ep-40 ~ span.ep-40 {
+	display: none;
+}
+
+.ui-dialog .charsheet div input.show-ep-40[value="true"] ~ span.ep-40 {
+	display: inline;
+}
+
+.ui-dialog .charsheet div input.show-combat-style ~ span.combat-style {
+	display: none;
+}
+
+.ui-dialog .charsheet div input.show-combat-style[value="true"] ~ span.combat-style {
+	display: inline;
+}
+
+.ui-dialog .charsheet div input.show-ability ~ span.ability,
+.ui-dialog .charsheet div input.show-ability[value="true"] ~ span.no-ability {
+	display: none;
+}
+
+.ui-dialog .charsheet div input.show-ability[value="true"] ~ span.ability,
+.ui-dialog .charsheet div input.show-ability ~ span.no-ability {
+	display: inline;
+}
+
+.ui-dialog .charsheet div input.show-porter-ally[value="true"] ~ span.combatant-ally,
+.ui-dialog .charsheet div input.show-porter-ally ~ span.porter-ally {
+	display: none;
+}
+
+.ui-dialog .charsheet div input.show-porter-ally ~ span.combatant-ally,
+.ui-dialog .charsheet div input.show-porter-ally[value="true"] ~ span.porter-ally {
+	display: inline;
+}
+
+
+/* ##############################################
+	Radio Buttons 
+############################################## */
+
+.ui-dialog .charsheet div.advantage-toolbar {
+	margin: 5px;
+	display: inline-block;
+}
+
+.ui-dialog .charsheet div.advantage-toolbar input[type="radio"] {
+	opacity: 0;
+	position: fixed;
+	width: 0;
+}
+
+.ui-dialog .charsheet div.advantage-toolbar label {
+	width: 20px;
+	font-weight: bold;
+	font-size: 10pt;
+	text-align: center;
+	display: inline-block;
+	padding: 3px 5px;
+	border: 1px solid rgb(179, 179, 179);
+    margin: 0px -3px;
+}
+
+.ui-dialog .charsheet div.advantage-toolbar label.left-end {
+	border-top-left-radius: 3px;
+	border-bottom-left-radius: 3px;
+}
+
+.ui-dialog .charsheet div.advantage-toolbar label.right-end {
+	border-top-right-radius: 3px;
+	border-bottom-right-radius: 3px;
+}
+
+.ui-dialog .charsheet div.advantage-toolbar label:hover {
+	background-color: #404040;
+	cursor: pointer;
+}
+
+.ui-dialog .charsheet div.advantage-toolbar input[type="radio"]:checked + label {
+	background-color: #600080;
+	cursor: inherit;
+}
+
+
+/* ##############################################
+	Dice Roll Buttons 
+############################################## */
+
+.ui-dialog .charsheet button[type="roll"], .ui-dialog .charsheet button[type="action"] {
+	color: Gainsboro;
+	background-color: #202020;
+	background-image: -webkit-linear-gradient(top, rgb(0, 0, 0), rgb(80, 00, 100));
+	border: 1px solid darkgray;
+	border-radius: 3px;
+	padding: 2px 3px;
+    font-size: 1.3em;
+    margin: 0px 3px 0px 3px;
+}
+
+.ui-dialog .charsheet button[type="roll"].btn {
+	margin-top: -4px;
+}
+
+.ui-dialog .charsheet button[type="action"].generic-skill {
+	font-size: 0.9em;
+}
+
+.ui-dialog .charsheet button[type="action"].toggle {
+	width: 8px;
+	height: 16px;
+}
+
+.ui-dialog .charsheet button[type="action"].toggle:before {
+	font-family: Garamond;
+	font-size: 10pt;
+	font-weight: bold;
+	content: "S"; 
+}
+
+.ui-dialog .charsheet button[type="action"].end-spell {
+	width: 70px;
+}
+
+.ui-dialog .charsheet button[type="action"].end-spell:before {
+	font-family: Garamond;
+	font-size: 10pt;
+	content: "End Spell";
+}
+
+.ui-dialog .charsheet button[type="roll"]:hover, .ui-dialog .charsheet button[type="action"]:hover {
+	background-image: -webkit-linear-gradient(top, rgb(20, 20, 20), rgb(100, 00, 120));
+}
+
+.ui-dialog .charsheet button[type="roll"]:before, .ui-dialog .charsheet button[type="action"]:before {
+    font-family: "dicefontd10";
+	content: "k";
+}
+
+.ui-dialog .charsheet button[type="action"].info-button:before {
+	font-family: courier;
+	font-weight: normal;
+	content: "i";
+}
+.ui-dialog .charsheet button[type="action"].info-button.secondary {
+	left: 140px;
+	position: relative;
+}
+
+/* ##############################################
+	Custom roll template from here: https://wiki.roll20.net/Building_Character_Sheets/Roll_Templates#Jakob.27s_Better_Default_Rolltemplate
+############################################## */
+
+/* Smaller margins - remove these if you want the huge default left margin */
+.sheet-rolltemplate-custom {
+  margin-left: -37px;
+}
+.withoutavatars .sheet-rolltemplate-custom {
+  margin-left: -7px;
+}
+
+.sheet-rolltemplate-custom .sheet-container {
+  border: 1px solid;
+  /* by default, the border is the same color as the header. You can change this here, e.g. to black */
+  border-color: var(--header-bg-color);
+}
+
+/* Header formatting - title and subtitle */
+.sheet-rolltemplate-custom .sheet-header {
+  background-color: var(--header-bg-color);
+  /* change text-align to center to center the header text */
+  text-align: left;
+  color: var(--header-text-color);
+  padding: 5px;
+}
+.sheet-rolltemplate-custom .sheet-title {
+  font-size:1.1em;
+  font-weight: bold;
+}
+.sheet-rolltemplate-custom .sheet-subtitle {
+  font-size:.9em;
+}
+
+/* example colors */
+.sheet-rolltemplate-custom .sheet-container {
+  /* this is the default color */
+  --header-bg-color: rgba(112,32,130,1);
+  --header-text-color: #FFF;
+}
+.sheet-rolltemplate-custom .sheet-container.sheet-color-red {
+  --header-bg-color: #F00;
+}
+.sheet-rolltemplate-custom .sheet-container.sheet-color-green {
+  --header-bg-color: #0F0;
+  --header-text-color: #000;
+}
+
+/* Allprops part */
+.sheet-rolltemplate-custom .sheet-content {
+  display: grid;
+  background: var(--dark-surface1);
+  /* Header formatting - modify the column layout below */
+  grid-template-columns: auto auto;
+  /* Line height to match default roll template */
+  line-height:1.4em;
+}
+.sheet-rolltemplate-custom .sheet-content > div {
+  padding: 5px;
+}
+
+/* Left column */
+.sheet-rolltemplate-custom .sheet-content .sheet-key {
+  font-weight: bold;
+  padding-right: 10px;
+  text-align: right;
+}
+
+/* Empty rule, use this if you want to change the right column 
+.sheet-rolltemplate-custom .sheet-value {
+}
+*/
+
+/* Make even-numbered rows grey */
+.sheet-rolltemplate-custom .sheet-content :nth-child(4n+3),
+.sheet-rolltemplate-custom .sheet-content :nth-child(4n) {
+  background:var(--dark-surface2);
+}
+
+/* Description field */
+.sheet-rolltemplate-custom .sheet-desc {
+  grid-column: span 2;
+  padding: 5px;
+  text-align: left;
+}
