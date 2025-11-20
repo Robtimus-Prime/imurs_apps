@@ -1302,7 +1302,7 @@
 			<button type="action" name="act_prconstitutioninfo" class="info-button" />
 			<label class="skillapp"> Constitution </label>
 			<label class="skill-tem-container">
-				<input name="attr_pr_consitution_training" type="checkbox" />
+				<input name="attr_pr_constitution_training" type="checkbox" />
 				<span class="skill-tem skill-training"> Training </span>
 			</label>
 			<input name="attr_pr_consitution_roll" type="hidden" value="2d6" />
@@ -4384,12 +4384,12 @@
 							</label>
 							<input name="attr_conjuration_fabricate_roll" type="hidden" value="2d6" />
 							<div>
-								<b> Create </b> <br />
 								<input name="attr_show_conjuration_fabricate_10_ep" type="hidden" class="show-ep-10" value="false" />
 								<input name="attr_show_conjuration_fabricate_20_ep" type="hidden" class="show-ep-20" value="false" />
 								<input name="attr_show_conjuration_fabricate_30_ep" type="hidden" class="show-ep-30" value="false" />
 								<input name="attr_show_conjuration_fabricate_40_ep" type="hidden" class="show-ep-40" value="false" />
 								<span class="ep-10">
+									<b> Create </b> <br />
 									<button type="action" name="act_conjurationfabricatecreate5ep" /> 5 EP
 									&nbsp;
 									<button type="action" name="act_conjurationfabricatecreate10ep" /> 10 EP
@@ -4408,12 +4408,12 @@
 								</span>
 							</div>
 							<div class="top-space">
-								<b> Repair </b> <br />
 								<input name="attr_show_conjuration_fabricate_10_ep" type="hidden" class="show-ep-10" value="false" />
 								<input name="attr_show_conjuration_fabricate_20_ep" type="hidden" class="show-ep-20" value="false" />
 								<input name="attr_show_conjuration_fabricate_30_ep" type="hidden" class="show-ep-30" value="false" />
 								<input name="attr_show_conjuration_fabricate_40_ep" type="hidden" class="show-ep-40" value="false" />
 								<span class="ep-10">
+									<b> Repair </b> <br />
 									<button type="action" name="act_conjurationfabricaterepair5ep" /> 5 EP
 									&nbsp;
 									<button type="action" name="act_conjurationfabricaterepair10ep" /> 10 EP
@@ -4454,12 +4454,12 @@
 								</div>
 
 								<div>
-									<b> Attack </b> <br />
 									<input name="attr_show_conjuration_fabricate_10_ep" type="hidden" class="show-ep-10" value="false" />
 									<input name="attr_show_conjuration_fabricate_20_ep" type="hidden" class="show-ep-20" value="false" />
 									<input name="attr_show_conjuration_fabricate_30_ep" type="hidden" class="show-ep-30" value="false" />
 									<input name="attr_show_conjuration_fabricate_40_ep" type="hidden" class="show-ep-40" value="false" />
 									<span class="ep-10">
+										<b> Attack </b> <br />
 										<button type="action" name="act_conjurationfabricateattack0ep" /> Basic
 										&nbsp;
 										<button type="action" name="act_conjurationfabricateattack5ep" /> 5 EP
@@ -5364,7 +5364,7 @@
 								<span class="ep-40">
 									<button type="action" name="act_dynamancydurationattack40ep" /> 40
 								</span>
-								<span class="ep-0">
+								<span class="ep-10">
 									<br />
 									<input name="attr_dynamancy_duration_attack_last_damage_roll" type="hidden" />
 									<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Dynamancy}} {{Dynamancy (duration attack) @{dynamancy_advantage_text}=[[@{dynamancy_attack_roll} + @{dynamancy_total} + @{mob_skill_bonus}]]}} {{Damage=[[@{dynamancy_duration_attack_last_damage_roll} + @{dynamancy_attribute_modifier}]]}}'" />
@@ -6985,6 +6985,31 @@ function get_poison_stats(boons_and_banes_text) {
 	};
 	
 	return poison_stats;
+}
+
+// CP Calc Functions
+function cp_calc_skill_points(points) {
+	let cp = 0;
+	
+	if (points > 19) {
+		cp = 48 + (points - 19) * 4;
+	}
+	else if (points > 9) {
+		cp = 18 + (points  - 9) * 3;
+	}
+	else {
+		cp = points * 2;
+	}
+
+	return cp;
+}
+
+function cp_calc_skill_applications(app_count) {
+	return Math.max(0, (app_count - 1) * 3);
+}
+
+function cp_calc_skill_pool(pool_extra) {
+	return (pool_extra == 1 ? 5 : (pool_extra == 2 ? 15 : (pool_extra == 3 ? 30 : (pool_extra == 4 ? 50 : 0))));
 }
 
 const attribute_array = [
@@ -9768,6 +9793,7 @@ const natural_magic_spells_by_ep_15 = [
 const active_skill_array = [
 	{
 		name: 'attack',
+		combat_score: true,
 		applications: [
 			{ name: 'dw_melee',            count: 6, friendly_name: 'dual wield melee',    damage_bonus: function(tier) { return 0; }                                    , extra_damage: null },
 			{ name: 'dw_missile',          count: 4, friendly_name: 'dual wield missile',  damage_bonus: function(tier) { return 0; }                                    , extra_damage: null },
@@ -9791,6 +9817,7 @@ const active_skill_array = [
 	},
 	{
 		name: 'perception',
+		combat_score: false,
 		applications: [ { name: 'notice' }, { name: 'scan' } ],
 		attribute: 'wit',
 		alternate_attribute: null,
@@ -9802,6 +9829,7 @@ const active_skill_array = [
 	},
 	{
 		name: 'defend',
+		combat_score: true,
 		applications: [ { name: 'block' }, { name: 'dodge' } ],
 		attribute: 'agility',
 		alternate_attribute: 'physique',
@@ -9813,6 +9841,7 @@ const active_skill_array = [
 	},
 	{
 		name: 'pr',
+		combat_score: true,
 		applications: [ { name: 'constitution' }, { name: 'fortitude' } ],
 		attribute: 'physique',
 		alternate_attribute: null,
@@ -9824,6 +9853,7 @@ const active_skill_array = [
 	},
 	{
 		name: 'mr',
+		combat_score: true,
 		applications: [ { name: 'concentration' }, { name: 'willpower' } ],
 		attribute: 'wit',
 		alternate_attribute: null,
@@ -9835,6 +9865,7 @@ const active_skill_array = [
 	},
 	{
 		name: 'athletics',
+		combat_score: false,
 		applications: [ { name: 'climb' }, { name: 'elusive_movement' }, { name: 'feat' }, { name: 'gymnastics' }, { name: 'jump' }, { name: 'swim' } ],
 		attribute: 'physique',
 		alternate_attribute: 'agility',
@@ -9846,6 +9877,7 @@ const active_skill_array = [
 	},
 	{
 		name: 'medicine',
+		combat_score: false,
 		applications: [ { name: 'diagnose' }, { name: 'first_aid' }, { name: 'long_term_care' } ],
 		attribute: 'intelligence',
 		alternate_attribute: null,
@@ -9857,6 +9889,7 @@ const active_skill_array = [
 	},
 	{
 		name: 'nature',
+		combat_score: false,
 		applications: [ { name: 'handle_animal' }, { name: 'sustain' }, { name: 'track' } ],
 		attribute: 'wit',
 		alternate_attribute: null,
@@ -9868,6 +9901,7 @@ const active_skill_array = [
 	},
 	{
 		name: 'persuade',
+		combat_score: false,
 		applications: [ { name: 'bluff' }, { name: 'diplomacy' }, { name: 'intimidate' }, { name: 'intuition' } ],
 		attribute: 'wit',
 		alternate_attribute: null,
@@ -9879,6 +9913,7 @@ const active_skill_array = [
 	},
 	{
 		name: 'security',
+		combat_score: false,
 		applications: [ { name: 'disable_device' }, { name: 'pick_locks' } ],
 		attribute: 'agility',
 		alternate_attribute: null,
@@ -9890,6 +9925,7 @@ const active_skill_array = [
 	},
 	{
 		name: 'sneak',
+		combat_score: false,
 		applications: [ { name: 'escapology' }, { name: 'sleight_of_hand' }, { name: 'stealth' } ],
 		attribute: 'agility',
 		alternate_attribute: null,
@@ -9902,6 +9938,7 @@ const active_skill_array = [
 	// Magic Skills
 	{
 		name: 'arcana',
+		combat_score: false,
 		applications: [ { name: 'arcana' } ],
 		attribute: 'intelligence',
 		alternate_attribute: 'wit',
@@ -9913,6 +9950,7 @@ const active_skill_array = [
 	},
 	{
 		name: 'alteration',
+		combat_score: true,
 		applications: [
 			{
 				name: 'adopt_aspect', 
@@ -9975,6 +10013,7 @@ const active_skill_array = [
 	},
 	{
 		name: 'biomancy',
+		combat_score: true,
 		applications: [
 			{
 				name: 'detoxify', 
@@ -10035,6 +10074,7 @@ const active_skill_array = [
 	},
 	{
 		name: 'conjuration',
+		combat_score: true,
 		applications: [
 			{
 				name: 'armor', 
@@ -10107,6 +10147,7 @@ const active_skill_array = [
 	},
 	{
 		name: 'displacement',
+		combat_score: false,
 		applications: [
 			{
 				name: 'bind', 
@@ -10171,6 +10212,7 @@ const active_skill_array = [
 	},
 	{
 		name: 'divination',
+		combat_score: false,
 		applications: [
 			{
 				name: 'analyze', 
@@ -10229,6 +10271,7 @@ const active_skill_array = [
 	},
 	{
 		name: 'dynamancy',
+		combat_score: true,
 		applications: [
 			{
 				name: 'attack', 
@@ -10266,6 +10309,7 @@ const active_skill_array = [
 	},
 	{
 		name: 'illusion',
+		combat_score: false,
 		applications: [
 			{
 				name: 'disguise', 
@@ -10312,6 +10356,7 @@ const active_skill_array = [
 	},
 	{
 		name: 'necromancy',
+		combat_score: true,
 		applications: [
 			{
 				name: 'control_undead', 
@@ -10357,6 +10402,7 @@ const active_skill_array = [
 	},
 	{
 		name: 'neuromancy',
+		combat_score: false,
 		applications: [
 			{
 				name: 'charm', 
@@ -10408,6 +10454,7 @@ const active_skill_array = [
 	},
 	{
 		name: 'metamancy',
+		combat_score: false,
 		applications: [
 			{
 				name: 'dispel_magic', 
@@ -10468,6 +10515,9 @@ active_skill_array.forEach( function(skill) {
 	let apply_size_modifier = (skill.size_modifier_multiplier > 0);
 	let apply_no_metabolism_bane = (skill.apply_no_metabolism_bane && skill.attribute == 'physique');
 	let alternate_attribute_mod_name = '';
+	let cp_points = `cp_${skill.name}_points`;
+	let cp_apps   = `cp_${skill.name}_applications`;
+	let cp_pool   = `cp_${skill.name}_pool`
 	if (is_versatile) {
 		alternate_attribute_mod_name = `${skill.alternate_attribute}_modifier`;
 		getAttrs_array.push(alternate_attribute_mod_name, skill.passive_skill);
@@ -10512,11 +10562,13 @@ active_skill_array.forEach( function(skill) {
 				[`${skill.name}_attribute_modifier`]: attribute_mod,
 				[`${skill.name}_total`]:              total,
 				[`${skill.name}_tier`]:               tier,
-				[`${skill.name}_pool_total`]:         pool
+				[`${skill.name}_pool_total`]:         pool,
+				[cp_points]:                          cp_calc_skill_points(skill_points),
+				[cp_pool]:                            cp_calc_skill_pool(pool_extra)
 			});
 		});
 	});
-	
+		
 	let advantage_name = `${skill.name}_advantage`;
 	let explode_name   = `${skill.name}_explode`;
 	
@@ -10557,6 +10609,8 @@ active_skill_array.forEach( function(skill) {
 		});
 	}
 	
+	let count = `${skill.name}_application_count`;
+
 	skill.applications.forEach( function(application) {
 		// Events: advantage level, explode value, or training of skill applications
 		// Sets the roll for each skill application
@@ -10564,8 +10618,15 @@ active_skill_array.forEach( function(skill) {
 		let roll     = `${skill.name}_${application.name}_roll`;
 		
 		on(`change:${advantage_name} change:${explode_name} change:${training}`, function() {
-			getAttrs([advantage_name, explode_name, training], function(values) {
-				setAttrs({ [roll]: get_roll(values[training], values[advantage_name], values[explode_name]) });
+			getAttrs([advantage_name, explode_name, training, count], function(values) {
+				let app_count = parseInt(values[count])||0;
+				let count_change = (values[training] == 'on' ? 1 : -1);
+				let new_count = Math.max(0, (app_count + count_change));
+				console.log(`${skill.name}_application_count = ${new_count}`);
+				setAttrs({
+					[roll]:  get_roll(values[training], values[advantage_name], values[explode_name]),
+					[count]: new_count
+				});
 				if (application.name == 'summon_ally') {
 					setAttrs({ 'summon_ally_untrained_dice': get_roll('0', values[advantage_name], values[explode_name]) });
 				}
@@ -10635,7 +10696,7 @@ active_skill_array.forEach( function(skill) {
 					else {
 						application.tier_ep_costs.forEach( function(tier_ep_cost) {
 							tier_ep_cost.ep_costs.forEach( function(ep_cost) {
-								console.log(`show_${skill.name}_${application.name}_${ep_cost}_ep: ${(has_training && tier >= tier_ep_cost.tier)}`);
+//								console.log(`show_${skill.name}_${application.name}_${ep_cost}_ep: ${(has_training && tier >= tier_ep_cost.tier)}`);
 								setAttrs({
 									[`show_${skill.name}_${application.name}_${ep_cost}_ep`]: (has_training && tier >= tier_ep_cost.tier)
 								});
@@ -10646,8 +10707,61 @@ active_skill_array.forEach( function(skill) {
 			});
 		}
 	});
+	
+	// Update CP cost of skill applications
+	on(`change:${count}`, function() {
+		getAttrs([count], function(values) {
+			let app_count = parseInt(values[count])||0;
+			setAttrs({ [cp_apps]: cp_calc_skill_applications(app_count) });
+		});
+	});
+
+	// Update total skill CP cost
+	on(`change:${cp_points} change:${cp_apps} change:${cp_pool}`, function() {
+		getAttrs([cp_points, cp_apps, cp_pool], function(values) {
+			let points_val = parseInt(values[cp_points])||0;
+			let apps_val   = parseInt(values[cp_apps]  )||0;
+			let pool_val   = parseInt(values[cp_pool]  )||0;
+			let cp_total = (points_val + apps_val + pool_val);
+			console.log(`${skill.name} points CP: ${points_val}, apps CP: ${apps_val}, pool CP: ${pool_val}; total = ${cp_total}`);
+			setAttrs({ [`cp_${skill.name}`]: cp_total });
+		});
+	});
 });
 
+// Update Skill Combat Score CP
+let combat_score_skill_array = active_skill_array
+	.filter(skill => { return skill.combat_score === true })
+	.map(skill => `cp_${skill.name}`);
+
+on('change:' + combat_score_skill_array.join(' change:'), function() {
+	getAttrs(combat_score_skill_array, function(values) {
+		let cp_total = 0;
+		combat_score_skill_array.forEach( function(cp_skill) {
+			cp_total += parseInt(values[cp_skill])||0;
+		});
+		console.log(`cp_combat_skills: ${cp_total}`);
+		setAttrs({ 'cp_combat_skills': cp_total });
+	});
+});
+
+// Update Skill Non-Combat Score CP
+let non_combat_score_skill_array = active_skill_array
+	.filter(skill => { return skill.combat_score === false })
+	.map(skill => `cp_${skill.name}`);
+
+on('change:' + non_combat_score_skill_array.join(' change:'), function() {
+	getAttrs(non_combat_score_skill_array, function(values) {
+		let cp_total = 0;
+		non_combat_score_skill_array.forEach( function(cp_skill) {
+			cp_total += parseInt(values[cp_skill])||0;
+		});
+		console.log(`cp_non_combat_skills: ${cp_total}`);
+		setAttrs({ 'cp_non_combat_skills': cp_total });
+	});
+});
+
+// Add events for combat styles
 const combat_style_array = active_skill_array
 	.find(skill => { return skill.name === 'attack'}).applications
 	.filter(application => { return application.count > 0 });
