@@ -11163,8 +11163,32 @@ const damage_type_array = [
 		secondary_effect: 'Targets are scared for one round'
 	}
 ];
+
 damage_type_array.forEach( function(damage_type) {
+	let has_damage_type_name      = `damage_type_${damage_type.name}`;
 	let has_secondary_effect_name = `damage_type_${damage_type.name}_secondary`;
+	
+	on(`change:${has_damage_type_name}`, function() {
+		if (has_damage_type_name === 'damage_type_physical') { return; }
+		getAttrs([has_damage_type_name, 'cp_damage_types'], function(values) {
+			let cp_damage = parseInt(values.cp_damage_types)||0;
+			let cp_change = (values[has_damage_type_name] == 'on' ? 3 : -3);
+			let new_cp_damage = Math.max(0, cp_damage + cp_change);
+			console.log(`cp_damage_types: ${new_cp_damage}`);
+			setAttrs({ 'cp_damage_types': new_cp_damage });
+		});
+	});
+	
+	on(`change:${has_secondary_effect_name}`, function() {
+		getAttrs([has_secondary_effect_name, 'cp_damage_types'], function(values) {
+			let cp_damage = parseInt(values.cp_damage_types)||0;
+			let cp_change = (values[has_secondary_effect_name] == 'on' ? 3 : -3);
+			let new_cp_damage = Math.max(0, cp_damage + cp_change);
+			console.log(`cp_damage_types: ${new_cp_damage}`);
+			setAttrs({ 'cp_damage_types': new_cp_damage });
+		});
+	});
+	
 	on(`clicked:damagetype${damage_type.name}info`, function() {
 		getAttrs([has_secondary_effect_name], function(values) {
 			let secondary = '';
@@ -11176,6 +11200,28 @@ damage_type_array.forEach( function(damage_type) {
 			startRoll(roll_text, (results) => {
 				finishRoll(results.rollId);
 			});
+		});
+	});
+});
+
+// Overall character CP calc
+on('change:cp_combat_skills change:cp_non_combat_skills change:cp_damage_types', function() {
+	getAttrs(['cp_combat_skills', 'cp_non_combat_skills', 'cp_damage_types'], function(values) {
+		let cp_cs_skills  = parseInt(values.cp_combat_skills    )||0;
+		let cp_ncs_skills = parseInt(values.cp_non_combat_skills)||0;
+		let cp_damage     = parseInt(values.cp_damage_types     )||0;
+		
+		let combat_score     = (cp_cs_skills + cp_damage) / 10;
+		let non_combat_score = (cp_ncs_skills) / 10;
+		
+		let cp_total = cp_cs_skills + cp_ncs_skills + cp_damage;
+		
+		console.log(`CP: ${cp_total}; CS: ${combat_score}; NCS: ${non_combat_score}`);
+		
+		setAttrs({
+			'cp_total':         cp_total,
+			'combat_score':     combat_score,
+			'non_combat_score': non_combat_score
 		});
 	});
 });
