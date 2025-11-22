@@ -7155,23 +7155,48 @@ magic_skill_base_array.forEach( function(skill) {
 	}
 });
 
-function set_passive_skills(only_if_blank = false) {
-	getAttrs(["passive_skills"], function(values) {
-		if (only_if_blank && values.passive_skills.trim().length > 0) {
-			return;
-		}
+function set_passive_skills(eventInfo) {
+	getAttrs(['cp_combat_passives', 'cp_non_combat_passives'], function(values) {
+		let cp_cs_passive  = parseInt(values.cp_combat_passives    )||0;
+		let cp_ncs_passive = parseInt(values.cp_non_combat_passives)||0;
 
-		let passive_skills_text = parse_textarea(values.passive_skills);
-		console.log('passive skills: ' + passive_skills_text);
+//		console.log('set_passive_skills');
+//		console.log(eventInfo);
+
+		let old_ps_text = (eventInfo.previousValue ? parse_textarea(eventInfo.previousValue) : '');
+		let new_ps_text = (eventInfo.newValue      ? parse_textarea(eventInfo.newValue)      : '');
 
 		let set_array = {};
+		let is_in_old_ps_text = false;
+		let is_in_new_ps_text = false;
+		let cp_cs_change      = 0;
+		let cp_ncs_change     = 0;
 		
 		passive_skill_array.forEach( function(skill) {
-			set_array[skill.name] = passive_skills_text.includes(skill.search_text);
+			is_in_old = old_ps_text.includes(skill.search_text);
+			is_in_new = new_ps_text.includes(skill.search_text);
+			if (is_in_old && !is_in_new) {
+				console.log(`remove ${skill.name}`);
+				set_array[skill.name] = false;
+				cp_cs_change         -= skill.cs_cp_cost;
+				cp_ncs_change        -= skill.ncs_cp_cost;
+			}
+			if (is_in_new && !is_in_old) {
+				console.log(`add ${skill.name}`);
+				set_array[skill.name] = true;
+				cp_cs_change         += skill.cs_cp_cost;
+				cp_ncs_change        += skill.ncs_cp_cost;
+			}
 		});
 		
+		let new_cp_cs_passive  = Math.max(0, cp_cs_passive  + cp_cs_change );
+		let new_cp_ncs_passive = Math.max(0, cp_ncs_passive + cp_ncs_change);
+		console.log(`new passive CP; CS ${new_cp_cs_passive}; NCS ${new_cp_ncs_passive}`);
+		set_array['cp_combat_passives']     = new_cp_cs_passive;
+		set_array['cp_non_combat_passives'] = new_cp_ncs_passive;
+		
 		setAttrs(set_array);
-	});	
+	});
 }
 
 const boons_and_banes_array = [
@@ -8492,16 +8517,33 @@ function cast_imbue(ep_cost) {
 }
 
 on('sheet:opened', function() {
-	getAttrs(['mob_skill_bonus'], function(values) {
+	getAttrs(['cp_total', 'passive_skills', 'boons_and_banes', 'mob_skill_bonus'], function(values) {
+		let cp_total        = parseInt(values.cp_total       )||0;
 		let mob_skill_bonus = parseInt(values.mob_skill_bonus)||0;
 		if (mob_skill_bonus == 0) {
-			console.log(`sheet:opened - mob_skill_bonus: ${mob_skill_bonus}`);
+			//console.log(`sheet:opened - mob_skill_bonus: ${mob_skill_bonus}`);
 			setAttrs({ "mob_skill_bonus": mob_skill_bonus });
 		}
+		if (cp_total == 0) {
+			console.log('CP total is zero');
+			let set_array = {};
+			if (values.passive_skills.trim().length == 0) {
+				console.log('No passive skills; setting all to false');
+				passive_skill_array.forEach(function(ps) {
+					set_array[ps.name] = false;
+				});
+			}
+			if (values.boons_and_banes.trim().length == 0) {
+				console.log('No boons or banes; setting all to false');
+				passive_skill_array.forEach(function(bb) {
+					set_array[bb.name] = false;
+				});
+			}
+			if (Object.keys(set_array).length > 0) {
+				setAttrs(set_array);
+			}
+		}
 	});
-
-	set_passive_skills(true);
-	set_boons_and_banes(true);
 });
 
 const rest_type_array = ['short', 'long'];
@@ -9620,6 +9662,17 @@ vital_stats_array.forEach( function(stat) {
 	});
 });
 
+on('change:hit_points_extra change:essence_points_extra', function() {
+	getAttrs(['hit_points_extra', 'essence_points_extra'], function(values) {
+		let hp_extra = parseInt(values.hit_points_extra    )||0;
+		let ep_extra = parseInt(values.essence_points_extra)||0;
+		
+		let cp_vital_stats = (hp_extra + ep_extra) / 2;
+		console.log(`cp_vital_stats: ${cp_vital_stats}`);
+		setAttrs({ 'cp_vital_stats': cp_vital_stats });
+	});
+});
+
 on("change:speed_base change:agility_modifier change:size_modifier_speed", function() {
 	getAttrs(["speed_base", "agility_modifier", "size_modifier_speed"], function(values) {
 		let base = parseInt(values.speed_base)||0;
@@ -9629,9 +9682,11 @@ on("change:speed_base change:agility_modifier change:size_modifier_speed", funct
 		if (agi_mod < 0) { extra_speed -= 0.5; }
 		let total = base + Math.floor(extra_speed) + size_mod;
 		let feet = total * 5;
+		let cp_speed = (base - 4) * 4;
 		setAttrs({
 			"speed_total": total,
-			"speed_feet": feet
+			"speed_feet":  feet,
+			"cp_speed":    cp_speed
 		});
 	});
 });
@@ -11205,16 +11260,20 @@ damage_type_array.forEach( function(damage_type) {
 });
 
 // Overall character CP calc
-on('change:cp_combat_skills change:cp_non_combat_skills change:cp_damage_types', function() {
-	getAttrs(['cp_combat_skills', 'cp_non_combat_skills', 'cp_damage_types'], function(values) {
-		let cp_cs_skills  = parseInt(values.cp_combat_skills    )||0;
-		let cp_ncs_skills = parseInt(values.cp_non_combat_skills)||0;
-		let cp_damage     = parseInt(values.cp_damage_types     )||0;
+on('change:cp_combat_skills change:cp_non_combat_skills change:cp_vital_stats change:cp_damage_types change:cp_combat_passives change:cp_non_combat_passives change:cp_speed', function() {
+	getAttrs(['cp_combat_skills', 'cp_non_combat_skills', 'cp_vital_stats', 'cp_damage_types', 'cp_combat_passives', 'cp_non_combat_passives', 'cp_speed'], function(values) {
+		let cp_cs_skills   = parseInt(values.cp_combat_skills      )||0;
+		let cp_ncs_skills  = parseInt(values.cp_non_combat_skills  )||0;
+		let cp_vital_stats = parseInt(values.cp_vital_stats        )||0;
+		let cp_cs_pass     = parseInt(values.cp_combat_passives    )||0;
+		let cp_ncs_pass    = parseInt(values.cp_non_combat_passives)||0;
+		let cp_speed       = parseInt(values.cp_speed              )||0;
+		let cp_damage      = parseInt(values.cp_damage_types       )||0;
 		
-		let combat_score     = (cp_cs_skills + cp_damage) / 10;
-		let non_combat_score = (cp_ncs_skills) / 10;
+		let combat_score     = (cp_cs_skills + cp_vital_stats + cp_cs_pass + cp_damage) / 10;
+		let non_combat_score = (cp_ncs_skills + cp_ncs_pass + cp_speed) / 10;
 		
-		let cp_total = cp_cs_skills + cp_ncs_skills + cp_damage;
+		let cp_total = cp_cs_skills + cp_ncs_skills + cp_vital_stats + cp_cs_pass + cp_ncs_pass + cp_damage + cp_speed;
 		
 		console.log(`CP: ${cp_total}; CS: ${combat_score}; NCS: ${non_combat_score}`);
 		
@@ -12104,8 +12163,8 @@ on("clicked:professioninfo", function() {
 	});
 });
 
-on("change:passive_skills", function() { 
-	set_passive_skills();
+on("change:passive_skills", function(eventInfo) { 
+	set_passive_skills(eventInfo);
 });
 
 on("change:boons_and_banes", function() { 
