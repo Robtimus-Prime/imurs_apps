@@ -7019,14 +7019,27 @@ const attribute_array = [
 	{ name: 'wit',          combat_score: false }
 ];
 
+const attribute_cp_costs = [ -60, -103, -92, -82, -72, -63, -54, -46, -38, -31, -24, -18, -12, -7, -2, 2, 7, 12, 18, 24, 31, 38, 46, 54, 63, 
+72, 82, 92, 103, 114, 126, 138, 151, 164, 178, 192, 207, 222, 238, 254, 271, 288, 306, 324, 343, 362, 382, 402, 423, 444, 466 ];
+
 attribute_array.forEach( function(attribute) {
 	on('change:' + attribute.name, function() {
 		getAttrs([attribute.name], function(values) {
 			let attribute_value = parseInt(values[attribute.name])||0;
-			let attribute_mod = get_modifier(attribute_value);
+			
+			if (attribute_value > 50) {
+				console.error('Attribute values over 50 are not supported!');
+				setAttrs({ [attribute.name]: 50 });
+				return;
+			}
+			
+			let attribute_mod   = get_modifier(attribute_value);
+			let cp_name         = `cp_${attribute.name}`;
+			let cp_value        = attribute_cp_costs[attribute_value];
+			console.log(`${cp_name}: ${cp_value}`);
 			setAttrs({
-				[attribute.name]:               attribute_value,
-				[attribute.name + '_modifier']: attribute_mod
+				[attribute.name + '_modifier']: attribute_mod,
+				[cp_name]:                      cp_value
 			});
 			
 			if (attribute.name == 'physique') {
@@ -7036,6 +7049,24 @@ attribute_array.forEach( function(attribute) {
 				});
 			}
 		});
+	});
+});
+
+on('change:cp_physique change:cp_agility', function() {
+	getAttrs(['cp_physique', 'cp_agility'], function(values) {
+		let cp_physique = parseInt(values.cp_physique)||0;
+		let cp_agility  = parseInt(values.cp_agility )||0;
+		console.log(`cp_combat_attributes: ${(cp_physique + cp_agility)}`);
+		setAttrs({ 'cp_combat_attributes': (cp_physique + cp_agility) });
+	});
+});
+	
+on('change:cp_intelligence change:cp_wit', function() {
+	getAttrs(['cp_intelligence', 'cp_wit'], function(values) {
+		let cp_intelligence = parseInt(values.cp_intelligence)||0;
+		let cp_wit          = parseInt(values.cp_wit         )||0;
+		console.log(`cp_non_combat_attributes: ${(cp_intelligence + cp_wit)}`);
+		setAttrs({ 'cp_non_combat_attributes': (cp_intelligence + cp_wit) });
 	});
 });
 
@@ -11260,20 +11291,22 @@ damage_type_array.forEach( function(damage_type) {
 });
 
 // Overall character CP calc
-on('change:cp_combat_skills change:cp_non_combat_skills change:cp_vital_stats change:cp_damage_types change:cp_combat_passives change:cp_non_combat_passives change:cp_speed', function() {
-	getAttrs(['cp_combat_skills', 'cp_non_combat_skills', 'cp_vital_stats', 'cp_damage_types', 'cp_combat_passives', 'cp_non_combat_passives', 'cp_speed'], function(values) {
-		let cp_cs_skills   = parseInt(values.cp_combat_skills      )||0;
-		let cp_ncs_skills  = parseInt(values.cp_non_combat_skills  )||0;
-		let cp_vital_stats = parseInt(values.cp_vital_stats        )||0;
-		let cp_cs_pass     = parseInt(values.cp_combat_passives    )||0;
-		let cp_ncs_pass    = parseInt(values.cp_non_combat_passives)||0;
-		let cp_speed       = parseInt(values.cp_speed              )||0;
-		let cp_damage      = parseInt(values.cp_damage_types       )||0;
+on('change:cp_combat_attributes change:cp_non_combat_attributes change:cp_combat_skills change:cp_non_combat_skills change:cp_vital_stats change:cp_damage_types change:cp_combat_passives change:cp_non_combat_passives change:cp_speed', function() {
+	getAttrs(['cp_combat_attributes', 'cp_non_combat_attributes', 'cp_combat_skills', 'cp_non_combat_skills', 'cp_vital_stats', 'cp_damage_types', 'cp_combat_passives', 'cp_non_combat_passives', 'cp_speed'], function(values) {
+		let cp_cs_atts     = parseInt(values.cp_combat_attributes     )||0;
+		let cp_ncs_atts    = parseInt(values.cp_non_combat_attributes )||0;
+		let cp_cs_skills   = parseInt(values.cp_combat_skills         )||0;
+		let cp_ncs_skills  = parseInt(values.cp_non_combat_skills     )||0;
+		let cp_vital_stats = parseInt(values.cp_vital_stats           )||0;
+		let cp_cs_pass     = parseInt(values.cp_combat_passives       )||0;
+		let cp_ncs_pass    = parseInt(values.cp_non_combat_passives   )||0;
+		let cp_speed       = parseInt(values.cp_speed                 )||0;
+		let cp_damage      = parseInt(values.cp_damage_types          )||0;
 		
-		let combat_score     = (cp_cs_skills + cp_vital_stats + cp_cs_pass + cp_damage) / 10;
-		let non_combat_score = (cp_ncs_skills + cp_ncs_pass + cp_speed) / 10;
+		let combat_score     = (cp_cs_atts + cp_cs_skills + cp_vital_stats + cp_cs_pass + cp_damage) / 10;
+		let non_combat_score = (cp_ncs_atts + cp_ncs_skills + cp_ncs_pass + cp_speed) / 10;
 		
-		let cp_total = cp_cs_skills + cp_ncs_skills + cp_vital_stats + cp_cs_pass + cp_ncs_pass + cp_damage + cp_speed;
+		let cp_total = cp_cs_atts + cp_ncs_atts + cp_cs_skills + cp_ncs_skills + cp_vital_stats + cp_cs_pass + cp_ncs_pass + cp_damage + cp_speed;
 		
 		console.log(`CP: ${cp_total}; CS: ${combat_score}; NCS: ${non_combat_score}`);
 		
