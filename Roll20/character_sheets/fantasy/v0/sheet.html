@@ -11019,10 +11019,12 @@ proficiency_skill_array.forEach( function(skill) {
 
 	// Event: change skill points, extra pool points, attribute; also passive skill and modifier (if applicable)
 	// Sets the skill total, attribute modifier, tier, and pool total
-	let skill_points_name = `${skill.name}_points`;
+	let skill_points_name     = `${skill.name}_points`;
 	let skill_extra_pool_name = `${skill.type}_pool_extra`;
-	let attribute_mod_name = `${skill.attribute}_modifier`;
-	let skill_tier_name = `${skill.type}_tier`;
+	let attribute_mod_name    = `${skill.attribute}_modifier`;
+	let skill_tier_name       = `${skill.type}_tier`;
+	let cp_points             = `cp_${skill.name}_points`;
+	
 	let getAttrs_array = [skill_points_name, skill_extra_pool_name, attribute_mod_name];
 	let change = 'change:' + getAttrs_array.join(' change:');
 	getAttrs_array.push(skill_tier_name);
@@ -11038,12 +11040,14 @@ proficiency_skill_array.forEach( function(skill) {
 			tier = Math.max(tier, get_tier(skill_points));
 			let pool = tier + pool_extra;
 			
+			console.log(`${cp_points}: ${(skill_points / 2)}`);
 			setAttrs({
 				[`${skill.name}_attribute_name`]:     capitalize_first_letter(attribute_name),
 				[`${skill.name}_attribute_modifier`]: attribute_mod,
 				[`${skill.name}_total`]:              total,
 				[`${skill.type}_tier`]:               tier,
-				[`${skill.type}_pool_total`]:         pool
+				[`${skill.type}_pool_total`]:         pool,
+				[cp_points]:                          (skill_points / 2)
 			});
 		});
 	});
@@ -11072,7 +11076,46 @@ proficiency_skill_array.forEach( function(skill) {
 				setAttrs({ [roll]: get_roll(values[training], values[advantage_name], values[explode_name]) });
 			});
 		});
+	});
+});
 
+const proficiency_names = proficiency_array.map(skill => skill.name);
+
+// Update CP total per profession type
+proficiency_names.forEach( function(skill) {
+	let array = [];
+	for (let i = 1; i <= proficiency_count; i++) {
+		array.push(`cp_${skill}${i}_points`);
+	}
+	array.push(`${skill}_pool_extra`);
+	
+	on('change:' + array.join(' change:'), function() {
+		getAttrs(array, function(values) {
+			let cp_total = 0;
+			array.forEach( function(cp_item) {
+				let item_value = parseInt(values[cp_item])||0;
+				if (cp_item.includes('pool')) {
+					item_value = cp_calc_skill_pool(item_value);
+				}
+				cp_total += item_value;
+			});
+			console.log(`cp_${skill}: ${cp_total}`);
+			setAttrs({ [`cp_${skill}`]: cp_total });
+		});
+	});
+});
+
+// Update Proficiency Non-Combat Score CP
+let proficiency_skill_cp_names = proficiency_names.map(skill => `cp_${skill}`);
+
+on('change:' + proficiency_skill_cp_names.join(' change:'), function() {
+	getAttrs(proficiency_skill_cp_names, function(values) {
+		let cp_total = 0;
+		proficiency_skill_cp_names.forEach( function(cp_skill) {
+			cp_total += parseInt(values[cp_skill])||0;
+		});
+		console.log(`cp_proficiencies: ${cp_total}`);
+		setAttrs({ 'cp_proficiencies': cp_total });
 	});
 });
 
@@ -11313,8 +11356,8 @@ on('change:area_type_blast change:area_type_burst change:area_type_line change:a
 });
 
 // Overall character CP calc
-on('change:cp_combat_attributes change:cp_non_combat_attributes change:cp_combat_skills change:cp_non_combat_skills change:cp_vital_stats change:cp_damage_types change:cp_area_types change:cp_combat_passives change:cp_non_combat_passives change:cp_speed', function() {
-	getAttrs(['cp_combat_attributes', 'cp_non_combat_attributes', 'cp_combat_skills', 'cp_non_combat_skills', 'cp_vital_stats', 'cp_damage_types', 'cp_area_types', 'cp_combat_passives', 'cp_non_combat_passives', 'cp_speed'], function(values) {
+on('change:cp_combat_attributes change:cp_non_combat_attributes change:cp_combat_skills change:cp_non_combat_skills change:cp_vital_stats change:cp_damage_types change:cp_area_types change:cp_combat_passives change:cp_non_combat_passives change:cp_speed change:cp_proficiencies', function() {
+	getAttrs(['cp_combat_attributes', 'cp_non_combat_attributes', 'cp_combat_skills', 'cp_non_combat_skills', 'cp_vital_stats', 'cp_damage_types', 'cp_area_types', 'cp_combat_passives', 'cp_non_combat_passives', 'cp_speed', 'cp_proficiencies'], function(values) {
 		let cp_cs_atts     = parseInt(values.cp_combat_attributes     )||0;
 		let cp_ncs_atts    = parseInt(values.cp_non_combat_attributes )||0;
 		let cp_cs_skills   = parseInt(values.cp_combat_skills         )||0;
@@ -11325,12 +11368,13 @@ on('change:cp_combat_attributes change:cp_non_combat_attributes change:cp_combat
 		let cp_speed       = parseInt(values.cp_speed                 )||0;
 		let cp_damage      = parseInt(values.cp_damage_types          )||0;
 		let cp_area_types  = parseInt(values.cp_area_types            )||0;
-		
+		let cp_profs       = parseInt(values.cp_proficiencies         )||0;
+
 		let combat_score     = (cp_cs_atts + cp_cs_skills + cp_vital_stats + cp_cs_pass + cp_damage) / 10;
-		let non_combat_score = (cp_ncs_atts + cp_ncs_skills + cp_ncs_pass + cp_speed + cp_area_types) / 10;
+		let non_combat_score = (cp_ncs_atts + cp_ncs_skills + cp_ncs_pass + cp_speed + cp_area_types + cp_profs) / 10;
 		
 		let cp_total = cp_cs_atts + cp_ncs_atts + cp_cs_skills + cp_ncs_skills + cp_vital_stats + cp_cs_pass + cp_ncs_pass + cp_damage + 
-					   cp_speed + cp_area_types;
+					   cp_speed + cp_area_types + cp_profs;
 		
 		console.log(`CP: ${cp_total}; CS: ${combat_score}; NCS: ${non_combat_score}`);
 		
