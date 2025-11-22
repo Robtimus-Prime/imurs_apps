@@ -11290,9 +11290,31 @@ damage_type_array.forEach( function(damage_type) {
 	});
 });
 
+const area_type_array = [
+	{ name: 'blast', cp_cost: 3 },
+	{ name: 'burst', cp_cost: 6 },
+	{ name: 'line',  cp_cost: 3 },
+	{ name: 'nova',  cp_cost: 3 },
+	{ name: 'wall',  cp_cost: 3 }
+];
+
+on('change:area_type_blast change:area_type_burst change:area_type_line change:area_type_nova change:area_type_wall', function() {
+	getAttrs(['area_type_blast', 'area_type_burst', 'area_type_line', 'area_type_nova', 'area_type_wall'], function(values) {
+		let cp_blast = (values.area_type_blast == 'on' ? 3 : 0);
+		let cp_burst = (values.area_type_burst == 'on' ? 3 : 0);
+		let cp_line  = (values.area_type_line  == 'on' ? 3 : 0);
+		let cp_nova  = (values.area_type_nova  == 'on' ? 3 : 0);
+		let cp_wall  = (values.area_type_wall  == 'on' ? 3 : 0);
+		
+		let cp_area_types = cp_blast + cp_burst + cp_line + cp_nova + cp_wall;
+		console.log(`area type CP: ${cp_area_types}`);
+		setAttrs({ 'cp_area_types': cp_area_types });
+	});
+});
+
 // Overall character CP calc
-on('change:cp_combat_attributes change:cp_non_combat_attributes change:cp_combat_skills change:cp_non_combat_skills change:cp_vital_stats change:cp_damage_types change:cp_combat_passives change:cp_non_combat_passives change:cp_speed', function() {
-	getAttrs(['cp_combat_attributes', 'cp_non_combat_attributes', 'cp_combat_skills', 'cp_non_combat_skills', 'cp_vital_stats', 'cp_damage_types', 'cp_combat_passives', 'cp_non_combat_passives', 'cp_speed'], function(values) {
+on('change:cp_combat_attributes change:cp_non_combat_attributes change:cp_combat_skills change:cp_non_combat_skills change:cp_vital_stats change:cp_damage_types change:cp_area_types change:cp_combat_passives change:cp_non_combat_passives change:cp_speed', function() {
+	getAttrs(['cp_combat_attributes', 'cp_non_combat_attributes', 'cp_combat_skills', 'cp_non_combat_skills', 'cp_vital_stats', 'cp_damage_types', 'cp_area_types', 'cp_combat_passives', 'cp_non_combat_passives', 'cp_speed'], function(values) {
 		let cp_cs_atts     = parseInt(values.cp_combat_attributes     )||0;
 		let cp_ncs_atts    = parseInt(values.cp_non_combat_attributes )||0;
 		let cp_cs_skills   = parseInt(values.cp_combat_skills         )||0;
@@ -11302,11 +11324,13 @@ on('change:cp_combat_attributes change:cp_non_combat_attributes change:cp_combat
 		let cp_ncs_pass    = parseInt(values.cp_non_combat_passives   )||0;
 		let cp_speed       = parseInt(values.cp_speed                 )||0;
 		let cp_damage      = parseInt(values.cp_damage_types          )||0;
+		let cp_area_types  = parseInt(values.cp_area_types            )||0;
 		
 		let combat_score     = (cp_cs_atts + cp_cs_skills + cp_vital_stats + cp_cs_pass + cp_damage) / 10;
-		let non_combat_score = (cp_ncs_atts + cp_ncs_skills + cp_ncs_pass + cp_speed) / 10;
+		let non_combat_score = (cp_ncs_atts + cp_ncs_skills + cp_ncs_pass + cp_speed + cp_area_types) / 10;
 		
-		let cp_total = cp_cs_atts + cp_ncs_atts + cp_cs_skills + cp_ncs_skills + cp_vital_stats + cp_cs_pass + cp_ncs_pass + cp_damage + cp_speed;
+		let cp_total = cp_cs_atts + cp_ncs_atts + cp_cs_skills + cp_ncs_skills + cp_vital_stats + cp_cs_pass + cp_ncs_pass + cp_damage + 
+					   cp_speed + cp_area_types;
 		
 		console.log(`CP: ${cp_total}; CS: ${combat_score}; NCS: ${non_combat_score}`);
 		
