@@ -11356,8 +11356,8 @@ on('change:area_type_blast change:area_type_burst change:area_type_line change:a
 });
 
 // Overall character CP calc
-on('change:cp_combat_attributes change:cp_non_combat_attributes change:cp_combat_skills change:cp_non_combat_skills change:cp_vital_stats change:cp_damage_types change:cp_area_types change:cp_combat_passives change:cp_non_combat_passives change:cp_speed change:cp_proficiencies', function() {
-	getAttrs(['cp_combat_attributes', 'cp_non_combat_attributes', 'cp_combat_skills', 'cp_non_combat_skills', 'cp_vital_stats', 'cp_damage_types', 'cp_area_types', 'cp_combat_passives', 'cp_non_combat_passives', 'cp_speed', 'cp_proficiencies'], function(values) {
+on('change:cp_combat_attributes change:cp_non_combat_attributes change:cp_combat_skills change:cp_non_combat_skills change:cp_vital_stats change:cp_damage_types change:cp_area_types change:cp_spell_statistics change:cp_combat_passives change:cp_non_combat_passives change:cp_speed change:cp_proficiencies', function() {
+	getAttrs(['cp_combat_attributes', 'cp_non_combat_attributes', 'cp_combat_skills', 'cp_non_combat_skills', 'cp_vital_stats', 'cp_damage_types', 'cp_area_types', 'cp_spell_statistics', 'cp_combat_passives', 'cp_non_combat_passives', 'cp_speed', 'cp_proficiencies'], function(values) {
 		let cp_cs_atts     = parseInt(values.cp_combat_attributes     )||0;
 		let cp_ncs_atts    = parseInt(values.cp_non_combat_attributes )||0;
 		let cp_cs_skills   = parseInt(values.cp_combat_skills         )||0;
@@ -11368,13 +11368,14 @@ on('change:cp_combat_attributes change:cp_non_combat_attributes change:cp_combat
 		let cp_speed       = parseInt(values.cp_speed                 )||0;
 		let cp_damage      = parseInt(values.cp_damage_types          )||0;
 		let cp_area_types  = parseInt(values.cp_area_types            )||0;
+		let cp_spell_stats = parseInt(values.cp_spell_statistics      )||0;
 		let cp_profs       = parseInt(values.cp_proficiencies         )||0;
 
 		let combat_score     = (cp_cs_atts + cp_cs_skills + cp_vital_stats + cp_cs_pass + cp_damage) / 10;
-		let non_combat_score = (cp_ncs_atts + cp_ncs_skills + cp_ncs_pass + cp_speed + cp_area_types + cp_profs) / 10;
+		let non_combat_score = (cp_ncs_atts + cp_ncs_skills + cp_ncs_pass + cp_speed + cp_area_types + cp_profs + cp_spell_stats) / 10;
 		
 		let cp_total = cp_cs_atts + cp_ncs_atts + cp_cs_skills + cp_ncs_skills + cp_vital_stats + cp_cs_pass + cp_ncs_pass + cp_damage + 
-					   cp_speed + cp_area_types + cp_profs;
+					   cp_speed + cp_area_types + cp_spell_stats + cp_profs;
 		
 		console.log(`CP: ${cp_total}; CS: ${combat_score}; NCS: ${non_combat_score}`);
 		
@@ -12355,12 +12356,22 @@ spell_statistics.forEach( function(statistic) {
 	on('change:' + key_array.join(' change:'), function() {
 		getAttrs(key_array, function(values) {
 			let arcana_points = parseInt(values.arcana_points)||0;
-			let arcana_total = parseInt(values.arcana_total)||0;
-			let extra = parseInt(values[extra_name])||0;
+			let arcana_total  = parseInt(values.arcana_total )||0;
+			let extra         = parseInt(values[extra_name]  )||0;
 			setAttrs({
-				[`spell_${statistic.name}`]: (arcana_points >= 1 ? Math.max(1, Math.floor(arcana_total / statistic.divisor)) + extra : '')
+				[`spell_${statistic.name}`]:    (arcana_points >= 1 ? Math.max(1, Math.floor(arcana_total / statistic.divisor)) + extra : ''),
+				[`cp_spell_${statistic.name}`]: (extra * statistic.divisor)
 			});
 		});
+	});
+});
+
+on('change:cp_spell_range change:cp_spell_area_size', function() {
+	getAttrs(['cp_spell_range', 'cp_spell_area_size'], function(values) {
+		let cp_spell_range     = parseInt(values.cp_spell_range    )||0;
+		let cp_spell_area_size = parseInt(values.cp_spell_area_size)||0;
+		console.log(`cp_spell_statistics: ${(cp_spell_range + cp_spell_area_size)}`);
+		setAttrs({ 'cp_spell_statistics': (cp_spell_range + cp_spell_area_size) });
 	});
 });
 
