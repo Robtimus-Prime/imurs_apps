@@ -6928,10 +6928,9 @@ function get_poison_attack_stats(has_poison, boons_and_banes_text) {
 	let damage = '';
 	let condition = null;
 	let roll_text = '';
-	let cp_cost = 0;
 
 	let regex = /(^|,)(\w+)*poisonattack(\w+),tier(\d+)(\w+)(,|$)/;
-	const matches = boons_and_banes_text.match(regex);
+	let matches = boons_and_banes_text.match(regex);
 	console.log(`boons_and_banes_text: ${boons_and_banes_text}; looking for poison attack`);
 	console.log(matches);
 	
@@ -6945,7 +6944,6 @@ function get_poison_attack_stats(has_poison, boons_and_banes_text) {
 		if (tier == 4) {
 			duration = (type == 'sleep' || type == 'kill' ? 'Instantaneous' : 'Short rest');
 		}
-		cp_cost = (natural_weapon.toLowerCase() === 'touch' ? tier * 75 : tier * 50);
 	
 		if (type == 'damage') {
 			damage = (tier + 1) + 'd6';
@@ -6970,7 +6968,7 @@ function get_poison_attack_stats(has_poison, boons_and_banes_text) {
 		}
 		
 		let effect = (type == 'damage') ? '[[' + damage + ']] poison damage' : condition;
-		roll_text = "@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Poison}} {{Physical Resilience (constitution)=TN " + TN + 
+		roll_text = "@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Poison Attack}} {{Physical Resilience (constitution)=TN " + TN + 
 		"}} {{Effect=" + effect + "}} {{Duration=" + duration + "}}'";
 	}
 	
@@ -6982,8 +6980,7 @@ function get_poison_attack_stats(has_poison, boons_and_banes_text) {
 		duration:       duration,
 		damage:         damage,
 		condition:      condition,
-		roll_text:      roll_text,
-		cp_cost:        cp_cost
+		roll_text:      roll_text
 	};
 	
 	return poison_stats;
@@ -7291,7 +7288,19 @@ const boons_and_banes_array = [
 	{ name: 'bb_non-eating',                          search_text: 'non-eating',                cs_cp_cost:   0, ncs_cp_cost:   3 },
 	{ name: 'bb_non-sleeping',                        search_text: 'non-sleeping',              cs_cp_cost:   0, ncs_cp_cost:  10 },
 	{ name: 'bb_paralysis',                           search_text: 'paralysis',                 cs_cp_cost:  20, ncs_cp_cost:   0 },
-	{ name: 'bb_poison_attack',                       search_text: 'poisonattack',              cs_cp_cost:   0, ncs_cp_cost:   0 },
+	{ name: 'bb_poison_attack',                       search_text: 'poisonattack',              cs_cp_cost:   0, ncs_cp_cost:   0, 
+		cp_function: function(boons_and_banes_text) {
+			let regex = /(^|,)(\w+)*poisonattack(\w+),tier(\d+)(\w+)(,|$)/;
+			let matches = boons_and_banes_text.match(regex);
+			let cs_cp_cost = 0;
+			if (matches) {
+				let tier = parseInt(matches[4])||0;
+				cs_cp_cost = tier * (matches[3] == 'touch' ? 75 : 50);
+			}
+			let cp_costs = { cs_cp_cost: cs_cp_cost, ncs_cp_cost: 0 };
+			return cp_costs;
+		}
+	},
 	{ name: 'bb_poison_immunity',                     search_text: 'poisonimmunity',            cs_cp_cost:  45, ncs_cp_cost:   0 },
 	{ name: 'bb_polyglot',                            search_text: 'polyglot',                  cs_cp_cost:   0, ncs_cp_cost:   8 },
 	{ name: 'bb_preternatural_cunning',               search_text: 'preternaturalcunning',      cs_cp_cost:  10, ncs_cp_cost:   0 },
@@ -7408,36 +7417,72 @@ function set_boons_and_banes(eventInfo) {
 
 		let old_bb_text = (eventInfo.previousValue ? parse_textarea(eventInfo.previousValue) : '');
 		let new_bb_text = (eventInfo.newValue      ? parse_textarea(eventInfo.newValue)      : '');
+		console.log(`old_bb_text: ${old_bb_text}`);
+		console.log(`new_bb_text: ${new_bb_text}`);
 
 		let set_array = {};
 		let is_in_old_bb_text = false;
 		let is_in_new_bb_text = false;
 		let cp_cs_change      = 0;
 		let cp_ncs_change     = 0;
+		let old_cs_cp_cost    = 0;
+		let old_ncs_cp_cost   = 0;
+		let new_cs_cp_cost    = 0;
+		let new_ncs_cp_cost   = 0;
+		let old_cp_costs      = null;
+		let new_cp_costs      = null;
 
 		boons_and_banes_array.forEach( function(bb) {
 			is_in_old = boons_and_banes_includes(bb, old_bb_text);
 			is_in_new = boons_and_banes_includes(bb, new_bb_text);
+			if ((!is_in_old && !is_in_new) || (is_in_new && is_in_old && !bb.cp_function)) {
+				return;
+			}
+			console.log(`${bb.name}; is_in_old: ${is_in_old}; is_in_new: ${is_in_new}`);
+			if (bb.cp_function) {
+				old_cp_costs    = (old_bb_text  ? bb.cp_function(old_bb_text) : null);
+				new_cp_costs    = (new_bb_text  ? bb.cp_function(new_bb_text) : null);
+				old_cs_cp_cost  = (old_cp_costs ? old_cp_costs.cs_cp_cost     : 0);
+			    old_ncs_cp_cost = (old_cp_costs ? old_cp_costs.ncs_cp_cost    : 0);
+				new_cs_cp_cost  = (new_cp_costs ? new_cp_costs.cs_cp_cost     : 0);
+			    new_ncs_cp_cost = (new_cp_costs ? new_cp_costs.ncs_cp_cost    : 0);
+				console.log('Found CP function; old then new CP costs below');
+				console.log(old_cp_costs);
+				console.log(new_cp_costs);
+			}
+			else {
+				console.log('No CP function found');
+				old_cs_cp_cost  = bb.cs_cp_cost;
+			    old_ncs_cp_cost = bb.ncs_cp_cost;
+				new_cs_cp_cost  = bb.cs_cp_cost;
+			    new_ncs_cp_cost = bb.ncs_cp_cost;
+			}
 			if (is_in_old && !is_in_new) {
 				console.log(`remove ${bb.name}`);
 				set_array[bb.name] = false;
-				cp_cs_change      -= bb.cs_cp_cost;
-				cp_ncs_change     -= bb.ncs_cp_cost;
+				cp_cs_change      -= old_cs_cp_cost;
+				cp_ncs_change     -= old_ncs_cp_cost;
 			}
 			if (is_in_new && !is_in_old) {
 				console.log(`add ${bb.name}`);
 				set_array[bb.name] = true;
-				cp_cs_change      += bb.cs_cp_cost;
-				cp_ncs_change     += bb.ncs_cp_cost;
+				cp_cs_change      += new_cs_cp_cost;
+				cp_ncs_change     += new_ncs_cp_cost;
+			}
+			if (is_in_new && is_in_old && bb.cp_function) {
+				console.log(`change ${bb.name}`);
+				set_array[bb.name] = true;
+				cp_cs_change      += new_cs_cp_cost  - old_cs_cp_cost;
+				cp_ncs_change     += new_ncs_cp_cost - old_ncs_cp_cost;
 			}
 		});
 		
 		let new_cp_cs_boons_banes  = cp_cs_boons_banes  + cp_cs_change;
 		let new_cp_ncs_boons_banes = cp_ncs_boons_banes + cp_ncs_change;
-		console.log(`new boons_banes CP; CS ${new_cp_cs_boons_banes}; NCS ${new_cp_ncs_boons_banes}`);
 		set_array['cp_combat_boons_banes']     = new_cp_cs_boons_banes;
 		set_array['cp_non_combat_boons_banes'] = new_cp_ncs_boons_banes;
-		
+		console.log(`new boons_banes CP`);
+		console.log(set_array);
 		setAttrs(set_array);
 	});
 }
@@ -9454,8 +9499,7 @@ on("change:bb_poison_attack", function() {
 			"poison_duration":       poison_stats.duration,
 			"poison_damage":         poison_stats.damage,
 			"poison_condition":      poison_stats.condition,
-			"poison_roll_text":      poison_stats.roll_text,
-			"cp_combat_boons_banes": poison_stats.cp_cost
+			"poison_roll_text":      poison_stats.roll_text
 		});
 	});
 });
@@ -15141,19 +15185,6 @@ on("clicked:necromancyshapecorpse30ep", function() {
 on("clicked:necromancyshapecorpse40ep", function() {
 	cast_shape_corpse(40);
 });
-
-/*on("change:neuromancy_advantage change:neuromancy_explode", function() {
-	getAttrs(["neuromancy_advantage", "neuromancy_charm_training", "neuromancy_fear_training", "neuromancy_influence_training", "neuromancy_sleep_training", "neuromancy_telepathy_training", "neuromancy_explode"], function(values) {
-		setAttrs({
-			"neuromancy_charm_roll": get_roll(values.neuromancy_charm_training, values.neuromancy_advantage, values.neuromancy_explode),
-			"neuromancy_fear_roll": get_roll(values.neuromancy_fear_training, values.neuromancy_advantage, values.neuromancy_explode),
-			"neuromancy_influence_roll": get_roll(values.neuromancy_influence_training, values.neuromancy_advantage, values.neuromancy_explode),
-			"neuromancy_sleep_roll": get_roll(values.neuromancy_sleep_training, values.neuromancy_advantage, values.neuromancy_explode),
-			"neuromancy_telepathy_roll": get_roll(values.neuromancy_telepathy_training, values.neuromancy_advantage, values.neuromancy_explode),
-			"neuromancy_advantage_text": get_advantage_text(values.neuromancy_advantage)
-		});
-	});
-});*/
 
 on("clicked:neuromancycharminfo", function() {
 	getAttrs(["neuromancy_tier", "show_neuromancy_charm_10_ep", "show_neuromancy_charm_20_ep", "show_neuromancy_charm_30_ep", "show_neuromancy_charm_40_ep", "spell_duration_bonus", "spell_range", "spell_area_size", "area_type_blast", "area_type_burst", "area_type_line", "area_type_nova", "area_type_wall"], function(values) {
