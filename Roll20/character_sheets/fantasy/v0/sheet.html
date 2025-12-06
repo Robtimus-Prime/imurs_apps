@@ -1031,12 +1031,12 @@
 			</span>
 		</div>
 
-		<!-- Poison -->
+		<!-- Poison Attack -->
 		<div class="monstrous-boon top-line">
-			<input name="attr_bb_poison" type="hidden" class="show-ability" value="false" />
+			<input name="attr_bb_poison_attack" type="hidden" class="show-ability" value="false" />
 			<span class="ability">
 				<div class="skillname">
-					<label> Poison <button type="action" name="act_poisoninfo" class="info-button generic-skill" /> </label>
+					<label> Poison Attack <button type="action" name="act_poisonattackinfo" class="info-button generic-skill" /> </label>
 				</div>
 				<div class="top-space">
 					<button type="roll" value="@{poison_roll_text}" />
@@ -6918,70 +6918,72 @@ function get_lair_action_stats(has_lair_action, boons_and_banes_text, lair_actio
 	return lair_action_stats;
 }
 
-function get_poison_stats(boons_and_banes_text) {
+function get_poison_attack_stats(has_poison, boons_and_banes_text) {
 
-	let has_poison = false;
 	let natural_weapon = '';
-	let potency = 0;
+	let tier = 0;
 	let type = '';
 	let TN = 0;
 	let duration = 0;
-	let successes = 0;
 	let damage = '';
 	let condition = null;
 	let roll_text = '';
+	let cp_cost = 0;
 
-	let regex = /(^|,)(\w+)*poison(\w+),potency(\d+)(\w+)(,|$)/;
+	let regex = /(^|,)(\w+)*poisonattack(\w+),tier(\d+)(\w+)(,|$)/;
 	const matches = boons_and_banes_text.match(regex);
+	console.log(`boons_and_banes_text: ${boons_and_banes_text}; looking for poison attack`);
 	console.log(matches);
 	
-	if (matches) {
-		has_poison = true;
+	if (has_poison && matches) {
 		natural_weapon = matches[3];
-		potency = matches[4];
+		tier = parseInt(matches[4])||0;
 		type = matches[5];
-		TN = 10 + (potency * 2);
-		duration = Math.min(Math.max(potency, 3), 6);
-		successes = Math.min(Math.ceil(potency / 3), 3);
-		
-		if (type == "damage") {
-			damage = (Math.ceil(potency / 2) + 1) + 'd6';
+		TN = 10 + (tier * 6);
+		let plural = (tier == 1 ? '' : 'es');
+		duration = `Short rest${_n}(${tier} success${plural})`;
+		if (tier == 4) {
+			duration = (type == 'sleep' || type == 'kill' ? 'Instantaneous' : 'Short rest');
 		}
-		else if (type == "sleep") {
-			condition = (potency < 7) ? "sleepy" : "asleep";
+		cp_cost = (natural_weapon.toLowerCase() === 'touch' ? tier * 75 : tier * 50);
+	
+		if (type == 'damage') {
+			damage = (tier + 1) + 'd6';
 		}
-		else if (type == "slow") {
-			if (potency < 7) {
-				let AP = Math.ceil(potency / 3);
-				condition = "slowed (-" + AP + " AP)";
+		else if (type == 'sleep') {
+			condition = (tier < 4) ? 'sleepy' : 'asleep';
+		}
+		else if (type == 'slow') {
+			if (tier < 4) {
+				let AP = Math.ceil(tier / 2);
+				condition = 'slowed (-' + AP + ' AP)';
 			}
 			else {
-				condition = "paralyzed";
+				condition = 'paralyzed';
 			}
 		}
-		else if (type == "sick") {
-			condition = (potency < 7) ? "sickened" : "nauseated";
+		else if (type == 'sick') {
+			condition = (tier < 3) ? 'sickened' : (tier < 4) ? 'fatigued & sickened' : 'nauseated';
 		}
-		else if (type == "kill") {
-			condition = (potency < 7) ? "fatigued" : "dead";
+		else if (type == 'kill') {
+			condition = (tier < 3) ? 'fatigued' : (tier < 4) ? 'fatigued & sickened' : 'dead';
 		}
 		
-		let effect = (type == "damage") ? "[[" + damage + "]] poison damage" : condition;
+		let effect = (type == 'damage') ? '[[' + damage + ']] poison damage' : condition;
 		roll_text = "@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Poison}} {{Physical Resilience (constitution)=TN " + TN + 
-		"}} {{Effect=" + effect + "}}'";
+		"}} {{Effect=" + effect + "}} {{Duration=" + duration + "}}'";
 	}
 	
 	var poison_stats = {
-		has_poison:     has_poison,
 		natural_weapon: natural_weapon,
-		potency:        potency,
+		tier:           tier,
 		type:           type,
 		TN:             TN,
 		duration:       duration,
-		successes:      successes,
 		damage:         damage,
 		condition:      condition,
-		roll_text:      roll_text
+		roll_text:      roll_text,
+		cp_cost:        cp_cost
 	};
 	
 	return poison_stats;
@@ -7273,7 +7275,7 @@ const boons_and_banes_array = [
 	{ name: 'bb_magic_resistance',                    search_text: 'magicresistance',           cs_cp_cost:  10, ncs_cp_cost:  10 },
 	{ name: 'bb_material_vulnerability',              search_text: 'materialvulnerability',     cs_cp_cost:  -6, ncs_cp_cost:   0 },
 	{ name: 'bb_mindless',                            search_text: 'mindless',                  cs_cp_cost:  55, ncs_cp_cost: -95 },
-	{ name: 'bb_natural_attack',                      search_text: 'naturalattack',             cs_cp_cost:   3, ncs_cp_cost:   0 },
+	{ name: 'bb_natural_attack',                      search_text: 'naturalattack',             cs_cp_cost:   3, ncs_cp_cost:   0, dupe_search_text: [ 'magicnaturalattack', 'epicnaturalattack', 'legendarynaturalattack' ] },
 	{ name: 'bb_magic_natural_attack',                search_text: 'magicnaturalattack',        cs_cp_cost:  18, ncs_cp_cost:   0 },
 	{ name: 'bb_epic_natural_attack',                 search_text: 'epicnaturalattack',         cs_cp_cost:  36, ncs_cp_cost:   0 },
 	{ name: 'bb_legendary_natural_attack',            search_text: 'legendarynaturalattack',    cs_cp_cost:  54, ncs_cp_cost:   0 },
@@ -7289,6 +7291,7 @@ const boons_and_banes_array = [
 	{ name: 'bb_non-eating',                          search_text: 'non-eating',                cs_cp_cost:   0, ncs_cp_cost:   3 },
 	{ name: 'bb_non-sleeping',                        search_text: 'non-sleeping',              cs_cp_cost:   0, ncs_cp_cost:  10 },
 	{ name: 'bb_paralysis',                           search_text: 'paralysis',                 cs_cp_cost:  20, ncs_cp_cost:   0 },
+	{ name: 'bb_poison_attack',                       search_text: 'poisonattack',              cs_cp_cost:   0, ncs_cp_cost:   0 },
 	{ name: 'bb_poison_immunity',                     search_text: 'poisonimmunity',            cs_cp_cost:  45, ncs_cp_cost:   0 },
 	{ name: 'bb_polyglot',                            search_text: 'polyglot',                  cs_cp_cost:   0, ncs_cp_cost:   8 },
 	{ name: 'bb_preternatural_cunning',               search_text: 'preternaturalcunning',      cs_cp_cost:  10, ncs_cp_cost:   0 },
@@ -7326,8 +7329,8 @@ attribute_array.forEach( function(attribute) {
 	let cs_cost  = (attribute.combat_score ? 4 : 0);
 	let ncs_cost = (attribute.combat_score ? 0 : 4);
 	boons_and_banes_array.push(
-		{ name: `bb_high_attribute_${attribute.name}`,      search_text: `highattribute${attribute.name}`,     cs_cp_cost: cs_cost,      ncs_cp_cost: ncs_cost,     },
-		{ name: `bb_low_attribute_${attribute.name}`,       search_text: `lowattribute${attribute.name}`,      cs_cp_cost: cs_cost * -1, ncs_cp_cost: ncs_cost * -1 },
+		{ name: `bb_high_attribute_${attribute.name}`,      search_text: `highattribute${attribute.name}`,     cs_cp_cost: cs_cost,      ncs_cp_cost: ncs_cost,      dupe_search_text: [ `veryhighattribute${attribute.name}` ] },
+		{ name: `bb_low_attribute_${attribute.name}`,       search_text: `lowattribute${attribute.name}`,      cs_cp_cost: cs_cost * -1, ncs_cp_cost: ncs_cost * -1, dupe_search_text: [ `verylowattribute${attribute.name}`  ] },
 		{ name: `bb_very_high_attribute_${attribute.name}`, search_text: `veryhighattribute${attribute.name}`, cs_cp_cost: cs_cost *  2, ncs_cp_cost: ncs_cost *  2 },
 		{ name: `bb_very_low_attribute_${attribute.name}`,  search_text: `verylowattribute${attribute.name}`,  cs_cp_cost: cs_cost * -2, ncs_cp_cost: ncs_cost * -2 }
 	);
@@ -7342,19 +7345,20 @@ attribute_array.forEach( function(attribute) {
 magic_skill_base_array.forEach( function(skill) {
 	boons_and_banes_array.push(
 		{ 
-			name:        `bb_magic_immunity_${skill.name}`,       
-			search_text: `magicimmunity${skill.name}`,
-			cs_cp_cost:  (skill.combat_score ? 60 :  0), 
-			ncs_cp_cost: (skill.combat_score ?  0 : 60)
+			name:             `bb_magic_immunity_${skill.name}`,
+			search_text:      `magicimmunity${skill.name}`,
+			cs_cp_cost:       (skill.combat_score ? 60 :  0), 
+			ncs_cp_cost:      (skill.combat_score ?  0 : 60),
+			dupe_search_text: [ `truemagicimmunity${skill.name}` ]
 		},
 		{ 
-			name:        `bb_true_magic_immunity_${skill.name}`,  
+			name:        `bb_true_magic_immunity_${skill.name}`,
 			search_text: `truemagicimmunity${skill.name}`,  
 			cs_cp_cost:  (skill.combat_score ? 45 :  0), 
 			ncs_cp_cost: (skill.combat_score ?  0 : 45)
 		},
 		{ 
-			name:        `bb_magic_vulnerability_${skill.name}`,  
+			name:        `bb_magic_vulnerability_${skill.name}`,
 			search_text: `magicvulnerability${skill.name}`, 
 			cs_cp_cost:  (skill.combat_score ? -10 :   0), 
 			ncs_cp_cost: (skill.combat_score ?   0 : -10)
@@ -7373,6 +7377,27 @@ magic_skill_base_array.forEach( function(skill) {
 	}
 });
 
+function boons_and_banes_includes(bb_object, bb_text) {
+	let includes = false;
+	let dupes    = false;
+	
+	let log_msg = '';
+	if (bb_object.dupe_search_text) {
+		bb_object.dupe_search_text.forEach( function(dupe) {
+			dupes ||= bb_text.includes(dupe);
+			log_msg += (bb_text.includes(dupe) ? `; found ${dupe}` : '');
+		});
+	}
+	
+	includes = bb_text.includes(bb_object.search_text) && !dupes;
+	
+	if (dupes) {
+		console.log(`Dupes${log_msg}`);
+	}
+	
+	return includes;
+}
+
 function set_boons_and_banes(eventInfo) {
 	getAttrs(['cp_combat_boons_banes', 'cp_non_combat_boons_banes'], function(values) {
 		let cp_cs_boons_banes  = parseInt(values.cp_combat_boons_banes    )||0;
@@ -7389,10 +7414,10 @@ function set_boons_and_banes(eventInfo) {
 		let is_in_new_bb_text = false;
 		let cp_cs_change      = 0;
 		let cp_ncs_change     = 0;
-		
+
 		boons_and_banes_array.forEach( function(bb) {
-			is_in_old = old_bb_text.includes(bb.search_text);
-			is_in_new = new_bb_text.includes(bb.search_text);
+			is_in_old = boons_and_banes_includes(bb, old_bb_text);
+			is_in_new = boons_and_banes_includes(bb, new_bb_text);
 			if (is_in_old && !is_in_new) {
 				console.log(`remove ${bb.name}`);
 				set_array[bb.name] = false;
@@ -8816,30 +8841,32 @@ on("clicked:paralysisinfo", function() {
 	});
 });
 
-on("clicked:poisoninfo", function() {
-	getAttrs(["poison_natural_weapon", "poison_potency", "poison_type", "poison_TN", "poison_duration", "poison_successes", "poison_damage", "poison_condition"], function(values) {
-		let damage_poison = (values.poison_type == "damage");
-		let effect = damage_poison ? values.poison_damage + " poison damage" : values.poison_condition;
+on("clicked:poisonattackinfo", function() {
+	getAttrs(["poison_natural_weapon", "poison_tier", "poison_type", "poison_TN", "poison_duration", "poison_damage", "poison_condition"], function(values) {
+		let damage_poison  = (values.poison_type == "damage");
+		let effect         = damage_poison ? values.poison_damage + " poison damage" : values.poison_condition;
+		let poison_tier    = parseInt(values.poison_tier)||0;
+		let attack_text    = `your ${values.poison_natural_weapon} attack`;
+		let touch_text     = '';
+		let success_text   = (poison_tier == 4 ? '' : ' If they roll the specified number of successes, they have processed the poison and no longer suffer its effects.');
 		
-		let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: Poison}} " +
+		if (values.poison_natural_weapon == 'touch') {
+			attack_text = 'any of your natural attacks';
+			touch_text  = _rn + 'Your poison can be delivered by any physical contact with you, so any creature touching you at all would have to make a ' +
+			'Physical Resilience (constitution) check or be poisoned. This also applies to the following made by or against you: unarmed attacks, ' +
+			'Attack (grapple and reposition) checks, and anything else the GM decides.';
+		}
+		
+		let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: Poison Attack}} " +
 		"{{Natural weapon=" + capitalize_first_letter(values.poison_natural_weapon) + "}} {{Type= " + capitalize_first_letter(values.poison_type) + 
-		"}} {{Potency=" + values.poison_potency + "}} {{Physical Resilience (constitution)=TN " + values.poison_TN + "}} {{Duration=" + 
-		values.poison_duration + " rounds}} {{Effect=" + effect + "}} {{Successes=" + values.poison_successes + "}} " +
-		"{{desc=When a creature is damaged by the specified natural weapon, they must make a Physical Resilience (constitution) check against the poison's " +
-		"TN or suffer the effects. Until the poison's duration runs out, the creature must make another check each round. If they roll the specified number "+
-		"of successes, they have processed the poison and no longer suffer its effects.}}'";
-		
+		"}} {{Tier=" + poison_tier + "}} {{Physical Resilience (constitution)=TN " + values.poison_TN + "}}  {{Effect=" + effect + "}} {{Duration=" + 
+		values.poison_duration + "}}" + 
+		"{{desc=When a creature is damaged by " + attack_text + ", they must make a Physical Resilience " +
+		"(constitution) check against the poison's TN or suffer the effects. Until the poison's duration runs out, the creature must make another check " +
+		"each round. " + success_text + _rn +
+		"If you poison the same target multiple times with this attack, the target suffers disadvantage on resilience checks against your poison until " +
+		"its next short rest." + touch_text + "}}'";
 		startRoll(roll_text, (results) => {
-			finishRoll(results.rollId);
-		});
-	});
-});
-
-on("clicked:rollpoison", function() {
-	getAttrs(["poison_natural_weapon", "poison_potency", "poison_type", "poison_TN", "poison_duration", "poison_successes", "poison_damage", "poison_condition"], function(values) {
-		let effect = (values.poison_type == "damage") ? "[[" + values.poison_damage + "]] poison damage" : values.poison_condition;
-		
-		startRoll("@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Poison}} {{Physical Resilience (constitution)=TN " + values.poison_TN + "}} {{Effect=" + effect + "}}'", (results) => {
 			finishRoll(results.rollId);
 		});
 	});
@@ -9410,6 +9437,27 @@ on("change:bb_paralysis", function() {
 			"paralysis_duration": duration
 		});
 	});	
+});
+
+on("change:bb_poison_attack", function() {
+	getAttrs(['bb_poison_attack', 'boons_and_banes'], function (values) {
+		let has_poison_attack = Boolean(values.bb_poison_attack)||false;
+
+		// set poison attack stats
+		var poison_stats = get_poison_attack_stats(has_poison_attack, parse_textarea(values.boons_and_banes));
+		console.log(poison_stats);
+		setAttrs({
+			"poison_natural_weapon": poison_stats.natural_weapon,
+			"poison_tier":           poison_stats.tier,
+			"poison_type":           poison_stats.type,
+			"poison_TN":             poison_stats.TN,
+			"poison_duration":       poison_stats.duration,
+			"poison_damage":         poison_stats.damage,
+			"poison_condition":      poison_stats.condition,
+			"poison_roll_text":      poison_stats.roll_text,
+			"cp_combat_boons_banes": poison_stats.cp_cost
+		});
+	});
 });
 
 on("change:bb_regeneration", function() {
