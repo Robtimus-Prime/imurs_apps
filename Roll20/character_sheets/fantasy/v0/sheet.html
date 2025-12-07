@@ -7283,7 +7283,14 @@ const boons_and_banes_array = [
 			return cp_costs;
 		}
 	},
-	{ name: 'bb_change_shape',                        search_text: 'changeshape',               cs_cp_cost:   0, ncs_cp_cost:  10 },
+	{ name: 'bb_change_shape',                        search_text: 'changeshape',               cs_cp_cost:   0, ncs_cp_cost:   0, 
+		cp_function: function(boons_and_banes_text) {
+			let change_shape_type = boons_and_banes_text.split('changeshape')[1];
+			let ncs_cp_cost = (change_shape_type.length >=3 && change_shape_type.substring(0, 3) == 'any' ? 30 : 10);
+			let cp_costs = { cs_cp_cost: 0, ncs_cp_cost: ncs_cp_cost };
+			return cp_costs;
+		}
+	},
 	{ name: 'bb_climb',                               search_text: 'climb',                     cs_cp_cost:   0, ncs_cp_cost:   0, 
 		cp_function: function(boons_and_banes_text) {
 			let movement = parse_movement_boon('climb', boons_and_banes_text);
@@ -9233,31 +9240,31 @@ on('change:bb_minor_breath_weapon change:bb_major_breath_weapon', function() {
 on("change:pr_total change:pr_tier change:bb_breath_weapon change:ps_improved_breath_weapon change:ps_greater_breath_weapon change:ps_epic_breath_weapon change:ps_legendary_breath_weapon", function() {
 	console.log('called breath weapon change function');
 	getAttrs(["bb_breath_weapon", "breath_weapon_type", "boons_and_banes", "pr_total", "pr_tier", "ps_improved_breath_weapon", "ps_greater_breath_weapon", "ps_epic_breath_weapon", "ps_legendary_breath_weapon"], function(values) {
-		let has_breath_weapon = Boolean(values.bb_breath_weapon)||false;
-		let boons_and_banes_text = parse_textarea(values.boons_and_banes);
-		let pr_total = parseInt(values.pr_total)||0;
-		let pr_tier = parseInt(values.pr_tier)||0;
-		let has_improved_breath_weapon = Boolean(values.ps_improved_breath_weapon)||false;
-		let has_greater_breath_weapon = Boolean(values.ps_greater_breath_weapon)||false;
-		let has_epic_breath_weapon = Boolean(values.ps_epic_breath_weapon)||false;
+		let has_breath_weapon           = Boolean(values.bb_breath_weapon)||false;
+		let boons_and_banes_text        = parse_textarea(values.boons_and_banes);
+		let pr_total                    = parseInt(values.pr_total)||0;
+		let pr_tier                     = parseInt(values.pr_tier)||0;
+		let has_improved_breath_weapon  = Boolean(values.ps_improved_breath_weapon)||false;
+		let has_greater_breath_weapon   = Boolean(values.ps_greater_breath_weapon)||false;
+		let has_epic_breath_weapon      = Boolean(values.ps_epic_breath_weapon)||false;
 		let has_legendary_breath_weapon = Boolean(values.ps_legendary_breath_weapon)||false;
 
-		let area_type = '';
-		let damage_type = '';
-		let damage_multiplier = 0;
+		let area_type          = '';
+		let damage_type        = '';
+		let damage_multiplier  = 0;
 		let damage_description = '';
-		let ps_tier_bonus = 0;
-		let damage_total = 0;
-		let area_size = 0;
-		let description = '';
-		let recharge_roll = '';
+		let ps_tier_bonus      = 0;
+		let damage_total       = 0;
+		let area_size          = 0;
+		let description        = '';
+		let recharge_roll      = '';
 
 		if (has_breath_weapon) {
-			let regex = /(^|,)(\w+)*breathweapon(\w+),(\w+)(,|$)/;
+			let regex   = /(^|,)(\w+)*breathweapon(\w+),(\w+)(,|$)/;
 			let matches = boons_and_banes_text.match(regex);
 			console.log(matches);
 			if (matches) {
-				area_type = matches[3];
+				area_type   = matches[3];
 				damage_type = matches[4];
 			}
 			
@@ -9272,19 +9279,19 @@ on("change:pr_total change:pr_tier change:bb_breath_weapon change:ps_improved_br
 
 			if (has_improved_breath_weapon) {
 				ps_tier_bonus = Math.max(ps_tier_bonus, 1);
-				ps_text = 'Improved Breath Weapon';
+				ps_text       = 'Improved Breath Weapon';
 			}
 			if (has_greater_breath_weapon) {
 				ps_tier_bonus = Math.max(ps_tier_bonus, 2);
-				ps_text = 'Greater Breath Weapon';
+				ps_text       = 'Greater Breath Weapon';
 			}
 			if (has_epic_breath_weapon) {
 				ps_tier_bonus = Math.max(ps_tier_bonus, 3);
-				ps_text = 'Epic Breath Weapon';
+				ps_text       = 'Epic Breath Weapon';
 			}
 			if (has_legendary_breath_weapon) {
 				ps_tier_bonus = Math.max(ps_tier_bonus, 4);
-				ps_text = 'Legendary Breath Weapon';
+				ps_text       = 'Legendary Breath Weapon';
 			}
 			
 			damage_total = (pr_tier + 1 + ps_tier_bonus) * damage_multiplier;
@@ -9301,11 +9308,9 @@ on("change:pr_total change:pr_tier change:bb_breath_weapon change:ps_improved_br
 				area_size *= 2;
 			}
 			
-			description = `${area_type} (${area_size} sq), ${damage_type}`;
-			
+			description   = `${area_type} (${area_size} sq), ${damage_type}`;
 			recharge_roll = `1d6cs<${pr_tier}cf>${(pr_tier + 1)}`;
-			
-			damage_type = capitalize_first_letter(damage_type);
+			damage_type   = capitalize_first_letter(damage_type);
 		}
 
 		setAttrs({
