@@ -7234,6 +7234,18 @@ function parse_movement_boon(boon_name, boons_and_banes_text) {
   return parseInt(movement)||0;
 }
 
+function parse_breath_weapon_boon(boons_and_banes_text) {
+	let breath_weapon_parts = boons_and_banes_text.split('breathweapon');
+	let type = breath_weapon_parts[0].substring(breath_weapon_parts[0].length - 5);
+	let damage_type = breath_weapon_parts[1].split(',')[1];
+	console.log(`bw type: ${type}; damage_type: ${damage_type}`);
+	let multiplier = (type == 'minor' ? 1 : 10);
+	let base_cost  = (damage_type == 'physical' ? 3 : 9);
+	let cs_cp_cost = base_cost * multiplier;
+	let cp_costs = { cs_cp_cost: cs_cp_cost, ncs_cp_cost: 0 };
+	return cp_costs;
+}
+
 const boons_and_banes_array = [
 	{ name: 'bb_amorphous',                           search_text: 'amorphous',                 cs_cp_cost: 120, ncs_cp_cost:   0 },
 	{ name: 'bb_amphibious',                          search_text: 'amphibious',                cs_cp_cost:   0, ncs_cp_cost:   8 },
@@ -7253,7 +7265,16 @@ const boons_and_banes_array = [
 	{ name: 'bb_blindsight',                          search_text: 'blindsight',                cs_cp_cost:   0, ncs_cp_cost:  40 },
 	{ name: 'bb_blood_drain',                         search_text: 'blooddrain',                cs_cp_cost:  20, ncs_cp_cost:   0 },
 	{ name: 'bb_blur',                                search_text: 'blur',                      cs_cp_cost:  12, ncs_cp_cost:   0 },
-	{ name: 'bb_breath_weapon',                       search_text: 'breathweapon',              cs_cp_cost:   0, ncs_cp_cost:   0 },
+	{ name: 'bb_minor_breath_weapon',                 search_text: 'minorbreathweapon',         cs_cp_cost:   0, ncs_cp_cost:   0, 
+		cp_function: function(boons_and_banes_text) {
+			return parse_breath_weapon_boon(boons_and_banes_text);
+		}
+	},
+	{ name: 'bb_major_breath_weapon',                 search_text: 'majorbreathweapon',         cs_cp_cost:   0, ncs_cp_cost:   0, 
+		cp_function: function(boons_and_banes_text) {
+			return parse_breath_weapon_boon(boons_and_banes_text);
+		}
+	},
 	{ name: 'bb_burrow',                              search_text: 'burrow',                    cs_cp_cost:   0, ncs_cp_cost:   0,
 		cp_function: function(boons_and_banes_text) {
 			let movement = parse_movement_boon('burrow', boons_and_banes_text);
@@ -9191,9 +9212,27 @@ aura_type_array.forEach( function (type) {
 	});
 });
 
+on('change:bb_minor_breath_weapon change:bb_major_breath_weapon', function() {
+	getAttrs(['bb_minor_breath_weapon', 'bb_major_breath_weapon'], function(values) {
+		let has_minor_breath_weapon = Boolean(values.bb_minor_breath_weapon)||false;
+		let has_major_breath_weapon = Boolean(values.bb_major_breath_weapon)||false;
+		let set_object = null;
+		if (has_minor_breath_weapon || has_major_breath_weapon) {
+			set_object = {
+				'bb_breath_weapon':   true,
+				'breath_weapon_type': (has_minor_breath_weapon ? 'minor' : 'major')
+			};
+		}
+		else {
+			set_object = { 'bb_breath_weapon': false };
+		}
+		setAttrs(set_object);
+	});
+});
+
 on("change:pr_total change:pr_tier change:bb_breath_weapon change:ps_improved_breath_weapon change:ps_greater_breath_weapon change:ps_epic_breath_weapon change:ps_legendary_breath_weapon", function() {
 	console.log('called breath weapon change function');
-	getAttrs(["bb_breath_weapon", "boons_and_banes", "pr_total", "pr_tier", "ps_improved_breath_weapon", "ps_greater_breath_weapon", "ps_epic_breath_weapon", "ps_legendary_breath_weapon"], function(values) {
+	getAttrs(["bb_breath_weapon", "breath_weapon_type", "boons_and_banes", "pr_total", "pr_tier", "ps_improved_breath_weapon", "ps_greater_breath_weapon", "ps_epic_breath_weapon", "ps_legendary_breath_weapon"], function(values) {
 		let has_breath_weapon = Boolean(values.bb_breath_weapon)||false;
 		let boons_and_banes_text = parse_textarea(values.boons_and_banes);
 		let pr_total = parseInt(values.pr_total)||0;
@@ -9203,7 +9242,6 @@ on("change:pr_total change:pr_tier change:bb_breath_weapon change:ps_improved_br
 		let has_epic_breath_weapon = Boolean(values.ps_epic_breath_weapon)||false;
 		let has_legendary_breath_weapon = Boolean(values.ps_legendary_breath_weapon)||false;
 
-		let breath_weapon_type = '';
 		let area_type = '';
 		let damage_type = '';
 		let damage_multiplier = 0;
@@ -9219,15 +9257,14 @@ on("change:pr_total change:pr_tier change:bb_breath_weapon change:ps_improved_br
 			let matches = boons_and_banes_text.match(regex);
 			console.log(matches);
 			if (matches) {
-				breath_weapon_type = matches[2];
 				area_type = matches[3];
 				damage_type = matches[4];
 			}
 			
-			if (breath_weapon_type == 'minor') {
+			if (values.breath_weapon_type == 'minor') {
 				damage_multiplier = 2;
 			}
-			else if (breath_weapon_type == 'major') {
+			else if (values.breath_weapon_type == 'major') {
 				damage_multiplier = 4;
 			}
 			
