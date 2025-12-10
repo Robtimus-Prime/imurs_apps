@@ -892,8 +892,6 @@
 				</div>
 				<input class="custom" name="attr_disease_attack_name" type="text" placeholder="Disease Name" />
 				<textarea class="large" name="attr_disease_attack_detail" placeholder="Disease Detail"></textarea>
-				Infected creature's tier in Physical Resilience:
-				<input name="attr_disease_attack_infected_pr_tier" type="text" />
 			</span>
 		</div>	
 
@@ -7304,7 +7302,14 @@ const boons_and_banes_array = [
 	{ name: 'bb_create_spawn',                        search_text: 'createspawn',               cs_cp_cost:  12, ncs_cp_cost:   0 },
 	{ name: 'bb_crush',                               search_text: 'crush',                     cs_cp_cost:   8, ncs_cp_cost:   0 },
 	{ name: 'bb_desert_thirst',                       search_text: 'desertthirst',              cs_cp_cost:  30, ncs_cp_cost:   0 },
-	{ name: 'bb_disease_attack',                      search_text: 'diseaseattack',             cs_cp_cost:  15, ncs_cp_cost:   0 },
+	{ name: 'bb_disease_attack',                      search_text: 'diseaseattack',             cs_cp_cost:  15, ncs_cp_cost:   0,
+		cp_function: function(boons_and_banes_text) {
+			let disease_attack_tier = parseInt(boons_and_banes_text.split('diseaseattack')[1].split(',')[1].substring(4, 5))||0;
+			let cs_cp_cost = disease_attack_tier * 30;
+			let cp_costs = { cs_cp_cost: cs_cp_cost, ncs_cp_cost: 0 };
+			return cp_costs;
+		}
+	},
 	{ name: 'bb_disease_immunity',                    search_text: 'diseaseimmunity',           cs_cp_cost:  45, ncs_cp_cost:   0 },
 	{ name: 'bb_energy_drain',                        search_text: 'energydrain',               cs_cp_cost:  30, ncs_cp_cost:   0 },
 	{ name: 'bb_engulf',                              search_text: 'engulf',                    cs_cp_cost:  60, ncs_cp_cost:   0 },
@@ -8882,9 +8887,9 @@ on("clicked:diseaseattackinfo", function() {
 		let successes = parseInt(values.disease_attack_successes)||0;
 		let suffix = (successes == 1 ? '' : 'es');
 
-		let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: @{disease_attack_name}}} {{subtitle=@{disease_attack_rarity_text} " +
+		let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: @{disease_attack_name}}} " +
 		"Disease}} {{Natural Attack=@{disease_attack_natural_attack}}} {{Physical Resilience=TN [[@{disease_attack_tn}]]}} " +
-		"{{Duration=[[@{disease_attack_base_duration} - @{disease_attack_infected_pr_tier}]] days}} {{Resist=[[@{disease_attack_successes}]] success" + suffix + 
+		"{{Duration=@{disease_attack_duration}}} {{Resist=[[@{disease_attack_successes}]] success" + suffix + 
 		"}} {{desc=@{disease_attack_detail}}}'";
 		startRoll(roll_text, (results) => {
 			finishRoll(results.rollId);
@@ -9359,50 +9364,32 @@ on("change:bb_desert_thirst", function() {
 on("change:bb_disease_attack", function() {
 	getAttrs(["bb_disease_attack", "boons_and_banes"], function(values) {
 		let has_disease_attack = Boolean(values.bb_disease_attack)||false;
-		let rarity_rating = 0;
+		let name           = '';
 		let natural_attack = '';
-		let rarity_text = ''; 
-		let tn = 0;
-		let base_duration = 0;
-		let successes = 0;
+		let tier           = 0;
+		let tn             = 0;
+		let successes      = 0;
+		let duration       = '';
 	
 		if (has_disease_attack) {
-			let regex = /(^|,)diseaseattack([a-z]+),(common|uncommon|rare|unheardof)(,|$)/;
+			let regex   = /(^|,)diseaseattack(\w+),tier(\d),(\w+)(,|$)/;
 			let matches = parse_textarea(values.boons_and_banes).match(regex);
 			console.log(matches);
-			let rarity_text = capitalize_first_letter(matches[3]);
-			
-			if (matches[3] == 'common') {
-				rarity_rating = 1;
-				successes = 1;
-			}
-			else if (matches[3] == 'uncommon') {
-				rarity_rating = 2;
-				successes = 2;
-			}
-			else if (matches[3] == 'rare') {
-				rarity_rating = 3;
-				successes = 2;
-			}
-			else if (matches[3] == 'unheardof') {
-				rarity_rating = 4;
-				rarity_text = 'Unheard of';
-				successes = 3;
-			}
-
+			name           = matches[4];
+			tier           = parseInt(matches[3])||0;
+			successes      = (tier < 3 ? tier : tier - 1);
 			natural_attack = matches[2];
-			rarity_text    = rarity_text;
-			tn             = 10 + (rarity_rating * 6);
-			base_duration  = rarity_rating * 6;
-			successes      = successes;
+			tn             = 10 + (tier * 6);
+			duration       = `[[${tier}]] week` + (tier == 1 ? '' : 's');
 		}
 		
 		setAttrs({
 			"disease_attack_natural_attack": natural_attack,
-			"disease_attack_rarity_text":    rarity_text,
+			"disease_attack_tier":           tier,
 			"disease_attack_tn":             tn,
-			"disease_attack_base_duration":  base_duration,
-			"disease_attack_successes":      successes
+			"disease_attack_duration":       duration,
+			"disease_attack_successes":      successes,
+			"disease_attack_name":           name
 		});
 	});	
 });
