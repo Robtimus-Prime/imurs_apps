@@ -7030,9 +7030,9 @@ attribute_array.forEach( function(attribute) {
 				return;
 			}
 			
-			let attribute_mod   = get_modifier(attribute_value);
-			let cp_name         = `cp_${attribute.name}`;
-			let cp_value        = attribute_cp_costs[attribute_value];
+			let attribute_mod = get_modifier(attribute_value);
+			let cp_name       = `cp_${attribute.name}`;
+			let cp_value      = attribute_cp_costs[attribute_value];
 			console.log(`${cp_name}: ${cp_value}`);
 			setAttrs({
 				[attribute.name + '_modifier']: attribute_mod,
@@ -7049,21 +7049,17 @@ attribute_array.forEach( function(attribute) {
 	});
 });
 
-on('change:cp_physique change:cp_agility', function() {
-	getAttrs(['cp_physique', 'cp_agility'], function(values) {
-		let cp_physique = parseInt(values.cp_physique)||0;
-		let cp_agility  = parseInt(values.cp_agility )||0;
-		console.log(`cp_combat_attributes: ${(cp_physique + cp_agility)}`);
-		setAttrs({ 'cp_combat_attributes': (cp_physique + cp_agility) });
-	});
-});
-	
-on('change:cp_intelligence change:cp_wit', function() {
-	getAttrs(['cp_intelligence', 'cp_wit'], function(values) {
-		let cp_intelligence = parseInt(values.cp_intelligence)||0;
-		let cp_wit          = parseInt(values.cp_wit         )||0;
-		console.log(`cp_non_combat_attributes: ${(cp_intelligence + cp_wit)}`);
-		setAttrs({ 'cp_non_combat_attributes': (cp_intelligence + cp_wit) });
+[true, false].forEach( function(is_combat_score) {
+	let attr_array = attribute_array.filter(attr => attr.combat_score == is_combat_score).map(attr => `cp_${attr.name}`);
+	on('change:' + attr_array.join(' change:'), function() {
+		getAttrs(attr_array, function(values) {
+			let cp_combat_attributes = 0;
+			for (const attr of attr_array) {
+				cp_combat_attributes += parseInt(values[attr])||0;
+			}
+			console.log(`cp_combat_attributes: ${cp_combat_attributes}`);
+			setAttrs({ 'cp_combat_attributes': cp_combat_attributes });
+		});
 	});
 });
 
