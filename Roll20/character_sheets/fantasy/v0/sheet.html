@@ -11531,23 +11531,16 @@ damage_type_array.forEach( function(damage_type) {
 	});
 });
 
-const area_type_array = [
-	{ name: 'blast', cp_cost: 3 },
-	{ name: 'burst', cp_cost: 6 },
-	{ name: 'line',  cp_cost: 3 },
-	{ name: 'nova',  cp_cost: 3 },
-	{ name: 'wall',  cp_cost: 3 }
-];
+const area_type_array = ['area_type_blast', 'area_type_burst', 'area_type_line', 'area_type_nova', 'area_type_wall'];
 
-on('change:area_type_blast change:area_type_burst change:area_type_line change:area_type_nova change:area_type_wall', function() {
-	getAttrs(['area_type_blast', 'area_type_burst', 'area_type_line', 'area_type_nova', 'area_type_wall'], function(values) {
-		let cp_blast = (values.area_type_blast == 'on' ? 3 : 0);
-		let cp_burst = (values.area_type_burst == 'on' ? 3 : 0);
-		let cp_line  = (values.area_type_line  == 'on' ? 3 : 0);
-		let cp_nova  = (values.area_type_nova  == 'on' ? 3 : 0);
-		let cp_wall  = (values.area_type_wall  == 'on' ? 3 : 0);
+on('change:' + area_type_array.join(' change:'), function() {
+	getAttrs(area_type_array, function(values) {
+		let cp_area_types = 0;
 		
-		let cp_area_types = cp_blast + cp_burst + cp_line + cp_nova + cp_wall;
+		for (let type of area_type_array) {
+			cp_area_types += (values[type] == 'on' ? 3 : 0);
+		}
+
 		console.log(`area type CP: ${cp_area_types}`);
 		setAttrs({ 'cp_area_types': cp_area_types });
 	});
