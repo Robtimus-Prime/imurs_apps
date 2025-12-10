@@ -7232,18 +7232,17 @@ function parse_movement_boon(boon_name, boons_and_banes_text) {
   return parseInt(movement)||0;
 }
 
-function parse_breath_weapon_boon(boons_and_banes_text) {
-	let breath_weapon_parts = boons_and_banes_text.split('breathweapon');
-	let type = breath_weapon_parts[0].substring(breath_weapon_parts[0].length - 5);
-	let damage_type = breath_weapon_parts[1].split(',')[1];
-	console.log(`bw type: ${type}; damage_type: ${damage_type}`);
+function parse_breath_weapon_explosive_death_boon(boon, boons_and_banes_text) {
+	let boon_parts = boons_and_banes_text.split(boon);
+	let type = boon_parts[0].substring(boon_parts[0].length - 5);
+	let damage_type_index = (boon == 'breathweapon' ? 1 : 0);
+	let damage_type = boon_parts[1].split(',')[damage_type_index];
 	let multiplier = (type == 'minor' ? 1 : 10);
 	let base_cost  = (damage_type == 'physical' ? 3 : 9);
 	let cs_cp_cost = base_cost * multiplier;
 	let cp_costs = { cs_cp_cost: cs_cp_cost, ncs_cp_cost: 0 };
 	return cp_costs;
 }
-
 const boons_and_banes_array = [
 	{ name: 'bb_amorphous',                           search_text: 'amorphous',                 cs_cp_cost: 120, ncs_cp_cost:   0 },
 	{ name: 'bb_amphibious',                          search_text: 'amphibious',                cs_cp_cost:   0, ncs_cp_cost:   8 },
@@ -7265,12 +7264,12 @@ const boons_and_banes_array = [
 	{ name: 'bb_blur',                                search_text: 'blur',                      cs_cp_cost:  12, ncs_cp_cost:   0 },
 	{ name: 'bb_minor_breath_weapon',                 search_text: 'minorbreathweapon',         cs_cp_cost:   0, ncs_cp_cost:   0, 
 		cp_function: function(boons_and_banes_text) {
-			return parse_breath_weapon_boon(boons_and_banes_text);
+			return parse_breath_weapon_explosive_death_boon('breathweapon', boons_and_banes_text);
 		}
 	},
 	{ name: 'bb_major_breath_weapon',                 search_text: 'majorbreathweapon',         cs_cp_cost:   0, ncs_cp_cost:   0, 
 		cp_function: function(boons_and_banes_text) {
-			return parse_breath_weapon_boon(boons_and_banes_text);
+			return parse_breath_weapon_explosive_death_boon('breathweapon', boons_and_banes_text);
 		}
 	},
 	{ name: 'bb_burrow',                              search_text: 'burrow',                    cs_cp_cost:   0, ncs_cp_cost:   0,
@@ -7313,7 +7312,16 @@ const boons_and_banes_array = [
 	{ name: 'bb_disease_immunity',                    search_text: 'diseaseimmunity',           cs_cp_cost:  45, ncs_cp_cost:   0 },
 	{ name: 'bb_energy_drain',                        search_text: 'energydrain',               cs_cp_cost:  30, ncs_cp_cost:   0 },
 	{ name: 'bb_engulf',                              search_text: 'engulf',                    cs_cp_cost:  60, ncs_cp_cost:   0 },
-	{ name: 'bb_explosive_death',                     search_text: 'explosivedeath',            cs_cp_cost:   0, ncs_cp_cost:   0 },
+	{ name: 'bb_minor_explosive_death',               search_text: 'minorexplosivedeath',       cs_cp_cost:   0, ncs_cp_cost:   0,
+		cp_function: function(boons_and_banes_text) {
+			return parse_breath_weapon_explosive_death_boon('explosivedeath', boons_and_banes_text);
+		}
+	},
+	{ name: 'bb_major_explosive_death',               search_text: 'majorexplosivedeath',       cs_cp_cost:   0, ncs_cp_cost:   0,
+		cp_function: function(boons_and_banes_text) {
+			return parse_breath_weapon_explosive_death_boon('explosivedeath', boons_and_banes_text);
+		}
+	},
 	{ name: 'bb_fast_movement',                       search_text: 'fastmovement',              cs_cp_cost:   0, ncs_cp_cost:   0, 
 		cp_function: function(boons_and_banes_text) {
 			let movement = parse_movement_boon('fastmovement', boons_and_banes_text);
@@ -9224,21 +9232,30 @@ aura_type_array.forEach( function (type) {
 	});
 });
 
-on('change:bb_minor_breath_weapon change:bb_major_breath_weapon', function() {
-	getAttrs(['bb_minor_breath_weapon', 'bb_major_breath_weapon'], function(values) {
-		let has_minor_breath_weapon = Boolean(values.bb_minor_breath_weapon)||false;
-		let has_major_breath_weapon = Boolean(values.bb_major_breath_weapon)||false;
-		let set_object = null;
-		if (has_minor_breath_weapon || has_major_breath_weapon) {
-			set_object = {
-				'bb_breath_weapon':   true,
-				'breath_weapon_type': (has_minor_breath_weapon ? 'minor' : 'major')
-			};
-		}
-		else {
-			set_object = { 'bb_breath_weapon': false };
-		}
-		setAttrs(set_object);
+const breath_weapon_explosive_death_array = [ 'breath_weapon', 'explosive_death' ];
+
+breath_weapon_explosive_death_array.forEach( function(boon) {
+	let boon_minor = `bb_minor_${boon}`;
+	let boon_major = `bb_major_${boon}`;
+	let boon_any   = `bb_${boon}`;
+	let boon_type  = `${boon}_type`;
+	let get_array = [ boon_minor, boon_major ];
+	on('change:' + get_array.join(' change:'), function() {
+		getAttrs(get_array, function(values) {
+			let has_minor_boon = Boolean(values[boon_minor])||false;
+			let has_major_boon = Boolean(values[boon_major])||false;
+			let set_object = null;
+			if (has_minor_boon || has_major_boon) {
+				set_object = {
+					[boon_any]:  true,
+					[boon_type]: (has_minor_boon ? 'minor' : 'major')
+				};
+			}
+			else {
+				set_object = { [boon_any]: false };
+			}
+			setAttrs(set_object);
+		});
 	});
 });
 
