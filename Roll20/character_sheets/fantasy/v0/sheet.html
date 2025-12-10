@@ -9711,6 +9711,7 @@ const active_skill_array = [
 		attribute: 'intelligence',
 		alternate_attribute: 'wit',
 		passive_skill: 'ps_intuitive_magic_versatility_arcana',
+		natural: false,
 		size_modifier_multiplier: 0,
 		apply_no_metabolism_bane: false,
 		affects_hp: false,
@@ -9774,6 +9775,7 @@ const active_skill_array = [
 		attribute: 'intelligence',
 		alternate_attribute: 'wit',
 		passive_skill: 'ps_intuitive_magic_versatility_alteration',
+		natural: true,
 		size_modifier_multiplier: 0,
 		apply_no_metabolism_bane: false,
 		affects_hp: false,
@@ -9835,6 +9837,7 @@ const active_skill_array = [
 		attribute: 'wit',
 		alternate_attribute: 'intelligence',
 		passive_skill: 'ps_academic_magic_versatility_biomancy',
+		natural: false,
 		size_modifier_multiplier: 0,
 		apply_no_metabolism_bane: false,
 		affects_hp: false,
@@ -9908,6 +9911,7 @@ const active_skill_array = [
 		attribute: 'intelligence',
 		alternate_attribute: 'wit',
 		passive_skill: 'ps_intuitive_magic_versatility_conjuration',
+		natural: true,
 		size_modifier_multiplier: 0,
 		apply_no_metabolism_bane: false,
 		affects_hp: false,
@@ -9973,6 +9977,7 @@ const active_skill_array = [
 		attribute: 'intelligence',
 		alternate_attribute: 'wit',
 		passive_skill: 'ps_intuitive_magic_versatility_displacement',
+		natural: true,
 		size_modifier_multiplier: 0,
 		apply_no_metabolism_bane: false,
 		affects_hp: false,
@@ -10032,6 +10037,7 @@ const active_skill_array = [
 		attribute: 'wit',
 		alternate_attribute: 'intelligence',
 		passive_skill: 'ps_academic_magic_versatility_divination',
+		natural: true,
 		size_modifier_multiplier: 0,
 		apply_no_metabolism_bane: false,
 		affects_hp: false,
@@ -10070,6 +10076,7 @@ const active_skill_array = [
 		attribute: 'intelligence',
 		alternate_attribute: 'wit',
 		passive_skill: 'ps_intuitive_magic_versatility_dynamancy',
+		natural: true,
 		size_modifier_multiplier: 0,
 		apply_no_metabolism_bane: false,
 		affects_hp: false,
@@ -10117,6 +10124,7 @@ const active_skill_array = [
 		attribute: 'wit',
 		alternate_attribute: 'intelligence',
 		passive_skill: 'ps_academic_magic_versatility_illusion',
+		natural: true,
 		size_modifier_multiplier: 0,
 		apply_no_metabolism_bane: false,
 		affects_hp: false,
@@ -10163,6 +10171,7 @@ const active_skill_array = [
 		attribute: 'intelligence',
 		alternate_attribute: 'wit',
 		passive_skill: 'ps_intuitive_magic_versatility_necromancy',
+		natural: false,
 		size_modifier_multiplier: 0,
 		apply_no_metabolism_bane: false,
 		affects_hp: false,
@@ -10215,6 +10224,7 @@ const active_skill_array = [
 		attribute: 'wit',
 		alternate_attribute: 'intelligence',
 		passive_skill: 'ps_academic_magic_versatility_neuromancy',
+		natural: true,
 		size_modifier_multiplier: 0,
 		apply_no_metabolism_bane: false,
 		affects_hp: false,
@@ -10264,6 +10274,7 @@ const active_skill_array = [
 		attribute: 'intelligence',
 		alternate_attribute: 'wit',
 		passive_skill: 'ps_intuitive_magic_versatility_metamancy',
+		natural: false,
 		size_modifier_multiplier: 0,
 		apply_no_metabolism_bane: false,
 		affects_hp: false,
@@ -11099,27 +11110,18 @@ const passive_skill_array = [
 	{ name: 'ps_vitality',                    search_text: 'vitality',                  cs_cp_cost:  6, ncs_cp_cost:  0 },
 ];
 
-const magic_skill_base_array = [
-	{ name: 'arcana',       intuitive: true,  natural: false, combat_score: false },
-	{ name: 'alteration',   intuitive: true,  natural: true,  combat_score: true  },
-	{ name: 'biomancy',     intuitive: false, natural: false, combat_score: true  },
-	{ name: 'conjuration',  intuitive: true,  natural: true,  combat_score: true  },
-	{ name: 'displacement', intuitive: true,  natural: true,  combat_score: false },
-	{ name: 'divination',   intuitive: false, natural: true,  combat_score: false },
-	{ name: 'illusion',     intuitive: false, natural: true,  combat_score: false },
-	{ name: 'dynamancy',    intuitive: true,  natural: true,  combat_score: true  },
-	{ name: 'metamancy',    intuitive: true,  natural: false, combat_score: false },
-	{ name: 'necromancy',   intuitive: true,  natural: false, combat_score: true  },
-	{ name: 'neuromancy',   intuitive: false, natural: true,  combat_score: false }
-];
+const magic_skill_base_array = active_skill_array
+	.filter(skill => 
+		skill.alternate_attribute && 
+		skill.passive_skill && 
+		skill.passive_skill.includes('magic'));
 
 magic_skill_base_array.forEach( function(skill) {
-	let versatility = (skill.intuitive ? 'intuitive' : 'academic' );
 	passive_skill_array.push( {
-		name:        `ps_${versatility}_magic_versatility_${skill.name}`, 
-		search_text: `${versatility}magicversatility${skill.name}`, 
-		cs_cp_cost:  (skill.combat_score ? 4 : 0), 
-		ncs_cp_cost: (skill.combat_score ? 0 : 4) 
+		name:        skill.passive_skill,
+		search_text: skill.passive_skill.substring(3).replaceAll('_', ''),
+		cs_cp_cost:  (skill.combat_score ? 4 : 0),
+		ncs_cp_cost: (skill.combat_score ? 0 : 4)
 	} );
 	
 	if (skill.natural) {
