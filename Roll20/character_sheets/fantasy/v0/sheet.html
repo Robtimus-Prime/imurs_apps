@@ -1019,16 +1019,6 @@
 			</span>
 		</div>
 
-		<!-- Paralysis -->
-		<div class="monstrous-boon top-line">
-			<input name="attr_bb_paralysis" type="hidden" class="show-ability" value="false" />
-			<span class="ability">
-				<div class="skillname">
-					<label> Paralysis <button type="action" name="act_paralysisinfo" class="info-button generic-skill" /> </label>
-				</div>
-			</span>
-		</div>
-
 		<!-- Poison Attack -->
 		<div class="monstrous-boon top-line">
 			<input name="attr_bb_poison_attack" type="hidden" class="show-ability" value="false" />
@@ -8678,6 +8668,7 @@ on("change:perception_total change:agility_modifier change:bb_quick_reflexes cha
 on("change:bb_aura_of_damage change:size_modifier_aura", function() {
 	getAttrs(["bb_aura_of_damage", "boons_and_banes", "size_modifier_aura", "mr_tier"], function(values) {
 		let has_aura_of_damage = Boolean(values.bb_aura_of_damage)||false;
+		console.log(`bb_aura_of_damage: ${bb_aura_of_damage}; has_aura_of_damage: ${has_aura_of_damage}`);
 		let tier = parseInt(values.mr_tier)||0;
 		let size_mod = parseInt(values.size_modifier_aura)||0;
 
@@ -9037,34 +9028,6 @@ lair_action_array.forEach( function(number) {
 	});
 });
 
-on("change:bb_paralysis", function() {
-	getAttrs(["bb_paralysis", "boons_and_banes", "mr_total", "pr_total"], function(values) {
-		let has_paralysis = Boolean(values.bb_paralysis)||false;
-		let mr_total = parseInt(values.mr_total)||0;
-		let pr_total = parseInt(values.pr_total)||0;
-		
-		let type = '';
-		let resist = 0;
-		let duration = 0;
-
-		if (has_paralysis) {
-			let regex = /(^|,)paralysis([a-z]+),([mp]r)(,|$)/;
-			let matches = parse_textarea(values.boons_and_banes).match(regex);
-			console.log(matches);
-			let resist_total = (matches[3] == 'mr' ? mr_total : pr_total);
-			type = capitalize_first_letter(matches[2]);
-			resist = 12 + resist_total;
-			duration = Math.floor(resist_total / 2);
-		}
-
-		setAttrs({
-			"paralysis_type":     type,
-			"paralysis_resist":   resist,
-			"paralysis_duration": duration
-		});
-	});	
-});
-
 on("change:bb_poison_attack", function() {
 	getAttrs(['bb_poison_attack', 'boons_and_banes'], function (values) {
 		let has_poison_attack = Boolean(values.bb_poison_attack)||false;
@@ -9087,8 +9050,8 @@ on("change:bb_poison_attack", function() {
 
 on("change:bb_regeneration", function() {
 	getAttrs(["bb_regeneration", "boons_and_banes"], function(values) {
-		let has_regeneration = Boolean(values.bb_regeneration)||false;
-		
+		let has_regeneration = (values.bb_regeneration.toString().toLowerCase() === 'true');
+		console.log(`bb_regeneration: ${values.bb_regeneration}; has_regeneration: ${has_regeneration}`);
 		let healing = '0';
 		let vulnerability = '';
 
@@ -10986,6 +10949,8 @@ const damage_type_array = [
 	}
 ];
 
+const damage_type_list = damage_type_array.map(type => type.name);
+
 damage_type_array.forEach( function(damage_type) {
 	let has_damage_type_name      = `damage_type_${damage_type.name}`;
 	let has_secondary_effect_name = `damage_type_${damage_type.name}_secondary`;
@@ -11192,379 +11157,494 @@ function set_passive_skills(eventInfo) {
 	});
 }
 
-function parse_movement_boon(boon_name, boons_and_banes_text) {
-  let movement = boons_and_banes_text.split(boon_name)[1].split(',')[0].split('sq')[0];
-  return parseInt(movement)||0;
+function parse_movement_boon(bb_raw) {
+	let movement_boons = [
+		{ search_text: 'burrow',       base_cost: 12 },
+		{ search_text: 'climb',        base_cost:  0 },
+		{ search_text: 'fastmovement', base_cost:  0 },
+		{ search_text: 'fly',          base_cost:  6 },
+		{ search_text: 'slowmovement', base_cost:  0, bane: true },
+		{ search_text: 'swim',         base_cost:  0 }
+	];
+	let boon = movement_boons.find(b => bb_raw.startsWith(b.search_text));
+	let movement = parseInt(bb_raw.split(boon.search_text)[1].split('sq')[0])||0;
+	let cp_cost = boon.base_cost + (movement * 4) * (boon.bane ? -1 : 1);
+	let return_object = { 
+		cs_cp_cost: 0,
+		ncs_cp_cost: cp_cost
+	};
+	return return_object;
 }
 
-function parse_breath_weapon_explosive_death_boon(boon, boons_and_banes_text) {
-	let boon_parts = boons_and_banes_text.split(boon);
-	let type = boon_parts[0].substring(boon_parts[0].length - 5);
-	let damage_type_index = (boon == 'breathweapon' ? 1 : 0);
-	let damage_type = boon_parts[1].split(',')[damage_type_index];
-	let multiplier = (type == 'minor' ? 1 : 10);
-	let base_cost  = (damage_type == 'physical' ? 3 : 9);
+function parse_breath_weapon_boon(bb_raw) {
+	let bb_array   = bb_raw.split(',');
+	let multiplier = (bb_array[0].includes('minor') ? 1 : 10);
+	let base_cost  = (bb_array[1] == 'physical' ? 3 : 9);
 	let cs_cp_cost = base_cost * multiplier;
 	let cp_costs = { cs_cp_cost: cs_cp_cost, ncs_cp_cost: 0 };
 	return cp_costs;
 }
+
+const natural_attack_boon_array = [
+	{ prefix: '',          cp_cost:  3 },
+	{ prefix: 'magic',     cp_cost:  6 },
+	{ prefix: 'eldritch',  cp_cost: 12 },
+	{ prefix: 'epic',      cp_cost: 18 },
+	{ prefix: 'legendary', cp_cost: 24 },
+	{ prefix: 'energy',    cp_cost: 54 },
+];
+
+function parse_natural_attack_boon(bb_raw) {
+	let bb_array   = bb_raw.split(',');
+	let boon_parts = bb_array[0].split('naturalattack');
+	let boon       = natural_attack_boon_array.find(b => b.prefix == boon_parts[0]);
+	let multiplier = 1;
+	let cp_cost = boon.cp_cost;
+	if (boon_parts[1].includes('x')) {
+		let attack_parts = boon_parts[1].split('x');
+		if (attack_parts.length > 1 && !isNaN(parseInt(attack_parts[1]))) {
+			multiplier = parseInt(attack_parts[1]);
+		}
+	}
+	if (!['', 'energy'].includes(boon_parts[0])) {
+		if (bb_array[1] != 'physical') {
+			cp_cost *= 3;
+		}
+	}
+	let cp_costs = { cs_cp_cost: cp_cost * multiplier, ncs_cp_cost: 0 };
+	return cp_costs;
+}
+
 const boons_and_banes_array = [
-	{ name: 'bb_amorphous',                           search_text: 'amorphous',                 cs_cp_cost: 120, ncs_cp_cost:   0 },
-	{ name: 'bb_amphibious',                          search_text: 'amphibious',                cs_cp_cost:   0, ncs_cp_cost:   8 },
-	{ name: 'bb_aquatic',                             search_text: 'aquatic',                   cs_cp_cost:   0, ncs_cp_cost:   8 },
-	{ name: 'bb_aura_of_damage',                      search_text: 'auraofdamage',              cs_cp_cost:   0, ncs_cp_cost:   0,
-		cp_function: function(boons_and_banes_text) {
-			let damage_type = boons_and_banes_text.split('auraofdamage')[1].split(',')[0];
-			let cs_cp_cost = (damage_type == 'physical' ? 20 : 60);
-			let cp_costs = { cs_cp_cost: cs_cp_cost, ncs_cp_cost: 0 };
-			return cp_costs;
+	{ name: 'bb_amorphous',                           search_text: 'amorphous',                 cs_cp_cost: 120, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_amphibious',                          search_text: 'amphibious',                cs_cp_cost:   0, ncs_cp_cost:   8, increment: 0, max_count:  1 },
+	{ name: 'bb_aquatic',                             search_text: 'aquatic',                   cs_cp_cost:   0, ncs_cp_cost:   8, increment: 0, max_count:  1 },
+	{ name: 'bb_aura_of_fear',                        search_text: 'auraoffear',                cs_cp_cost:  30, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_aura_of_slowness',                    search_text: 'auraofslowness',            cs_cp_cost:  30, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_aura_of_stench',                      search_text: 'auraofstench',              cs_cp_cost:  15, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_blindsense',                          search_text: 'blindsense',                cs_cp_cost:   0, ncs_cp_cost:  30, increment: 0, max_count:  1 },
+	{ name: 'bb_blindsight',                          search_text: 'blindsight',                cs_cp_cost:   0, ncs_cp_cost:  40, increment: 0, max_count:  1 },
+	{ name: 'bb_blood_drain',                         search_text: 'blooddrain',                cs_cp_cost:  20, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_blur',                                search_text: 'blur',                      cs_cp_cost:  12, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_minor_breath_weapon_blast',           search_text: 'minorbreathweapon',         cs_cp_cost:   0, ncs_cp_cost:   0, increment: 1, max_count:  3, 
+		cp_function: function(bb_raw) {
+			return parse_breath_weapon_boon(bb_raw);
 		}
 	},
-	{ name: 'bb_aura_of_fear',                        search_text: 'auraoffear',                cs_cp_cost:  30, ncs_cp_cost:   0 },
-	{ name: 'bb_aura_of_slowness',                    search_text: 'auraofslowness',            cs_cp_cost:  30, ncs_cp_cost:   0 },
-	{ name: 'bb_aura_of_stench',                      search_text: 'auraofstench',              cs_cp_cost:  15, ncs_cp_cost:   0 },
-	{ name: 'bb_blindsense',                          search_text: 'blindsense',                cs_cp_cost:   0, ncs_cp_cost:  30 },
-	{ name: 'bb_blindsight',                          search_text: 'blindsight',                cs_cp_cost:   0, ncs_cp_cost:  40 },
-	{ name: 'bb_blood_drain',                         search_text: 'blooddrain',                cs_cp_cost:  20, ncs_cp_cost:   0 },
-	{ name: 'bb_blur',                                search_text: 'blur',                      cs_cp_cost:  12, ncs_cp_cost:   0 },
-	{ name: 'bb_minor_breath_weapon',                 search_text: 'minorbreathweapon',         cs_cp_cost:   0, ncs_cp_cost:   0, 
-		cp_function: function(boons_and_banes_text) {
-			return parse_breath_weapon_explosive_death_boon('breathweapon', boons_and_banes_text);
+	{ name: 'bb_minor_breath_weapon_line',            search_text: 'minorbreathweapon',         cs_cp_cost:   0, ncs_cp_cost:   0, increment: 1, max_count:  3, 
+		cp_function: function(bb_raw) {
+			return parse_breath_weapon_boon(bb_raw);
 		}
 	},
-	{ name: 'bb_major_breath_weapon',                 search_text: 'majorbreathweapon',         cs_cp_cost:   0, ncs_cp_cost:   0, 
-		cp_function: function(boons_and_banes_text) {
-			return parse_breath_weapon_explosive_death_boon('breathweapon', boons_and_banes_text);
+	{ name: 'bb_major_breath_weapon_blast',           search_text: 'majorbreathweapon',         cs_cp_cost:   0, ncs_cp_cost:   0, increment: 1, max_count:  3, 
+		cp_function: function(bb_raw) {
+			return parse_breath_weapon_boon(bb_raw);
 		}
 	},
-	{ name: 'bb_burrow',                              search_text: 'burrow',                    cs_cp_cost:   0, ncs_cp_cost:   0,
-		cp_function: function(boons_and_banes_text) {
-			let movement = parse_movement_boon('burrow', boons_and_banes_text);
-			let ncs_cp_cost = 12 + (movement * 4);
+	{ name: 'bb_major_breath_weapon_line',            search_text: 'majorbreathweapon',         cs_cp_cost:   0, ncs_cp_cost:   0, increment: 1, max_count:  3, 
+		cp_function: function(bb_raw) {
+			return parse_breath_weapon_boon(bb_raw);
+		}
+	},
+	{ name: 'bb_burrow',                              search_text: 'burrow',                    cs_cp_cost:   0, ncs_cp_cost:   0, increment: 0, max_count:  1, 
+		cp_function: function(bb_raw) {
+			return parse_movement_boon(bb_raw);
+		}
+	},
+	{ name: 'bb_change_shape',                        search_text: 'changeshape',               cs_cp_cost:   0, ncs_cp_cost:   0, increment: 0, max_count: 10, 
+		cp_function: function(bb_raw) {
+			let change_shape_type = bb_raw.split('changeshape')[1];
+			let ncs_cp_cost = (change_shape_type.length >= 3 && change_shape_type.substring(0, 3) == 'any' ? 30 : 10);
 			let cp_costs = { cs_cp_cost: 0, ncs_cp_cost: ncs_cp_cost };
 			return cp_costs;
 		}
 	},
-	{ name: 'bb_change_shape',                        search_text: 'changeshape',               cs_cp_cost:   0, ncs_cp_cost:   0, 
-		cp_function: function(boons_and_banes_text) {
-			let change_shape_type = boons_and_banes_text.split('changeshape')[1];
-			let ncs_cp_cost = (change_shape_type.length >=3 && change_shape_type.substring(0, 3) == 'any' ? 30 : 10);
-			let cp_costs = { cs_cp_cost: 0, ncs_cp_cost: ncs_cp_cost };
-			return cp_costs;
+	{ name: 'bb_climb',                               search_text: 'climb',                     cs_cp_cost:   0, ncs_cp_cost:   0, increment: 0, max_count:  1,  
+		cp_function: function(bb_raw) {
+			return parse_movement_boon(bb_raw);
 		}
 	},
-	{ name: 'bb_climb',                               search_text: 'climb',                     cs_cp_cost:   0, ncs_cp_cost:   0, 
-		cp_function: function(boons_and_banes_text) {
-			let movement = parse_movement_boon('climb', boons_and_banes_text);
-			let ncs_cp_cost = movement * 4;
-			let cp_costs = { cs_cp_cost: 0, ncs_cp_cost: ncs_cp_cost };
-			return cp_costs;
-		}
-	},
-	{ name: 'bb_construct',                           search_text: 'construct',                 cs_cp_cost:  -4, ncs_cp_cost:  19 },
-	{ name: 'bb_corrosive_blood',                     search_text: 'corrosiveblood',            cs_cp_cost:  30, ncs_cp_cost:   0 },
-	{ name: 'bb_create_spawn',                        search_text: 'createspawn',               cs_cp_cost:  12, ncs_cp_cost:   0 },
-	{ name: 'bb_crush',                               search_text: 'crush',                     cs_cp_cost:   8, ncs_cp_cost:   0 },
-	{ name: 'bb_desert_thirst',                       search_text: 'desertthirst',              cs_cp_cost:  30, ncs_cp_cost:   0 },
-	{ name: 'bb_disease_attack',                      search_text: 'diseaseattack',             cs_cp_cost:  15, ncs_cp_cost:   0,
-		cp_function: function(boons_and_banes_text) {
-			let disease_attack_tier = parseInt(boons_and_banes_text.split('diseaseattack')[1].split(',')[1].substring(4, 5))||0;
+	{ name: 'bb_construct',                           search_text: 'construct',                 cs_cp_cost:  56, ncs_cp_cost:  19, increment: 0, max_count:  1 },
+	{ name: 'bb_corrosive_blood',                     search_text: 'corrosiveblood',            cs_cp_cost:  30, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_create_spawn',                        search_text: 'createspawn',               cs_cp_cost:  12, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_crush',                               search_text: 'crush',                     cs_cp_cost:   8, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_desert_thirst',                       search_text: 'desertthirst',              cs_cp_cost:  30, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_disease_attack',                      search_text: 'diseaseattack',             cs_cp_cost:  15, ncs_cp_cost:   0, increment: 2, max_count:  3,
+		cp_function: function(bb_raw) {
+			let disease_attack_tier = parseInt(bb_raw.split(',')[1].substring(4, 5))||0;
 			let cs_cp_cost = disease_attack_tier * 30;
 			let cp_costs = { cs_cp_cost: cs_cp_cost, ncs_cp_cost: 0 };
 			return cp_costs;
 		}
 	},
-	{ name: 'bb_disease_immunity',                    search_text: 'diseaseimmunity',           cs_cp_cost:  45, ncs_cp_cost:   0 },
-	{ name: 'bb_energy_drain',                        search_text: 'energydrain',               cs_cp_cost:  30, ncs_cp_cost:   0 },
-	{ name: 'bb_engulf',                              search_text: 'engulf',                    cs_cp_cost:  60, ncs_cp_cost:   0 },
-	{ name: 'bb_minor_explosive_death',               search_text: 'minorexplosivedeath',       cs_cp_cost:   0, ncs_cp_cost:   0,
-		cp_function: function(boons_and_banes_text) {
-			return parse_breath_weapon_explosive_death_boon('explosivedeath', boons_and_banes_text);
+	{ name: 'bb_disease_immunity',                    search_text: 'diseaseimmunity',           cs_cp_cost:  45, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_energy_drain',                        search_text: 'energydrain',               cs_cp_cost:  30, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_engulf',                              search_text: 'engulf',                    cs_cp_cost:  60, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_fast_movement',                       search_text: 'fastmovement',              cs_cp_cost:   0, ncs_cp_cost:   0, increment: 0, max_count:  1, 
+		cp_function: function(bb_raw) {
+			return parse_movement_boon(bb_raw);
 		}
 	},
-	{ name: 'bb_major_explosive_death',               search_text: 'majorexplosivedeath',       cs_cp_cost:   0, ncs_cp_cost:   0,
-		cp_function: function(boons_and_banes_text) {
-			return parse_breath_weapon_explosive_death_boon('explosivedeath', boons_and_banes_text);
+	{ name: 'bb_fear_immunity',                       search_text: 'fearimmunity',              cs_cp_cost:  10, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_ferocity',                            search_text: 'ferocity',                  cs_cp_cost:   6, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_fly',                                 search_text: 'fly',                       cs_cp_cost:   0, ncs_cp_cost:   0, increment: 0, max_count:  1, 
+		cp_function: function(bb_raw) {
+			return parse_movement_boon(bb_raw);
 		}
 	},
-	{ name: 'bb_fast_movement',                       search_text: 'fastmovement',              cs_cp_cost:   0, ncs_cp_cost:   0, 
-		cp_function: function(boons_and_banes_text) {
-			let movement = parse_movement_boon('fastmovement', boons_and_banes_text);
-			let ncs_cp_cost = movement * 4;
-			let cp_costs = { cs_cp_cost: 0, ncs_cp_cost: ncs_cp_cost };
+	{ name: 'bb_free_grapple',                        search_text: 'freegrapple',               cs_cp_cost:   8, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_gaze_attack',                         search_text: 'gazeattack',                cs_cp_cost:   0, ncs_cp_cost:   0, increment: 1, max_count:  3,
+		cp_function: function(bb_raw) {
+			let gaze_parts  = bb_raw.split('gazeattack')[1].split(',');
+			let ep_cost     = parseInt(gaze_parts[1].split('ep')[0])||0;
+			let magic_skill = active_skill_array.find(s => s.applications.find(a => a.name == gaze_parts[0]));
+			let cp_costs    = {
+				cs_cp_cost:  (magic_skill.combat_score ? ep_cost : 0),
+				ncs_cp_cost: (magic_skill.combat_score ? 0 : ep_cost)
+			};
 			return cp_costs;
 		}
 	},
-	{ name: 'bb_fear_immunity',                       search_text: 'fearimmunity',              cs_cp_cost:  10, ncs_cp_cost:   0 },
-	{ name: 'bb_ferocity',                            search_text: 'ferocity',                  cs_cp_cost:   6, ncs_cp_cost:   0 },
-	{ name: 'bb_fly',                                 search_text: 'fly',                       cs_cp_cost:   0, ncs_cp_cost:   0, 
-		cp_function: function(boons_and_banes_text) {
-			let movement = parse_movement_boon('fly', boons_and_banes_text);
-			let ncs_cp_cost = 6 + (movement * 4);
-			let cp_costs = { cs_cp_cost: 0, ncs_cp_cost: ncs_cp_cost };
-			return cp_costs;
-		}
-	},
-	{ name: 'bb_free_grapple',                        search_text: 'freegrapple',               cs_cp_cost:   8, ncs_cp_cost:   0 },
-	{ name: 'bb_gaze_attack',                         search_text: 'gazeattack',                cs_cp_cost:   0, ncs_cp_cost:   0 },
-	{ name: 'bb_huge_size',                           search_text: 'hugesize',                  cs_cp_cost:   6, ncs_cp_cost:   0 },
-	{ name: 'bb_infravision',                         search_text: 'infravision',               cs_cp_cost:   0, ncs_cp_cost:   6 },
-	{ name: 'bb_inner_magic',                         search_text: 'innermagic',                cs_cp_cost:   0, ncs_cp_cost:   0 },
-	{ name: 'bb_lair_action_1',                       search_text: 'lairaction1',               cs_cp_cost:  30, ncs_cp_cost:   0 },
-	{ name: 'bb_lair_action_2',                       search_text: 'lairaction2',               cs_cp_cost:  30, ncs_cp_cost:   0 },
-	{ name: 'bb_lair_action_3',                       search_text: 'lairaction3',               cs_cp_cost:  30, ncs_cp_cost:   0 },
-	{ name: 'bb_large_size',                          search_text: 'largesize',                 cs_cp_cost:   0, ncs_cp_cost:   0 },
-	{ name: 'bb_legendary_monster',                   search_text: 'legendarymonster',          cs_cp_cost: 120, ncs_cp_cost:   0 },
-	{ name: 'bb_magic_resistance',                    search_text: 'magicresistance',           cs_cp_cost:  10, ncs_cp_cost:  10 },
-	{ name: 'bb_material_vulnerability',              search_text: 'materialvulnerability',     cs_cp_cost:  -6, ncs_cp_cost:   0 },
-	{ name: 'bb_mindless',                            search_text: 'mindless',                  cs_cp_cost:  55, ncs_cp_cost: -95 },
-	{ name: 'bb_natural_attack',                      search_text: 'naturalattack',             cs_cp_cost:   3, ncs_cp_cost:   0, dupe_search_text: [ 'magicnaturalattack', 'epicnaturalattack', 'legendarynaturalattack' ] },
-	{ name: 'bb_magic_natural_attack',                search_text: 'magicnaturalattack',        cs_cp_cost:  18, ncs_cp_cost:   0 },
-	{ name: 'bb_epic_natural_attack',                 search_text: 'epicnaturalattack',         cs_cp_cost:  36, ncs_cp_cost:   0 },
-	{ name: 'bb_legendary_natural_attack',            search_text: 'legendarynaturalattack',    cs_cp_cost:  54, ncs_cp_cost:   0 },
-	{ name: 'bb_energy_natural_attack',               search_text: 'energynaturalattack',       cs_cp_cost:  54, ncs_cp_cost:   0 },
-	{ name: 'bb_natural_damage_immunity',             search_text: 'ndi',                       cs_cp_cost:  30, ncs_cp_cost:   0 },
-	{ name: 'bb_natural_damage_resistance',           search_text: 'ndr',                       cs_cp_cost:   0, ncs_cp_cost:   0 },
-	{ name: 'bb_total_magic_immunity',                search_text: 'totalmagicimmunity',        cs_cp_cost: 200, ncs_cp_cost: 200 },
-	{ name: 'bb_minor_natural_damage_vulnerability',  search_text: 'minorndv',                  cs_cp_cost: -10, ncs_cp_cost:   0 },
-	{ name: 'bb_major_natural_damage_vulnerability',  search_text: 'majorndv',                  cs_cp_cost: -30, ncs_cp_cost:   0 },
-	{ name: 'bb_no_metabolism',                       search_text: 'nometabolism',              cs_cp_cost: -20, ncs_cp_cost:   0 },
-	{ name: 'bb_no_natural_healing',                  search_text: 'nonaturalhealing',          cs_cp_cost: -20, ncs_cp_cost:   0 },
-	{ name: 'bb_non-breathing',                       search_text: 'non-breathing',             cs_cp_cost:   0, ncs_cp_cost:   6 },
-	{ name: 'bb_non-eating',                          search_text: 'non-eating',                cs_cp_cost:   0, ncs_cp_cost:   3 },
-	{ name: 'bb_non-sleeping',                        search_text: 'non-sleeping',              cs_cp_cost:   0, ncs_cp_cost:  10 },
-	{ name: 'bb_paralysis',                           search_text: 'paralysis',                 cs_cp_cost:  20, ncs_cp_cost:   0 },
-	{ name: 'bb_poison_attack',                       search_text: 'poisonattack',              cs_cp_cost:   0, ncs_cp_cost:   0, 
-		cp_function: function(boons_and_banes_text) {
-			let poison_attack_stats = boons_and_banes_text.split('poisonattack')[1].split(',');
-			let weapon     = poison_attack_stats[0];
-			let tier       = parseInt(poison_attack_stats[1].substring(4, 5))||0;
+	{ name: 'bb_huge_size',                           search_text: 'hugesize',                  cs_cp_cost:   6, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_infravision',                         search_text: 'infravision',               cs_cp_cost:   0, ncs_cp_cost:   6, increment: 0, max_count:  1 },
+	{ name: 'bb_inner_magic',                         search_text: 'innermagic',                cs_cp_cost:   0, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_lair_action_1',                       search_text: 'lairaction1',               cs_cp_cost:  30, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_lair_action_2',                       search_text: 'lairaction2',               cs_cp_cost:  30, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_lair_action_3',                       search_text: 'lairaction3',               cs_cp_cost:  30, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_large_size',                          search_text: 'largesize',                 cs_cp_cost:   0, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_legendary_monster',                   search_text: 'legendarymonster',          cs_cp_cost: 120, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_magic_resistance',                    search_text: 'magicresistance',           cs_cp_cost:  10, ncs_cp_cost:  10, increment: 0, max_count:  1 },
+	{ name: 'bb_material_vulnerability',              search_text: 'materialvulnerability',     cs_cp_cost:  -6, ncs_cp_cost:   0, increment: 0, max_count: 10 },
+	{ name: 'bb_mindless',                            search_text: 'mindless',                  cs_cp_cost:  55, ncs_cp_cost: -95, increment: 0, max_count:  1 },
+	{ name: 'bb_total_magic_immunity',                search_text: 'totalmagicimmunity',        cs_cp_cost: 200, ncs_cp_cost: 200, increment: 0, max_count:  1 },
+	{ name: 'bb_no_metabolism',                       search_text: 'nometabolism',              cs_cp_cost: -20, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_no_natural_healing',                  search_text: 'nonaturalhealing',          cs_cp_cost: -20, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_non-breathing',                       search_text: 'non-breathing',             cs_cp_cost:   0, ncs_cp_cost:   6, increment: 0, max_count:  1 },
+	{ name: 'bb_non-eating',                          search_text: 'non-eating',                cs_cp_cost:   0, ncs_cp_cost:   3, increment: 0, max_count:  1 },
+	{ name: 'bb_non-sleeping',                        search_text: 'non-sleeping',              cs_cp_cost:   0, ncs_cp_cost:  10, increment: 0, max_count:  1 },
+	{ name: 'bb_poison_attack',                       search_text: 'poisonattack',              cs_cp_cost:   0, ncs_cp_cost:   0, increment: 1, max_count:  3, 
+		cp_function: function(bb_raw) {
+			let bb_array   = bb_raw.split(',');
+			let weapon     = bb_array[0].split('poisonattack')[1];
+			let tier       = parseInt(bb_array[1].substring(4, 5))||0;
 			let cs_cp_cost = tier * (weapon == 'touch' ? 75 : 50);
 			let cp_costs   = { cs_cp_cost: cs_cp_cost, ncs_cp_cost: 0 };
 			return cp_costs;
 		}
 	},
-	{ name: 'bb_poison_immunity',                     search_text: 'poisonimmunity',            cs_cp_cost:  45, ncs_cp_cost:   0 },
-	{ name: 'bb_polyglot',                            search_text: 'polyglot',                  cs_cp_cost:   0, ncs_cp_cost:   8 },
-	{ name: 'bb_preternatural_cunning',               search_text: 'preternaturalcunning',      cs_cp_cost:  10, ncs_cp_cost:   0 },
-	{ name: 'bb_quick_reflexes',                      search_text: 'quickreflexes',             cs_cp_cost:   6, ncs_cp_cost:   0 },
-	{ name: 'bb_rake',                                search_text: 'rake',                      cs_cp_cost:  10, ncs_cp_cost:   0 },
-	{ name: 'bb_regeneration',                        search_text: 'regeneration',              cs_cp_cost:   0, ncs_cp_cost:   0 },
-	{ name: 'bb_resurrection_vulnerability',          search_text: 'resurrectionvulnerability', cs_cp_cost: -12, ncs_cp_cost:   0 },
-	{ name: 'bb_scent',                               search_text: 'scent',                     cs_cp_cost:   0, ncs_cp_cost:   6 },
-	{ name: 'bb_slow_movement',                       search_text: 'slowmovement',              cs_cp_cost:   0, ncs_cp_cost:   0, 
-		cp_function: function(boons_and_banes_text) {
-			let movement = parse_movement_boon('slowmovement', boons_and_banes_text);
-			let ncs_cp_cost = movement * -4;
-			let cp_costs = { cs_cp_cost: 0, ncs_cp_cost: ncs_cp_cost };
+	{ name: 'bb_poison_immunity',                     search_text: 'poisonimmunity',            cs_cp_cost:  45, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_polyglot',                            search_text: 'polyglot',                  cs_cp_cost:   0, ncs_cp_cost:   8, increment: 0, max_count:  1 },
+	{ name: 'bb_preternatural_cunning',               search_text: 'preternaturalcunning',      cs_cp_cost:  10, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_quick_reflexes',                      search_text: 'quickreflexes',             cs_cp_cost:   6, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_rake',                                search_text: 'rake',                      cs_cp_cost:  10, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_regeneration',                        search_text: 'regeneration',              cs_cp_cost:   0, ncs_cp_cost:   0, increment: 1, max_count:  1,
+		cp_function: function(bb_raw) {
+			let dice       = parseInt(bb_raw.split('regeneration')[1].split('d6,')[0])||0;
+			let cs_cp_cost = dice * 20;
+			let cp_costs   = { cs_cp_cost: cs_cp_cost, ncs_cp_cost: 0 };
 			return cp_costs;
 		}
 	},
-	{ name: 'bb_slow_reflexes',                       search_text: 'slowreflexes',              cs_cp_cost:  -6, ncs_cp_cost:   0 },
-	{ name: 'bb_small_size',                          search_text: 'smallsize',                 cs_cp_cost:   0, ncs_cp_cost:   0 },
-	{ name: 'bb_spell_immunity',                      search_text: 'spellimmunity',             cs_cp_cost:   0, ncs_cp_cost:   0 },
-	{ name: 'bb_spell_vulnerability',                 search_text: 'spellvulnerability',        cs_cp_cost:   0, ncs_cp_cost:   0 },
-	{ name: 'bb_stability',                           search_text: 'stability',                 cs_cp_cost:   4, ncs_cp_cost:   0 },
-	{ name: 'bb_steal_voice',                         search_text: 'stealvoice',                cs_cp_cost:   0, ncs_cp_cost:   6 },
-	{ name: 'bb_stonecunning',                        search_text: 'stonecunning',              cs_cp_cost:   0, ncs_cp_cost:   4 },
-	{ name: 'bb_sunlight_powerlessness',              search_text: 'sunlightpowerlessness',     cs_cp_cost: -10, ncs_cp_cost:   0 },
-	{ name: 'bb_supernatural_toughness',              search_text: 'supernaturaltoughness',     cs_cp_cost:  10, ncs_cp_cost:   0 },
-	{ name: 'bb_swallow_whole',                       search_text: 'swallowwhole',              cs_cp_cost:  12, ncs_cp_cost:   0 },
-	{ name: 'bb_swarm',                               search_text: 'swarm',                     cs_cp_cost:  12, ncs_cp_cost:   0 },
-	{ name: 'bb_swim',                                search_text: 'swim',                      cs_cp_cost:   0, ncs_cp_cost:   0, 
-		cp_function: function(boons_and_banes_text) {
-			let movement = parse_movement_boon('swim', boons_and_banes_text);
-			let ncs_cp_cost = movement * 4;
-			let cp_costs = { cs_cp_cost: 0, ncs_cp_cost: ncs_cp_cost };
-			return cp_costs;
+	{ name: 'bb_resurrection_vulnerability',          search_text: 'resurrectionvulnerability', cs_cp_cost: -12, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_scent',                               search_text: 'scent',                     cs_cp_cost:   0, ncs_cp_cost:   6, increment: 0, max_count:  1 },
+	{ name: 'bb_slow_movement',                       search_text: 'slowmovement',              cs_cp_cost:   0, ncs_cp_cost:   0, increment: 0, max_count:  1, 
+		cp_function: function(bb_raw) {
+			return parse_movement_boon(bb_raw);
 		}
 	},
-	{ name: 'bb_tiny_size',                           search_text: 'tinysize',                  cs_cp_cost:   6, ncs_cp_cost:   0 },
-	{ name: 'bb_tireless',                            search_text: 'tireless',                  cs_cp_cost:   6, ncs_cp_cost:   0 },
-	{ name: 'bb_tomb_rot',                            search_text: 'tombrot',                   cs_cp_cost:  20, ncs_cp_cost:   0 },
-	{ name: 'bb_transparent',                         search_text: 'transparent',               cs_cp_cost:   0, ncs_cp_cost:  20 },
-	{ name: 'bb_tremorsense',                         search_text: 'tremorsense',               cs_cp_cost:   0, ncs_cp_cost:  20 },
-	{ name: 'bb_ultravision',                         search_text: 'ultravision',               cs_cp_cost:   0, ncs_cp_cost:   4 },
-	{ name: 'bb_undead_ghostly',                      search_text: 'undeadghostly',             cs_cp_cost: 156, ncs_cp_cost:  19 },
-	{ name: 'bb_undead_skeletal',                     search_text: 'undeadskeletal',            cs_cp_cost:  56, ncs_cp_cost:  19 },
-	{ name: 'bb_undead_zombified',                    search_text: 'undeadzombified',           cs_cp_cost:  56, ncs_cp_cost:  19 },
-	{ name: 'bb_web',                                 search_text: 'web',                       cs_cp_cost:  20, ncs_cp_cost:   0 }
+	{ name: 'bb_slow_reflexes',                       search_text: 'slowreflexes',              cs_cp_cost:  -6, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_small_size',                          search_text: 'smallsize',                 cs_cp_cost:   0, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_spell_immunity',                      search_text: 'spellimmunity',             cs_cp_cost:   0, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_spell_vulnerability',                 search_text: 'spellvulnerability',        cs_cp_cost:   0, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_stability',                           search_text: 'stability',                 cs_cp_cost:   4, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_steal_voice',                         search_text: 'stealvoice',                cs_cp_cost:   0, ncs_cp_cost:   6, increment: 0, max_count:  1 },
+	{ name: 'bb_stonecunning',                        search_text: 'stonecunning',              cs_cp_cost:   0, ncs_cp_cost:   4, increment: 0, max_count:  1 },
+	{ name: 'bb_sunlight_powerlessness',              search_text: 'sunlightpowerlessness',     cs_cp_cost: -10, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_supernatural_toughness',              search_text: 'supernaturaltoughness',     cs_cp_cost:  10, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_swallow_whole',                       search_text: 'swallowwhole',              cs_cp_cost:  12, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_swarm',                               search_text: 'swarm',                     cs_cp_cost:  12, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_swim',                                search_text: 'swim',                      cs_cp_cost:   0, ncs_cp_cost:   0, increment: 0, max_count:  1, 
+		cp_function: function(bb_raw) {
+			return parse_movement_boon(bb_raw);
+		}
+	},
+	{ name: 'bb_tiny_size',                           search_text: 'tinysize',                  cs_cp_cost:   6, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_tireless',                            search_text: 'tireless',                  cs_cp_cost:   6, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_tomb_rot',                            search_text: 'tombrot',                   cs_cp_cost:  20, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_transparent',                         search_text: 'transparent',               cs_cp_cost:   0, ncs_cp_cost:  20, increment: 0, max_count:  1 },
+	{ name: 'bb_tremorsense',                         search_text: 'tremorsense',               cs_cp_cost:   0, ncs_cp_cost:  20, increment: 0, max_count:  1 },
+	{ name: 'bb_ultravision',                         search_text: 'ultravision',               cs_cp_cost:   0, ncs_cp_cost:   4, increment: 0, max_count:  1 },
+	{ name: 'bb_undead_ghostly',                      search_text: 'undeadghostly',             cs_cp_cost: 156, ncs_cp_cost:  19, increment: 0, max_count:  1 },
+	{ name: 'bb_undead_skeletal',                     search_text: 'undeadskeletal',            cs_cp_cost:  56, ncs_cp_cost:  19, increment: 0, max_count:  1 },
+	{ name: 'bb_undead_zombified',                    search_text: 'undeadzombified',           cs_cp_cost:  56, ncs_cp_cost:  19, increment: 0, max_count:  1 },
+	{ name: 'bb_web',                                 search_text: 'web',                       cs_cp_cost:  20, ncs_cp_cost:   0, increment: 0, max_count:  1 }
 ];
 
 attribute_array.forEach( function(attribute) {
 	let cs_cost  = (attribute.combat_score ? 4 : 0);
 	let ncs_cost = (attribute.combat_score ? 0 : 4);
 	boons_and_banes_array.push(
-		{ name: `bb_high_attribute_${attribute.name}`,      search_text: `highattribute${attribute.name}`,     cs_cp_cost: cs_cost,      ncs_cp_cost: ncs_cost,      dupe_search_text: [ `veryhighattribute${attribute.name}` ] },
-		{ name: `bb_low_attribute_${attribute.name}`,       search_text: `lowattribute${attribute.name}`,      cs_cp_cost: cs_cost * -1, ncs_cp_cost: ncs_cost * -1, dupe_search_text: [ `verylowattribute${attribute.name}`  ] },
-		{ name: `bb_very_high_attribute_${attribute.name}`, search_text: `veryhighattribute${attribute.name}`, cs_cp_cost: cs_cost *  2, ncs_cp_cost: ncs_cost *  2 },
-		{ name: `bb_very_low_attribute_${attribute.name}`,  search_text: `verylowattribute${attribute.name}`,  cs_cp_cost: cs_cost * -2, ncs_cp_cost: ncs_cost * -2 }
+		{ name: `bb_high_attribute_${attribute.name}`,      search_text: `highattribute${attribute.name}`,     cs_cp_cost: cs_cost,      ncs_cp_cost: ncs_cost,      increment: 0, max_count: 1 },
+		{ name: `bb_low_attribute_${attribute.name}`,       search_text: `lowattribute${attribute.name}`,      cs_cp_cost: cs_cost * -1, ncs_cp_cost: ncs_cost * -1, increment: 0, max_count: 1 },
+		{ name: `bb_very_high_attribute_${attribute.name}`, search_text: `veryhighattribute${attribute.name}`, cs_cp_cost: cs_cost *  2, ncs_cp_cost: ncs_cost *  2, increment: 0, max_count: 1 },
+		{ name: `bb_very_low_attribute_${attribute.name}`,  search_text: `verylowattribute${attribute.name}`,  cs_cp_cost: cs_cost * -2, ncs_cp_cost: ncs_cost * -2, increment: 0, max_count: 1 }
 	);
 
 	cs_cost  = (attribute.combat_score ? -30 :   0);
 	ncs_cost = (attribute.combat_score ?   0 : -40);
 	boons_and_banes_array.push(
-		{ name: `bb_unskilled_${attribute.name}`, search_text: `unskilled${attribute.name}`, cs_cp_cost: cs_cost, ncs_cp_cost: ncs_cost }
+		{
+			name:        `bb_unskilled_${attribute.name}`,
+			search_text: `unskilled${attribute.name}`,
+			cs_cp_cost:  cs_cost,
+			ncs_cp_cost: ncs_cost,
+			increment:   0,
+			max_count:   1 
+		}
 	);
+});
+
+natural_attack_boon_array.forEach( function(boon) {
+	let is_increment = (!['', 'energy'].includes(boon.prefix));
+	let underscore = (is_increment ? '_' : '');
+	boons_and_banes_array.push(
+		{ 
+			name:        `bb_${boon.prefix}${underscore}natural_attack`,
+			search_text: `${boon.prefix}naturalattack`,
+			cs_cp_cost:   0,
+			ncs_cp_cost:  0,
+			increment:    (is_increment ? 1 : 0),
+			max_count:   10,
+			cp_function: function(bb_raw) {
+				return parse_natural_attack_boon(bb_raw);
+			}
+		}
+	);	
 });
 
 magic_skill_base_array.forEach( function(skill) {
 	boons_and_banes_array.push(
 		{ 
-			name:             `bb_magic_immunity_${skill.name}`,
-			search_text:      `magicimmunity${skill.name}`,
-			cs_cp_cost:       (skill.combat_score ? 60 :  0), 
-			ncs_cp_cost:      (skill.combat_score ?  0 : 60),
-			dupe_search_text: [ `truemagicimmunity${skill.name}` ]
+			name:        `bb_magic_immunity_${skill.name}`,
+			search_text: `magicimmunity${skill.name}`,
+			cs_cp_cost:  (skill.combat_score ? 60 :  0), 
+			ncs_cp_cost: (skill.combat_score ?  0 : 60),
+			increment:   0,
+			max_count:   1
 		},
 		{ 
 			name:        `bb_true_magic_immunity_${skill.name}`,
 			search_text: `truemagicimmunity${skill.name}`,  
 			cs_cp_cost:  (skill.combat_score ? 45 :  0), 
-			ncs_cp_cost: (skill.combat_score ?  0 : 45)
+			ncs_cp_cost: (skill.combat_score ?  0 : 45),
+			increment:   0,
+			max_count:   1
 		},
 		{ 
 			name:        `bb_magic_vulnerability_${skill.name}`,
 			search_text: `magicvulnerability${skill.name}`, 
 			cs_cp_cost:  (skill.combat_score ? -10 :   0), 
-			ncs_cp_cost: (skill.combat_score ?   0 : -10)
+			ncs_cp_cost: (skill.combat_score ?   0 : -10),
+			increment:   0,
+			max_count:   1
 		}
 	);
-	
+
 	if (skill.natural) {
 		boons_and_banes_array.push(
 			{ 
 				name:        `bb_natural_magic_${skill.name}`, 
 				search_text: `naturalmagic${skill.name}`, 
 				cs_cp_cost:  (skill.combat_score ? 10 :  0), 
-				ncs_cp_cost: (skill.combat_score ?  0 : 10)
+				ncs_cp_cost: (skill.combat_score ?  0 : 10),
+				increment:   0,
+				max_count:   1
 			}
 		)
 	}
 });
 
-function boons_and_banes_includes(bb_object, bb_text) {
-	let includes = false;
-	let dupes    = false;
-	
-	let log_msg = '';
-	if (bb_object.dupe_search_text) {
-		bb_object.dupe_search_text.forEach( function(dupe) {
-			dupes ||= bb_text.includes(dupe);
-			log_msg += (bb_text.includes(dupe) ? `; found ${dupe}` : '');
-		});
+damage_type_list.forEach( function(type) {
+	boons_and_banes_array.push(
+		{
+			name:        `bb_aura_of_damage_${type}`,
+			search_text: `auraofdamage${type}`,
+			cs_cp_cost:  (type == 'physical' ? 20 : 60),
+			ncs_cp_cost: 0,
+			increment:   0,
+			max_count:   1
+		},
+		{
+			name:        `bb_natural_damage_resistance_${type}`,
+			search_text: `ndr${type}`,
+			cs_cp_cost:  0,
+			ncs_cp_cost: 0,
+			increment:   0,
+			max_count:   1,
+			cp_function: function(bb_raw) {
+				let ndr = parseInt(bb_raw.split(type)[1])||0;
+				let cs_cp_cost = ndr * (type == 'physical' ? 3 : 1);
+				let cp_costs   = { cs_cp_cost: cs_cp_cost, ncs_cp_cost: 0 };
+				return cp_costs;
+			}
+		},
+		{
+			name:        `bb_natural_damage_immunity_${type}`,
+			search_text: `ndi${type}`,
+			cs_cp_cost:  (type == 'physical' ? 90 : 30),
+			ncs_cp_cost: 0,
+			increment:   0,
+			max_count:   1
+		}
+	);
+	['minor', 'major'].forEach( function(mm) {
+		boons_and_banes_array.push(
+			{
+				name:        `bb_${mm}_explosive_death_${type}`,
+				search_text: `${mm}explosivedeath${type}`,
+				cs_cp_cost:  (type == 'physical' ? 3 : 9) * (mm == 'minor' ? 1 : 10),
+				ncs_cp_cost: 0,
+				increment:   0,
+				max_count:   1
+			},
+			{
+				name:        `bb_${mm}_natural_damage_vulnerability_${type}`,
+				search_text: `${mm}ndv${type}`,
+				cs_cp_cost:  (type == 'physical' ? 30 : 10) * (mm == 'minor' ? 1 : 3) * -1,
+				ncs_cp_cost: 0,
+				increment:   0,
+				max_count:   1
+			}
+		);
+	});
+});
+
+function parse_boons_and_banes_text(boons_and_banes_text) {
+	if (!boons_and_banes_text) {
+		return null;
 	}
-	
-	includes = bb_text.includes(bb_object.search_text) && !dupes;
-	
-	if (dupes) {
-		console.log(`Dupes${log_msg}`);
+	let parsed_array = [];
+	let bb           = null;
+	let bb_part      = null;
+	let bb_array     = boons_and_banes_text.split(',');
+	for (let i = 0; i < bb_array.length; i++ ) {
+		bb = boons_and_banes_array.find(b => bb_array[i].startsWith(b.search_text));
+		if (!bb) {
+			console.error(`${bb_array[i]} not found`);
+			continue;
+		}
+		bb_part = bb_array[i];
+		for (let j = i + 1; j <= i + bb.increment; j++) {
+			bb_part += `,${bb_array[j]}`;
+		}
+		parsed_array.push(bb_part);
+		i += bb.increment;
 	}
-	
-	return includes;
+	parsed_array = parsed_array.sort((a, b) => a.localeCompare(b));
+	return parsed_array;
+}
+
+function get_boons_and_banes(bb_array) {
+	let set_object  = { cp_combat_boons_banes: 0, cp_non_combat_boons_banes: 0 };
+	if (!bb_array) {
+		return set_object;
+	}
+	let bb          = null;
+	let calc_cp     = null;
+	let count       = 0;
+	let count_affix = '';
+	for (let bb_raw of bb_array) {
+		bb = boons_and_banes_array.find(b => bb_raw.startsWith(b.search_text));
+		if (!bb) {
+			console.error(`${bb_raw} not found`);
+			continue;
+		}
+		count = set_object[`${bb.name}_count`];
+		if (count) {
+			if (count + 1 > bb.max_count) {
+				console.error(`Not adding ${bb_raw}; max count exceeded`);
+				continue;
+			}
+			else {
+				count++;
+			}
+		}
+		else {
+			count = 1;
+		}
+		count_affix = (bb.max_count > 1 ? `_${count}` : '');
+		set_object[`${bb.name}${count_affix}`] = true;
+		set_object[`${bb.name}_count`] = count;
+		if (bb.max_count > 1) {
+			set_object[`${bb.name}${count_affix}_raw`] = bb_raw;
+		}
+		if (bb.cp_function) {
+			calc_cp = bb.cp_function(bb_raw);
+			set_object.cp_combat_boons_banes  += calc_cp.cs_cp_cost;
+			set_object.cp_non_combat_boons_banes += calc_cp.ncs_cp_cost;
+		}
+		else {
+			set_object.cp_combat_boons_banes  += bb.cs_cp_cost;
+			set_object.cp_non_combat_boons_banes += bb.ncs_cp_cost;
+		}
+	}
+
+	return set_object;
 }
 
 function set_boons_and_banes(eventInfo) {
-	getAttrs(['cp_combat_boons_banes', 'cp_non_combat_boons_banes'], function(values) {
-		let cp_cs_boons_banes  = parseInt(values.cp_combat_boons_banes    )||0;
-		let cp_ncs_boons_banes = parseInt(values.cp_non_combat_boons_banes)||0;
+	console.log('set_boons_and_banes');
+	console.log(eventInfo);
 
-		console.log('set_boons_and_banes');
-		console.log(eventInfo);
+	let old_bb_text = (eventInfo.previousValue ? parse_textarea(eventInfo.previousValue) : '');
+	let new_bb_text = (eventInfo.newValue      ? parse_textarea(eventInfo.newValue)      : '');
+	console.log(`old_bb_text: ${old_bb_text}`);
+	console.log(`new_bb_text: ${new_bb_text}`);
 
-		let old_bb_text = (eventInfo.previousValue ? parse_textarea(eventInfo.previousValue) : '');
-		let new_bb_text = (eventInfo.newValue      ? parse_textarea(eventInfo.newValue)      : '');
-		console.log(`old_bb_text: ${old_bb_text}`);
-		console.log(`new_bb_text: ${new_bb_text}`);
+	let old_bb_array = parse_boons_and_banes_text(old_bb_text);
+	let new_bb_array = parse_boons_and_banes_text(new_bb_text);
+	console.log(old_bb_array);
+	console.log(new_bb_array);
 
-		let set_array = {};
-		let is_in_old_bb_text = false;
-		let is_in_new_bb_text = false;
-		let cp_cs_change      = 0;
-		let cp_ncs_change     = 0;
-		let old_cs_cp_cost    = 0;
-		let old_ncs_cp_cost   = 0;
-		let new_cs_cp_cost    = 0;
-		let new_ncs_cp_cost   = 0;
-		let old_cp_costs      = null;
-		let new_cp_costs      = null;
+	let old_bb_object = get_boons_and_banes(old_bb_array);
+	let new_bb_object = get_boons_and_banes(new_bb_array);
+	//console.log(old_bb_object);
+	//console.log(new_bb_object);
 
-		boons_and_banes_array.forEach( function(bb) {
-			is_in_old = boons_and_banes_includes(bb, old_bb_text);
-			is_in_new = boons_and_banes_includes(bb, new_bb_text);
-			if ((!is_in_old && !is_in_new) || (is_in_new && is_in_old && !bb.cp_function)) {
-				return;
-			}
-			console.log(`${bb.name}; is_in_old: ${is_in_old}; is_in_new: ${is_in_new}`);
-			if (bb.cp_function) {
-				old_cp_costs    = (is_in_old    ? bb.cp_function(old_bb_text) : null);
-				new_cp_costs    = (is_in_new    ? bb.cp_function(new_bb_text) : null);
-				old_cs_cp_cost  = (old_cp_costs ? old_cp_costs.cs_cp_cost     : 0);
-			    old_ncs_cp_cost = (old_cp_costs ? old_cp_costs.ncs_cp_cost    : 0);
-				new_cs_cp_cost  = (new_cp_costs ? new_cp_costs.cs_cp_cost     : 0);
-			    new_ncs_cp_cost = (new_cp_costs ? new_cp_costs.ncs_cp_cost    : 0);
-				console.log('Found CP function; old then new CP costs below');
-				console.log(old_cp_costs);
-				console.log(new_cp_costs);
-			}
-			else {
-				console.log('No CP function found');
-				old_cs_cp_cost  = bb.cs_cp_cost;
-			    old_ncs_cp_cost = bb.ncs_cp_cost;
-				new_cs_cp_cost  = bb.cs_cp_cost;
-			    new_ncs_cp_cost = bb.ncs_cp_cost;
-			}
-			if (is_in_old && !is_in_new) {
-				console.log(`remove ${bb.name}`);
-				set_array[bb.name] = false;
-				cp_cs_change      -= old_cs_cp_cost;
-				cp_ncs_change     -= old_ncs_cp_cost;
-			}
-			if (is_in_new && !is_in_old) {
-				console.log(`add ${bb.name}`);
-				set_array[bb.name] = true;
-				cp_cs_change      += new_cs_cp_cost;
-				cp_ncs_change     += new_ncs_cp_cost;
-			}
-			if (is_in_new && is_in_old && bb.cp_function) {
-				console.log(`change ${bb.name}`);
-				set_array[bb.name] = true;
-				cp_cs_change      += new_cs_cp_cost  - old_cs_cp_cost;
-				cp_ncs_change     += new_ncs_cp_cost - old_ncs_cp_cost;
-			}
-		});
-		
-		let new_cp_cs_boons_banes  = cp_cs_boons_banes  + cp_cs_change;
-		let new_cp_ncs_boons_banes = cp_ncs_boons_banes + cp_ncs_change;
-		set_array['cp_combat_boons_banes']     = (new_bb_text ? new_cp_cs_boons_banes  : 0);
-		set_array['cp_non_combat_boons_banes'] = (new_bb_text ? new_cp_ncs_boons_banes : 0);
-		console.log(`new boons_banes CP`);
-		console.log(set_array);
-		setAttrs(set_array);
-	});
+	let keys_to_blank_out = Object.keys(old_bb_object).filter(b => !Object.keys(new_bb_object).includes(b));
+
+	for (let key of keys_to_blank_out) {
+		new_bb_object[key] = '';
+	}
+
+	console.log(new_bb_object);
+	setAttrs(new_bb_object);
 }
 
 // Overall character CP calc
-on('change:cp_combat_attributes change:cp_non_combat_attributes change:cp_combat_skills change:cp_non_combat_skills change:cp_vital_stats change:cp_damage_types change:cp_area_types change:cp_spell_statistics change:cp_combat_passives change:cp_non_combat_passives change:cp_speed change:cp_proficiencies', function() {
-	getAttrs(['cp_combat_attributes', 'cp_non_combat_attributes', 'cp_combat_skills', 'cp_non_combat_skills', 'cp_vital_stats', 'cp_damage_types', 'cp_area_types', 'cp_spell_statistics', 'cp_combat_passives', 'cp_non_combat_passives', 'cp_speed', 'cp_proficiencies'], function(values) {
-		let cp_cs_atts     = parseInt(values.cp_combat_attributes     )||0;
-		let cp_ncs_atts    = parseInt(values.cp_non_combat_attributes )||0;
-		let cp_cs_skills   = parseInt(values.cp_combat_skills         )||0;
-		let cp_ncs_skills  = parseInt(values.cp_non_combat_skills     )||0;
-		let cp_vital_stats = parseInt(values.cp_vital_stats           )||0;
-		let cp_cs_pass     = parseInt(values.cp_combat_passives       )||0;
-		let cp_ncs_pass    = parseInt(values.cp_non_combat_passives   )||0;
-		let cp_speed       = parseInt(values.cp_speed                 )||0;
-		let cp_damage      = parseInt(values.cp_damage_types          )||0;
-		let cp_area_types  = parseInt(values.cp_area_types            )||0;
-		let cp_spell_stats = parseInt(values.cp_spell_statistics      )||0;
-		let cp_profs       = parseInt(values.cp_proficiencies         )||0;
+const cp_calc_attr_array = ['cp_combat_attributes', 'cp_non_combat_attributes', 'cp_combat_skills', 'cp_non_combat_skills', 'cp_vital_stats', 'cp_damage_types', 'cp_area_types', 'cp_spell_statistics', 'cp_combat_passives', 'cp_non_combat_passives', 'cp_combat_boons_banes', 'cp_non_combat_boons_banes', 'cp_speed', 'cp_proficiencies'];
+on('change:' + cp_calc_attr_array.join(' change:'), function() {
+	getAttrs(cp_calc_attr_array, function(values) {
+		let cp_cs_atts     = parseInt(values.cp_combat_attributes      )||0;
+		let cp_ncs_atts    = parseInt(values.cp_non_combat_attributes  )||0;
+		let cp_cs_skills   = parseInt(values.cp_combat_skills          )||0;
+		let cp_ncs_skills  = parseInt(values.cp_non_combat_skills      )||0;
+		let cp_vital_stats = parseInt(values.cp_vital_stats            )||0;
+		let cp_cs_pass     = parseInt(values.cp_combat_passives        )||0;
+		let cp_ncs_pass    = parseInt(values.cp_non_combat_passives    )||0;
+		let cp_cs_bb       = parseInt(values.cp_combat_boons_banes     )||0;
+		let cp_ncs_bb      = parseInt(values.cp_non_combat_boons_banes )||0;
+		let cp_speed       = parseInt(values.cp_speed                  )||0;
+		let cp_damage      = parseInt(values.cp_damage_types           )||0;
+		let cp_area_types  = parseInt(values.cp_area_types             )||0;
+		let cp_spell_stats = parseInt(values.cp_spell_statistics       )||0;
+		let cp_profs       = parseInt(values.cp_proficiencies          )||0;
 
-		let combat_score     = (cp_cs_atts + cp_cs_skills + cp_vital_stats + cp_cs_pass + cp_damage) / 10;
-		let non_combat_score = (cp_ncs_atts + cp_ncs_skills + cp_ncs_pass + cp_speed + cp_area_types + cp_profs + cp_spell_stats) / 10;
+		let combat_score     = (cp_cs_atts + cp_cs_skills + cp_vital_stats + cp_cs_pass + cp_cs_bb + cp_damage) / 10;
+		let non_combat_score = (cp_ncs_atts + cp_ncs_skills + cp_ncs_pass + cp_ncs_bb + cp_speed + cp_area_types + cp_profs + cp_spell_stats) / 10;
 		
-		let cp_total = cp_cs_atts + cp_ncs_atts + cp_cs_skills + cp_ncs_skills + cp_vital_stats + cp_cs_pass + cp_ncs_pass + cp_damage + 
-					   cp_speed + cp_area_types + cp_spell_stats + cp_profs;
+		let cp_total = cp_cs_atts + cp_ncs_atts + cp_cs_skills + cp_ncs_skills + cp_vital_stats + cp_cs_pass + cp_ncs_pass + cp_cs_bb + cp_ncs_bb +
+					   cp_damage + cp_speed + cp_area_types + cp_spell_stats + cp_profs;
 		
 		console.log(`CP: ${cp_total}; CS: ${combat_score}; NCS: ${non_combat_score}`);
 		
