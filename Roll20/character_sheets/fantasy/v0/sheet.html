@@ -825,17 +825,204 @@
 
 		<!-- Breath Weapon  -->
 		<div class="monstrous-boon top-line">
-			<input name="attr_bb_breath_weapon" type="hidden" class="show-ability" value="false" />
+			<input name="attr_bb_minor_breath_weapon_blast_1" type="hidden" class="show-ability" value="false" />
 			<span class="ability">
 				<div class="skillname">
-					<label> Breath Weapon <button type="action" name="act_breathweaponinfo" class="info-button generic-skill" /> </label>
+					<label> Breath Weapon <button type="action" name="act_bbminorbreathweaponblast1info" class="info-button generic-skill" /> </label>
 				</div>
 				<div class="top-space">
-					<input name="breath_weapon_ps_tier_bonus" type="hidden" value="0" />
-					<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Breath Weapon}} {{Physical Resilience (fortitude)=**TN** [[12 + @{pr_total} + @{mob_skill_bonus}]]}} {{@{breath_weapon_damage_type} damage=[[@{breath_weapon_damage_total}d6]]}}'" />
-					<input class="custom" name="attr_breath_weapon_description" type="text" readonly />
-					<input name="attr_breath_weapon_recharge_roll" type="hidden" />
-					<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Breath Weapon}} {{Recharge=[[@{breath_weapon_recharge_roll}]]}}'" />
+					<input name="attr_bb_minor_breath_weapon_blast_1_ps_tier_bonus" type="hidden" value="0" />
+					<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Breath Weapon}} {{Physical Resilience (fortitude)=**TN** [[12 + @{pr_total} + @{mob_skill_bonus}]]}} {{@{bb_minor_breath_weapon_blast_1_damage_type} damage=[[@{bb_minor_breath_weapon_blast_1_damage_total}d6]]}}'" />
+					<input class="custom" name="attr_bb_minor_breath_weapon_blast_1_description" type="text" readonly />
+					<input name="attr_bb_minor_breath_weapon_blast_1_recharge_roll" type="hidden" />
+					<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Breath Weapon}} {{Recharge=[[@{bb_minor_breath_weapon_blast_1_recharge_roll}]]}}'" />
+					Check Recharge
+				</div>
+			</span>
+		</div>
+
+		<div class="monstrous-boon top-line">
+			<input name="attr_bb_minor_breath_weapon_blast_2" type="hidden" class="show-ability" value="false" />
+			<span class="ability">
+				<div class="skillname">
+					<label> Breath Weapon <button type="action" name="act_bbminorbreathweaponblast2info" class="info-button generic-skill" /> </label>
+				</div>
+				<div class="top-space">
+					<input name="attr_bb_minor_breath_weapon_blast_2_ps_tier_bonus" type="hidden" value="0" />
+					<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Breath Weapon}} {{Physical Resilience (fortitude)=**TN** [[12 + @{pr_total} + @{mob_skill_bonus}]]}} {{@{bb_minor_breath_weapon_blast_2_damage_type} damage=[[@{bb_minor_breath_weapon_blast_2_damage_total}d6]]}}'" />
+					<input class="custom" name="attr_bb_minor_breath_weapon_blast_2_description" type="text" readonly />
+					<input name="attr_bb_minor_breath_weapon_blast_2_recharge_roll" type="hidden" />
+					<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Breath Weapon}} {{Recharge=[[@{bb_minor_breath_weapon_blast_2_recharge_roll}]]}}'" />
+					Check Recharge
+				</div>
+			</span>
+		</div>
+
+		<div class="monstrous-boon top-line">
+			<input name="attr_bb_minor_breath_weapon_blast_3" type="hidden" class="show-ability" value="false" />
+			<span class="ability">
+				<div class="skillname">
+					<label> Breath Weapon <button type="action" name="act_bbminorbreathweaponblast3info" class="info-button generic-skill" /> </label>
+				</div>
+				<div class="top-space">
+					<input name="attr_bb_minor_breath_weapon_blast_3_ps_tier_bonus" type="hidden" value="0" />
+					<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Breath Weapon}} {{Physical Resilience (fortitude)=**TN** [[12 + @{pr_total} + @{mob_skill_bonus}]]}} {{@{bb_minor_breath_weapon_blast_3_damage_type} damage=[[@{bb_minor_breath_weapon_blast_3_damage_total}d6]]}}'" />
+					<input class="custom" name="attr_bb_minor_breath_weapon_blast_3_description" type="text" readonly />
+					<input name="attr_bb_minor_breath_weapon_blast_3_recharge_roll" type="hidden" />
+					<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Breath Weapon}} {{Recharge=[[@{bb_minor_breath_weapon_blast_3_recharge_roll}]]}}'" />
+					Check Recharge
+				</div>
+			</span>
+		</div>
+
+		<div class="monstrous-boon top-line">
+			<input name="attr_bb_minor_breath_weapon_line_1" type="hidden" class="show-ability" value="false" />
+			<span class="ability">
+				<div class="skillname">
+					<label> Breath Weapon <button type="action" name="act_bbminorbreathweaponline1info" class="info-button generic-skill" /> </label>
+				</div>
+				<div class="top-space">
+					<input name="attr_bb_minor_breath_weapon_line_1_ps_tier_bonus" type="hidden" value="0" />
+					<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Breath Weapon}} {{Physical Resilience (fortitude)=**TN** [[12 + @{pr_total} + @{mob_skill_bonus}]]}} {{@{bb_minor_breath_weapon_line_1_damage_type} damage=[[@{bb_minor_breath_weapon_line_1_damage_total}d6]]}}'" />
+					<input class="custom" name="attr_bb_minor_breath_weapon_line_1_description" type="text" readonly />
+					<input name="attr_bb_minor_breath_weapon_line_1_recharge_roll" type="hidden" />
+					<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Breath Weapon}} {{Recharge=[[@{bb_minor_breath_weapon_line_1_recharge_roll}]]}}'" />
+					Check Recharge
+				</div>
+			</span>
+		</div>
+
+		<div class="monstrous-boon top-line">
+			<input name="attr_bb_minor_breath_weapon_line_2" type="hidden" class="show-ability" value="false" />
+			<span class="ability">
+				<div class="skillname">
+					<label> Breath Weapon <button type="action" name="act_bbminorbreathweaponline2info" class="info-button generic-skill" /> </label>
+				</div>
+				<div class="top-space">
+					<input name="attr_bb_minor_breath_weapon_line_2_ps_tier_bonus" type="hidden" value="0" />
+					<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Breath Weapon}} {{Physical Resilience (fortitude)=**TN** [[12 + @{pr_total} + @{mob_skill_bonus}]]}} {{@{bb_minor_breath_weapon_line_2_damage_type} damage=[[@{bb_minor_breath_weapon_line_2_damage_total}d6]]}}'" />
+					<input class="custom" name="attr_bb_minor_breath_weapon_line_2_description" type="text" readonly />
+					<input name="attr_bb_minor_breath_weapon_line_2_recharge_roll" type="hidden" />
+					<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Breath Weapon}} {{Recharge=[[@{bb_minor_breath_weapon_line_2_recharge_roll}]]}}'" />
+					Check Recharge
+				</div>
+			</span>
+		</div>
+
+		<div class="monstrous-boon top-line">
+			<input name="attr_bb_minor_breath_weapon_line_3" type="hidden" class="show-ability" value="false" />
+			<span class="ability">
+				<div class="skillname">
+					<label> Breath Weapon <button type="action" name="act_bbminorbreathweaponline3info" class="info-button generic-skill" /> </label>
+				</div>
+				<div class="top-space">
+					<input name="attr_bb_minor_breath_weapon_line_3_ps_tier_bonus" type="hidden" value="0" />
+					<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Breath Weapon}} {{Physical Resilience (fortitude)=**TN** [[12 + @{pr_total} + @{mob_skill_bonus}]]}} {{@{bb_minor_breath_weapon_line_3_damage_type} damage=[[@{bb_minor_breath_weapon_line_3_damage_total}d6]]}}'" />
+					<input class="custom" name="attr_bb_minor_breath_weapon_line_3_description" type="text" readonly />
+					<input name="attr_bb_minor_breath_weapon_line_3_recharge_roll" type="hidden" />
+					<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Breath Weapon}} {{Recharge=[[@{bb_minor_breath_weapon_line_3_recharge_roll}]]}}'" />
+					Check Recharge
+				</div>
+			</span>
+		</div>
+
+		<div class="monstrous-boon top-line">
+			<input name="attr_bb_major_breath_weapon_blast_1" type="hidden" class="show-ability" value="false" />
+			<span class="ability">
+				<div class="skillname">
+					<label> Breath Weapon <button type="action" name="act_bbmajorbreathweaponblast1info" class="info-button generic-skill" /> </label>
+				</div>
+				<div class="top-space">
+					<input name="attr_bb_major_breath_weapon_blast_1_ps_tier_bonus" type="hidden" value="0" />
+					<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Breath Weapon}} {{Physical Resilience (fortitude)=**TN** [[12 + @{pr_total} + @{mob_skill_bonus}]]}} {{@{bb_major_breath_weapon_blast_1_damage_type} damage=[[@{bb_major_breath_weapon_blast_1_damage_total}d6]]}}'" />
+					<input class="custom" name="attr_bb_major_breath_weapon_blast_1_description" type="text" readonly />
+					<input name="attr_bb_major_breath_weapon_blast_1_recharge_roll" type="hidden" />
+					<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Breath Weapon}} {{Recharge=[[@{bb_major_breath_weapon_blast_1_recharge_roll}]]}}'" />
+					Check Recharge
+				</div>
+			</span>
+		</div>
+
+		<div class="monstrous-boon top-line">
+			<input name="attr_bb_major_breath_weapon_blast_2" type="hidden" class="show-ability" value="false" />
+			<span class="ability">
+				<div class="skillname">
+					<label> Breath Weapon <button type="action" name="act_bbmajorbreathweaponblast2info" class="info-button generic-skill" /> </label>
+				</div>
+				<div class="top-space">
+					<input name="attr_bb_major_breath_weapon_blast_2_ps_tier_bonus" type="hidden" value="0" />
+					<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Breath Weapon}} {{Physical Resilience (fortitude)=**TN** [[12 + @{pr_total} + @{mob_skill_bonus}]]}} {{@{bb_major_breath_weapon_blast_2_damage_type} damage=[[@{bb_major_breath_weapon_blast_2_damage_total}d6]]}}'" />
+					<input class="custom" name="attr_bb_major_breath_weapon_blast_2_description" type="text" readonly />
+					<input name="attr_bb_major_breath_weapon_blast_2_recharge_roll" type="hidden" />
+					<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Breath Weapon}} {{Recharge=[[@{bb_major_breath_weapon_blast_2_recharge_roll}]]}}'" />
+					Check Recharge
+				</div>
+			</span>
+		</div>
+
+		<div class="monstrous-boon top-line">
+			<input name="attr_bb_major_breath_weapon_blast_3" type="hidden" class="show-ability" value="false" />
+			<span class="ability">
+				<div class="skillname">
+					<label> Breath Weapon <button type="action" name="act_bbmajorbreathweaponblast3info" class="info-button generic-skill" /> </label>
+				</div>
+				<div class="top-space">
+					<input name="attr_bb_major_breath_weapon_blast_3_ps_tier_bonus" type="hidden" value="0" />
+					<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Breath Weapon}} {{Physical Resilience (fortitude)=**TN** [[12 + @{pr_total} + @{mob_skill_bonus}]]}} {{@{bb_major_breath_weapon_blast_3_damage_type} damage=[[@{bb_major_breath_weapon_blast_3_damage_total}d6]]}}'" />
+					<input class="custom" name="attr_bb_major_breath_weapon_blast_3_description" type="text" readonly />
+					<input name="attr_bb_major_breath_weapon_blast_3_recharge_roll" type="hidden" />
+					<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Breath Weapon}} {{Recharge=[[@{bb_major_breath_weapon_blast_3_recharge_roll}]]}}'" />
+					Check Recharge
+				</div>
+			</span>
+		</div>
+
+		<div class="monstrous-boon top-line">
+			<input name="attr_bb_major_breath_weapon_line_1" type="hidden" class="show-ability" value="false" />
+			<span class="ability">
+				<div class="skillname">
+					<label> Breath Weapon <button type="action" name="act_bbmajorbreathweaponline1info" class="info-button generic-skill" /> </label>
+				</div>
+				<div class="top-space">
+					<input name="attr_bb_major_breath_weapon_line_1_ps_tier_bonus" type="hidden" value="0" />
+					<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Breath Weapon}} {{Physical Resilience (fortitude)=**TN** [[12 + @{pr_total} + @{mob_skill_bonus}]]}} {{@{bb_major_breath_weapon_line_1_damage_type} damage=[[@{bb_major_breath_weapon_line_1_damage_total}d6]]}}'" />
+					<input class="custom" name="attr_bb_major_breath_weapon_line_1_description" type="text" readonly />
+					<input name="attr_bb_major_breath_weapon_line_1_recharge_roll" type="hidden" />
+					<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Breath Weapon}} {{Recharge=[[@{bb_major_breath_weapon_line_1_recharge_roll}]]}}'" />
+					Check Recharge
+				</div>
+			</span>
+		</div>
+
+		<div class="monstrous-boon top-line">
+			<input name="attr_bb_major_breath_weapon_line_2" type="hidden" class="show-ability" value="false" />
+			<span class="ability">
+				<div class="skillname">
+					<label> Breath Weapon <button type="action" name="act_bbmajorbreathweaponline2info" class="info-button generic-skill" /> </label>
+				</div>
+				<div class="top-space">
+					<input name="attr_bb_major_breath_weapon_line_2_ps_tier_bonus" type="hidden" value="0" />
+					<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Breath Weapon}} {{Physical Resilience (fortitude)=**TN** [[12 + @{pr_total} + @{mob_skill_bonus}]]}} {{@{bb_major_breath_weapon_line_2_damage_type} damage=[[@{bb_major_breath_weapon_line_2_damage_total}d6]]}}'" />
+					<input class="custom" name="attr_bb_major_breath_weapon_line_2_description" type="text" readonly />
+					<input name="attr_bb_major_breath_weapon_line_2_recharge_roll" type="hidden" />
+					<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Breath Weapon}} {{Recharge=[[@{bb_major_breath_weapon_line_2_recharge_roll}]]}}'" />
+					Check Recharge
+				</div>
+			</span>
+		</div>
+
+		<div class="monstrous-boon top-line">
+			<input name="attr_bb_major_breath_weapon_line_3" type="hidden" class="show-ability" value="false" />
+			<span class="ability">
+				<div class="skillname">
+					<label> Breath Weapon <button type="action" name="act_bbmajorbreathweaponline3info" class="info-button generic-skill" /> </label>
+				</div>
+				<div class="top-space">
+					<input name="attr_bb_major_breath_weapon_line_3_ps_tier_bonus" type="hidden" value="0" />
+					<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Breath Weapon}} {{Physical Resilience (fortitude)=**TN** [[12 + @{pr_total} + @{mob_skill_bonus}]]}} {{@{bb_major_breath_weapon_line_3_damage_type} damage=[[@{bb_major_breath_weapon_line_3_damage_total}d6]]}}'" />
+					<input class="custom" name="attr_bb_major_breath_weapon_line_3_description" type="text" readonly />
+					<input name="attr_bb_major_breath_weapon_line_3_recharge_roll" type="hidden" />
+					<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Breath Weapon}} {{Recharge=[[@{bb_major_breath_weapon_line_3_recharge_roll}]]}}'" />
 					Check Recharge
 				</div>
 			</span>
@@ -6302,6 +6489,7 @@ const _bull = _n + ' &#183; ';
 const _star = '&#9734;';
 const _pow = _rn + '**Power:** ';
 const _bolt_touch = `Bolt${_n}Touch`;
+const minor_major_array = ['minor', 'major'];
 
 function get_int_or_zero(value) {
 	if (!value) {
@@ -8362,22 +8550,6 @@ on("clicked:blooddraininfo", function() {
 	});
 });
 
-on("clicked:breathweaponinfo", function() {
-	getAttrs(["breath_weapon_area_type", "breath_weapon_damage_type", "breath_weapon_damage_description", "pr_tier", "pr_total"], function(values) {
-		let pr_tier  = get_int_or_zero(values.pr_tier);
-		let pr_total = get_int_or_zero(values.pr_total);
-		
-		let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: Breath Weapon}} {{Casting Time=2 AP}} {{Area Type=" + 
-		capitalize_first_letter(values.breath_weapon_area_type) + "}} {{Physical Resilience (fortitude)=**TN** " + skill_total_effect_pr(pr_total, 12) + 
-		"}} {{Damage=" + values.breath_weapon_damage_description + " " + values.breath_weapon_damage_type + " damage}} {{Recharge=" +
-		tier_effect_pr(pr_tier, 1, '') + " or lower on 1d6}}'";
-		
-		startRoll(roll_text, (results) => {
-			finishRoll(results.rollId);
-		});
-	});
-});
-
 on("clicked:diseaseattackinfo", function() {
 	getAttrs(["disease_attack_successes"], function(values) {
 		let successes = get_int_or_zero(values.disease_attack_successes);
@@ -8675,459 +8847,6 @@ on("change:perception_total change:agility_modifier change:bb_quick_reflexes cha
 		setAttrs({
 			"reflex_total": reflex
 		});
-	});	
-});
-
-on("change:bb_aura_of_damage change:size_modifier_aura", function() {
-	getAttrs(["bb_aura_of_damage", "boons_and_banes", "size_modifier_aura", "mr_tier"], function(values) {
-		let has_aura_of_damage = get_bool(values.bb_aura_of_damage);
-		let tier               = get_int_or_zero(values.mr_tier);
-		let size_mod           = get_int_or_zero(values.size_modifier_aura);
-
-		let description = '';
-		let type = '';
-		let damage = '0';
-
-		if (has_aura_of_damage) {
-			let regex = /(^|,)auraofdamage(\w+)(,|$)/;
-			let matches = parse_textarea(values.boons_and_banes).match(regex);
-			console.log(matches);
-			description = `nova (${7 + size_mod} sq), ${matches[2]}`;
-			type = capitalize_first_letter(matches[2]);
-			damage = (tier + 1) + "d6";
-		}
-		
-		setAttrs({ 
-			"aura_of_damage_description": description,
-			"aura_of_damage_type": type,
-			"aura_of_damage_damage": damage
-		});
-	});	
-});
-
-const aura_type_array = ['fear', 'slowness', 'stench']
-aura_type_array.forEach( function (type) {
-	let aura_boon_name = 'bb_aura_of_' + type;
-	on(`change:${aura_boon_name} change:size_modifier_aura`, function() {
-
-		getAttrs([aura_boon_name, 'size_modifier_aura'], function(values) {
-			let has_aura = get_bool(values[aura_boon_name]);
-			let size_mod = get_int_or_zero(values.size_modifier_aura);
-
-			setAttrs({ [`aura_of_${type}_description`]: (has_aura ? `nova (${7 + size_mod} sq)` : '') });
-		});	
-	});
-});
-
-const breath_weapon_explosive_death_array = [ 'breath_weapon', 'explosive_death' ];
-
-breath_weapon_explosive_death_array.forEach( function(boon) {
-	let boon_minor = `bb_minor_${boon}`;
-	let boon_major = `bb_major_${boon}`;
-	let boon_any   = `bb_${boon}`;
-	let boon_type  = `${boon}_type`;
-	let get_array = [ boon_minor, boon_major ];
-	on('change:' + get_array.join(' change:'), function() {
-		getAttrs(get_array, function(values) {
-			let has_minor_boon = get_bool(values[boon_minor]);
-			let has_major_boon = get_bool(values[boon_major]);
-			let set_object = null;
-			if (has_minor_boon || has_major_boon) {
-				set_object = {
-					[boon_any]:  true,
-					[boon_type]: (has_minor_boon ? 'minor' : 'major')
-				};
-			}
-			else {
-				set_object = { [boon_any]: false };
-			}
-			setAttrs(set_object);
-		});
-	});
-});
-
-on("change:pr_total change:pr_tier change:bb_breath_weapon change:ps_improved_breath_weapon change:ps_greater_breath_weapon change:ps_epic_breath_weapon change:ps_legendary_breath_weapon", function() {
-	console.log('called breath weapon change function');
-	getAttrs(["bb_breath_weapon", "breath_weapon_type", "boons_and_banes", "pr_total", "pr_tier", "ps_improved_breath_weapon", "ps_greater_breath_weapon", "ps_epic_breath_weapon", "ps_legendary_breath_weapon"], function(values) {
-		let has_breath_weapon           = get_bool(values.bb_breath_weapon);
-		let boons_and_banes_text        = parse_textarea(values.boons_and_banes);
-		let pr_total                    = get_int_or_zero(values.pr_total);
-		let pr_tier                     = get_int_or_zero(values.pr_tier);
-		let has_improved_breath_weapon  = get_bool(values.ps_improved_breath_weapon);
-		let has_greater_breath_weapon   = get_bool(values.ps_greater_breath_weapon);
-		let has_epic_breath_weapon      = get_bool(values.ps_epic_breath_weapon);
-		let has_legendary_breath_weapon = get_bool(values.ps_legendary_breath_weapon);
-
-		let area_type          = '';
-		let damage_type        = '';
-		let damage_multiplier  = 0;
-		let damage_description = '';
-		let ps_tier_bonus      = 0;
-		let damage_total       = 0;
-		let area_size          = 0;
-		let description        = '';
-		let recharge_roll      = '';
-
-		if (has_breath_weapon) {
-			let regex   = /(^|,)(\w+)*breathweapon(\w+),(\w+)(,|$)/;
-			let matches = boons_and_banes_text.match(regex);
-			console.log(matches);
-			if (matches) {
-				area_type   = matches[3];
-				damage_type = matches[4];
-			}
-			
-			if (values.breath_weapon_type == 'minor') {
-				damage_multiplier = 2;
-			}
-			else if (values.breath_weapon_type == 'major') {
-				damage_multiplier = 4;
-			}
-			
-			let ps_text = '';
-
-			if (has_improved_breath_weapon) {
-				ps_tier_bonus = Math.max(ps_tier_bonus, 1);
-				ps_text       = 'Improved Breath Weapon';
-			}
-			if (has_greater_breath_weapon) {
-				ps_tier_bonus = Math.max(ps_tier_bonus, 2);
-				ps_text       = 'Greater Breath Weapon';
-			}
-			if (has_epic_breath_weapon) {
-				ps_tier_bonus = Math.max(ps_tier_bonus, 3);
-				ps_text       = 'Epic Breath Weapon';
-			}
-			if (has_legendary_breath_weapon) {
-				ps_tier_bonus = Math.max(ps_tier_bonus, 4);
-				ps_text       = 'Legendary Breath Weapon';
-			}
-			
-			damage_total = (pr_tier + 1 + ps_tier_bonus) * damage_multiplier;
-			
-			if (ps_text != '') {
-				ps_text = `, plus ${ps_tier_bonus * damage_multiplier}d6 from the ${ps_text} passive skill`;
-			}
-			
-			damage_description = `[[${damage_total} : This is ${damage_multiplier}d6, plus ${damage_multiplier}d6 per tier you have in Physical ` +
-			`Resilience${ps_text}]]**d6**`;
-
-			area_size = Math.floor(pr_total / 4);
-			if (area_type.toLowerCase() == 'line') {
-				area_size *= 2;
-			}
-			
-			description   = `${area_type} (${area_size} sq), ${damage_type}`;
-			recharge_roll = `1d6cs<${pr_tier}cf>${(pr_tier + 1)}`;
-			damage_type   = capitalize_first_letter(damage_type);
-		}
-
-		setAttrs({
-			"breath_weapon_damage_multiplier":  damage_multiplier,
-			"breath_weapon_ps_tier_bonus":      ps_tier_bonus,
-			"breath_weapon_damage_total":       damage_total,
-			"breath_weapon_damage_type":        damage_type,
-			"breath_weapon_damage_description": damage_description,
-			"breath_weapon_area_type":          area_type,
-			"breath_weapon_description":        description,
-			"breath_weapon_recharge_roll":      recharge_roll
-		});
-	});
-});
-
-on("change:bb_corrosive_blood", function() {
-	getAttrs(["bb_corrosive_blood", "pr_tier"], function(values) {
-		let has_corrosive_blood = get_bool(values.bb_corrosive_blood);
-		let tier = get_int_or_zero(values.pr_tier);
-
-		let damage = '';
-
-		if (has_corrosive_blood) {
-			damage = ((tier + 1) * 2) + "d6";
-		}
-		
-		setAttrs({ "corrosive_blood_damage": damage });
-	});	
-});
-
-on("change:bb_desert_thirst", function() {
-	getAttrs(["bb_desert_thirst", "mr_tier"], function(values) {
-		let has_desert_thirst = get_bool(values.bb_desert_thirst);
-		let tier = get_int_or_zero(values.mr_tier);
-
-		let area_size = '';
-
-		if (has_desert_thirst) {
-			area_size = Math.max(2, tier);
-		}
-		
-		setAttrs({ "desert_thirst_area_size": area_size });
-	});	
-});
-
-on("change:bb_disease_attack", function() {
-	getAttrs(["bb_disease_attack", "boons_and_banes"], function(values) {
-		let has_disease_attack = get_bool(values.bb_disease_attack);
-		let name           = '';
-		let natural_attack = '';
-		let tier           = 0;
-		let tn             = 0;
-		let successes      = 0;
-		let duration       = '';
-	
-		if (has_disease_attack) {
-			let regex   = /(^|,)diseaseattack(\w+),tier(\d),(\w+)(,|$)/;
-			let matches = parse_textarea(values.boons_and_banes).match(regex);
-			console.log(matches);
-			name           = matches[4];
-			tier           = get_int_or_zero(matches[3]);
-			successes      = (tier < 3 ? tier : tier - 1);
-			natural_attack = matches[2];
-			tn             = 10 + (tier * 6);
-			duration       = `[[${tier}]] week` + (tier == 1 ? '' : 's');
-		}
-		
-		setAttrs({
-			"disease_attack_natural_attack": natural_attack,
-			"disease_attack_tier":           tier,
-			"disease_attack_tn":             tn,
-			"disease_attack_duration":       duration,
-			"disease_attack_successes":      successes,
-			"disease_attack_name":           name
-		});
-	});	
-});
-
-on("change:bb_explosive_death change:size_modifier_aura change:ps_improved_explosive_death change:ps_greater_explosive_death change:ps_epic_explosive_death change:ps_legendary_explosive_death", function() {
-	console.log('called explosive death change function');
-	getAttrs(["bb_explosive_death", "boons_and_banes", "size_modifier_aura", "mr_total", "mr_tier", "ps_improved_explosive_death", "ps_greater_explosive_death", "ps_epic_explosive_death", "ps_legendary_explosive_death"], function(values) {
-		let has_explosive_death           = get_bool(values.bb_explosive_death);
-		let boons_and_banes_text          = parse_textarea(values.boons_and_banes);
-		let size_mod                      = get_int_or_zero(values.size_modifier_aura);
-		let mr_total                      = get_int_or_zero(values.mr_total);
-		let mr_tier                       = get_int_or_zero(values.mr_tier);
-		let has_improved_explosive_death  = get_bool(values.ps_improved_explosive_death);
-		let has_greater_explosive_death   = get_bool(values.ps_greater_explosive_death);
-		let has_epic_explosive_death      = get_bool(values.ps_epic_explosive_death);
-		let has_legendary_explosive_death = get_bool(values.ps_legendary_explosive_death);
-
-		let explosive_death_type = '';
-		let damage_type = '';
-		let damage_multiplier = 0;
-		let ps_tier_bonus = 0;
-		let damage_total = 0;
-		let area_size = 0;
-		let description = '';
-
-		if (has_explosive_death) {
-			let regex = /(^|,)(\w+)*explosivedeath(\w+)(,|$)/;
-			let matches = boons_and_banes_text.match(regex);
-			console.log(matches);
-			if (matches) {
-				explosive_death_type = matches[2];
-				damage_type = matches[3];
-			}
-			
-			if (explosive_death_type == 'minor') {
-				damage_multiplier = 2;
-			}
-			else if (explosive_death_type == 'major') {
-				damage_multiplier = 4;
-			}
-
-			if (has_improved_explosive_death) {
-				ps_tier_bonus = Math.max(ps_tier_bonus, 1);
-			}
-			if (has_greater_explosive_death) {
-				ps_tier_bonus = Math.max(ps_tier_bonus, 2);
-			}
-			if (has_epic_explosive_death) {
-				ps_tier_bonus = Math.max(ps_tier_bonus, 3);
-			}
-			if (has_legendary_explosive_death) {
-				ps_tier_bonus = Math.max(ps_tier_bonus, 4);
-			}
-			
-			damage_total = (mr_tier + 1 + ps_tier_bonus) * damage_multiplier;
-			
-			description = `nova (${7 + size_mod} sq), ${damage_type}`;
-			
-			damage_type = capitalize_first_letter(damage_type);
-		}
-
-		setAttrs({
-			"explosive_death_damage_total": damage_total,
-			"explosive_death_damage_type":  damage_type,
-			"explosive_death_description":  description
-		});
-	});
-});
-
-on("change:bb_gaze_attack change:size_modifier_aura", function() {
-	getAttrs(["bb_gaze_attack", "boons_and_banes", "size_modifier_aura"], function(values) {
-		let has_gaze_attack = get_bool(values.bb_gaze_attack);
-		let size_mod        = get_int_or_zero(values.size_modifier_aura);
-
-		let area_size = '';
-		let spell = '';
-		let ep = '0';
-
-		if (has_gaze_attack) {
-			let regex = /(^|,)gazeattack([a-z]+),(\d+)ep(,|$)/;
-			let matches = parse_textarea(values.boons_and_banes).match(regex);
-			console.log(matches);
-
-			area_size = 7 + size_mod;
-			spell = matches[2];
-			ep = matches[3];
-		}
-		
-		setAttrs({ 
-			"gaze_attack_area_size": area_size,
-			"gaze_attack_spell":     spell,
-			"gaze_attack_ep":        ep
-		});
-	});	
-});
-
-on("change:bb_huge_size change:bb_large_size change:bb_small_size change:bb_tiny_size", function() {
-	getAttrs(["bb_huge_size", "bb_large_size", "bb_small_size", "bb_tiny_size"], function(values) {
-		let huge_size  = get_bool(values.bb_huge_size);
-		let large_size = get_bool(values.bb_large_size);
-		let small_size = get_bool(values.bb_small_size);
-		let tiny_size  = get_bool(values.bb_tiny_size);
-		
-		let size_modifier_skill  = (large_size ? -1 : (small_size ? 1 : (huge_size ? -2 : (tiny_size ? 2 : 0))));
-		let size_modifier_damage = size_modifier_skill * -1;
-		let size_modifier_hp     = (large_size ? 10 : (small_size ? -10 : (huge_size ? 30 : (tiny_size ? -20 : 0))));
-		let size_modifier_aura   = (huge_size ? 2 : (large_size ? 1 : 0 ));
-		let size_modifier_speed  = (huge_size ? 1 : 0 );
-
-		setAttrs({
-			"size_modifier_skill":  size_modifier_skill,
-			"size_modifier_damage": size_modifier_damage,
-			"size_modifier_hp" :    size_modifier_hp,
-			"size_modifier_aura":   size_modifier_aura,
-			"size_modifier_speed":  size_modifier_speed
-		});
-	});
-});
-
-const lair_action_array = [1, 2, 3];
-lair_action_array.forEach( function(number) {
-	on('change:bb_lair_action_' + number, function() {
-		let lair_action_boon_name = 'bb_lair_action_' + number;
-
-		getAttrs([lair_action_boon_name, 'boons_and_banes', 'pr_total', 'pr_tier'], function(values) {
-			let has_lair_action = get_bool(values[lair_action_boon_name]);
-			let pr_total = get_int_or_zero(values.pr_total);
-			let pr_tier  = get_int_or_zero(values.pr_tier);
-
-			lair_action_stats = get_lair_action_stats(has_lair_action, parse_textarea(values.boons_and_banes), number, pr_tier, pr_total);
-			setAttrs({ 
-				[`lair_action_${number}_range`]:       lair_action_stats.range,
-				[`lair_action_${number}_description`]: lair_action_stats.description,
-				[`lair_action_${number}_duration`]:    lair_action_stats.duration,
-				[`lair_action_${number}_area`]:        lair_action_stats.area,
-				[`lair_action_${number}_resist`]:      lair_action_stats.resist,
-				[`lair_action_${number}_text`]:        lair_action_stats.text,
-				[`lair_action_${number}_damage_type`]: lair_action_stats.damage_type,
-				[`lair_action_${number}_damage`]:      lair_action_stats.damage,
-				[`lair_action_${number}_condition`]:   lair_action_stats.condition,
-				[`lair_action_${number}_roll_text`]:   lair_action_stats.roll_text
-			});
-		});	
-	});
-});
-
-on("change:bb_poison_attack", function() {
-	getAttrs(['bb_poison_attack', 'boons_and_banes'], function (values) {
-		let has_poison_attack = get_bool(values.bb_poison_attack);
-
-		// set poison attack stats
-		var poison_stats = get_poison_attack_stats(has_poison_attack, parse_textarea(values.boons_and_banes));
-		console.log(poison_stats);
-		setAttrs({
-			"poison_natural_weapon": poison_stats.natural_weapon,
-			"poison_tier":           poison_stats.tier,
-			"poison_type":           poison_stats.type,
-			"poison_TN":             poison_stats.TN,
-			"poison_duration":       poison_stats.duration,
-			"poison_damage":         poison_stats.damage,
-			"poison_condition":      poison_stats.condition,
-			"poison_roll_text":      poison_stats.roll_text
-		});
-	});
-});
-
-on("change:bb_regeneration", function() {
-	getAttrs(["bb_regeneration", "boons_and_banes"], function(values) {
-		let has_regeneration = get_bool(values.bb_regeneration);
-		console.log(`bb_regeneration: ${values.bb_regeneration}; has_regeneration: ${has_regeneration}`);
-		let healing = '0';
-		let vulnerability = '';
-
-		if (has_regeneration) {
-			let regex = /(^|,)regeneration(\d+?d6),(.+?)(,|$)/;
-			let matches = parse_textarea(values.boons_and_banes).match(regex);
-			console.log(matches);
-			healing = matches[2];
-			vulnerability = matches[3];
-			vulnerability = vulnerability.replace('and', ' and ').replace('or', ' or ').replace('coldiron', 'cold iron');
-		}
-		
-		let roll_text = "@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Regeneration}} {{Healing=[[" + healing + "]]}}'";
-
-		setAttrs({
-			"regeneration_healing":       healing,
-			"regeneration_vulnerability": vulnerability,
-			"regeneration_roll_text":     roll_text
-		});
-	});	
-});
-
-on("change:bb_swallow_whole", function() {
-	getAttrs(["bb_swallow_whole", "hit_points", "pr_total", "pr_tier"], function(values) {
-		let has_swallow_whole = get_bool(values.bb_swallow_whole);
-		let hit_points = get_int_or_zero(values.hit_points);
-		let pr_total   = get_int_or_zero(values.pr_total);
-		let pr_tier    = get_int_or_zero(values.pr_tier);
-		
-		let damage = '';
-		let tn = 0;
-		let hp = 0;
-		let roll_text = '';
-
-		if (has_swallow_whole) {
-			damage = ((pr_tier + 1) * 2) + "d6";
-			tn = 12 + pr_total;
-			hp = Math.floor(hit_points / 10);
-			roll_text = "@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Swallow Whole}} {{Chemical damage=[[" + damage + "]]}}'";
-		}
-
-		setAttrs({
-			"swallow_whole_damage":    damage,
-			"swallow_whole_tn":        tn,
-			"swallow_whole_hp":        hp,
-			"swallow_whole_roll_text": roll_text
-		});
-	});	
-});
-
-on("change:bb_swarm", function() {
-	getAttrs(["bb_swarm", "pr_tier"], function(values) {
-		let has_swarm = get_bool(values.bb_swarm);
-		let pr_tier   = get_int_or_zero(values.pr_tier);
-		
-		let reform_roll = '';
-		let roll_text = '';
-
-		if (has_swarm) {
-			reform_roll = `1d6cs<${pr_tier}cf>${(pr_tier + 1)}`;
-			roll_text = "@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Swarm Reform}} {{Reform=[[" + reform_roll + "]]}}'";
-		}
-
-		setAttrs({ "swarm_reform_roll_text": roll_text });
 	});	
 });
 
@@ -11504,7 +11223,7 @@ damage_type_list.forEach( function(type) {
 			max_count:   1
 		}
 	);
-	['minor', 'major'].forEach( function(mm) {
+	minor_major_array.forEach( function(mm) {
 		boons_and_banes_array.push(
 			{
 				name:        `bb_${mm}_explosive_death_${type}`,
@@ -11627,6 +11346,495 @@ function set_boons_and_banes(eventInfo) {
 	console.log(new_bb_object);
 	setAttrs(new_bb_object);
 }
+
+on("change:bb_aura_of_damage change:size_modifier_aura", function() {
+	getAttrs(["bb_aura_of_damage", "boons_and_banes", "size_modifier_aura", "mr_tier"], function(values) {
+		let has_aura_of_damage = get_bool(values.bb_aura_of_damage);
+		let tier               = get_int_or_zero(values.mr_tier);
+		let size_mod           = get_int_or_zero(values.size_modifier_aura);
+
+		let description = '';
+		let type = '';
+		let damage = '0';
+
+		if (has_aura_of_damage) {
+			let regex = /(^|,)auraofdamage(\w+)(,|$)/;
+			let matches = parse_textarea(values.boons_and_banes).match(regex);
+			console.log(matches);
+			description = `nova (${7 + size_mod} sq), ${matches[2]}`;
+			type = capitalize_first_letter(matches[2]);
+			damage = (tier + 1) + "d6";
+		}
+		
+		setAttrs({ 
+			"aura_of_damage_description": description,
+			"aura_of_damage_type": type,
+			"aura_of_damage_damage": damage
+		});
+	});	
+});
+
+const aura_type_array = ['fear', 'slowness', 'stench']
+aura_type_array.forEach( function (type) {
+	let aura_boon_name = 'bb_aura_of_' + type;
+	on(`change:${aura_boon_name} change:size_modifier_aura`, function() {
+
+		getAttrs([aura_boon_name, 'size_modifier_aura'], function(values) {
+			let has_aura = get_bool(values[aura_boon_name]);
+			let size_mod = get_int_or_zero(values.size_modifier_aura);
+
+			setAttrs({ [`aura_of_${type}_description`]: (has_aura ? `nova (${7 + size_mod} sq)` : '') });
+		});	
+	});
+});
+
+const breath_weapon_explosive_death_array = [ 'breath_weapon', 'explosive_death' ];
+
+breath_weapon_explosive_death_array.forEach( function(boon) {
+	let boon_minor = `bb_minor_${boon}`;
+	let boon_major = `bb_major_${boon}`;
+	let boon_any   = `bb_${boon}`;
+	let boon_type  = `${boon}_type`;
+	let get_array = [ boon_minor, boon_major ];
+	on('change:' + get_array.join(' change:'), function() {
+		getAttrs(get_array, function(values) {
+			let has_minor_boon = get_bool(values[boon_minor]);
+			let has_major_boon = get_bool(values[boon_major]);
+			let set_object = null;
+			if (has_minor_boon || has_major_boon) {
+				set_object = {
+					[boon_any]:  true,
+					[boon_type]: (has_minor_boon ? 'minor' : 'major')
+				};
+			}
+			else {
+				set_object = { [boon_any]: false };
+			}
+			setAttrs(set_object);
+		});
+	});
+});
+
+
+minor_major_array.forEach( function(type) {
+	['blast', 'line'].forEach( function(area) {
+		let boon_base_name = `bb_${type}_breath_weapon_${area}`;
+		let boon           = boons_and_banes_array.find(b => b.name == boon_base_name);
+		if (!boon) {
+			console.error(`${boon_base_name} not found`);
+			return;
+		}
+		for (let i = 1; i <= boon.max_count; i++) {
+			// Set breath weapon values for rolls
+			let boon_name             = `${boon_base_name}_${i}`;
+			let boon_raw_name         = `${boon_name}_raw`;
+			let boon_damage_type_name = `${boon_name}_damage_type`;
+			let boon_damage_desc_name = `${boon_name}_damage_description`;
+			let boon_area_type_name   = `${boon_name}_area_type`;
+			
+			let get_array     = [ boon_name, boon_raw_name, 'pr_total', 'pr_tier', 'ps_improved_breath_weapon', 'ps_greater_breath_weapon', 'ps_epic_breath_weapon', 'ps_legendary_breath_weapon' ];
+			on('change:' + get_array.join(' change:'), function() {
+				console.log('called breath weapon change function');
+				getAttrs(get_array, function(values) {
+					let has_breath_weapon           = get_bool(values[boon_name]);
+					let breath_weapon_raw_text      = values[boon_raw_name];
+					let pr_total                    = get_int_or_zero(values.pr_total);
+					let pr_tier                     = get_int_or_zero(values.pr_tier);
+					let has_improved_breath_weapon  = get_bool(values.ps_improved_breath_weapon);
+					let has_greater_breath_weapon   = get_bool(values.ps_greater_breath_weapon);
+					let has_epic_breath_weapon      = get_bool(values.ps_epic_breath_weapon);
+					let has_legendary_breath_weapon = get_bool(values.ps_legendary_breath_weapon);
+
+					let area_type          = '';
+					let damage_type        = '';
+					let damage_multiplier  = 0;
+					let damage_description = '';
+					let ps_tier_bonus      = 0;
+					let damage_total       = 0;
+					let area_size          = 0;
+					let description        = '';
+					let recharge_roll      = '';
+
+					if (has_breath_weapon) {
+						let regex   = /m(in|aj)orbreathweapon(blast|line),(\w+)/;
+						let matches = breath_weapon_raw_text.match(regex);
+						console.log(matches);
+						if (matches) {
+							damage_type = matches[3];
+						}
+
+						area_type = area;
+						
+						damage_multiplier = (type == 'minor' ? 2 : 4);
+						
+						let ps_text = '';
+
+						if (has_improved_breath_weapon) {
+							ps_tier_bonus = Math.max(ps_tier_bonus, 1);
+							ps_text       = 'Improved Breath Weapon';
+						}
+						if (has_greater_breath_weapon) {
+							ps_tier_bonus = Math.max(ps_tier_bonus, 2);
+							ps_text       = 'Greater Breath Weapon';
+						}
+						if (has_epic_breath_weapon) {
+							ps_tier_bonus = Math.max(ps_tier_bonus, 3);
+							ps_text       = 'Epic Breath Weapon';
+						}
+						if (has_legendary_breath_weapon) {
+							ps_tier_bonus = Math.max(ps_tier_bonus, 4);
+							ps_text       = 'Legendary Breath Weapon';
+						}
+						
+						damage_total = (pr_tier + 1 + ps_tier_bonus) * damage_multiplier;
+						
+						if (ps_text != '') {
+							ps_text = `, plus ${ps_tier_bonus * damage_multiplier}d6 from the ${ps_text} passive skill`;
+						}
+						
+						damage_description = `[[${damage_total} : This is ${damage_multiplier}d6, plus ${damage_multiplier}d6 per tier you have in Physical ` +
+						`Resilience${ps_text}]]**d6**`;
+
+						area_size = Math.max(Math.floor(pr_total / 4), 1);
+						if (area_type.toLowerCase() == 'line') {
+							area_size *= 2;
+						}
+						
+						description   = `${area_type} (${area_size} sq), ${damage_type}`;
+						recharge_roll = `1d6cs<${pr_tier}cf>${(pr_tier + 1)}`;
+						damage_type   = capitalize_first_letter(damage_type);
+					}
+
+					setAttrs({
+						[`${boon_name}_damage_multiplier`]:  damage_multiplier,
+						[`${boon_name}_ps_tier_bonus`]:      ps_tier_bonus,
+						[`${boon_name}_damage_total`]:       damage_total,
+						[boon_damage_type_name]:             damage_type,
+						[boon_damage_desc_name]:             damage_description,
+						[boon_area_type_name]:               area_type,
+						[`${boon_name}_description`]:        description,
+						[`${boon_name}_recharge_roll`]:      recharge_roll
+					});
+				});
+			});
+			
+			// Set breath weapon info
+			let info_name = boon_name.replaceAll('_', '') + 'info';
+			on(`clicked:${info_name}`, function() {
+				getAttrs([boon_damage_type_name, boon_damage_desc_name, boon_area_type_name, 'pr_tier', 'pr_total'], function(values) {
+					let pr_tier   = get_int_or_zero(values.pr_tier);
+					let pr_total  = get_int_or_zero(values.pr_total);
+					
+					let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: " + capitalize_first_letter(type) + " Breath Weapon}} " +
+					"{{Casting Time=2 AP}} {{Area Type=" + capitalize_first_letter(values[boon_area_type_name]) + 
+					"}} {{Physical Resilience (fortitude)=**TN** " + skill_total_effect_pr(pr_total, 12) + "}} {{Damage=" + 
+					values[boon_damage_desc_name] + " " + values[boon_damage_type_name] + " damage}} {{Recharge=" +
+					tier_effect_pr(pr_tier, 1, '') + " or lower on 1d6}}'";
+					
+					startRoll(roll_text, (results) => {
+						finishRoll(results.rollId);
+					});
+				});
+			});
+		}
+	});
+});
+
+on("change:bb_corrosive_blood", function() {
+	getAttrs(["bb_corrosive_blood", "pr_tier"], function(values) {
+		let has_corrosive_blood = get_bool(values.bb_corrosive_blood);
+		let tier = get_int_or_zero(values.pr_tier);
+
+		let damage = '';
+
+		if (has_corrosive_blood) {
+			damage = ((tier + 1) * 2) + "d6";
+		}
+		
+		setAttrs({ "corrosive_blood_damage": damage });
+	});	
+});
+
+on("change:bb_desert_thirst", function() {
+	getAttrs(["bb_desert_thirst", "mr_tier"], function(values) {
+		let has_desert_thirst = get_bool(values.bb_desert_thirst);
+		let tier = get_int_or_zero(values.mr_tier);
+
+		let area_size = '';
+
+		if (has_desert_thirst) {
+			area_size = Math.max(2, tier);
+		}
+		
+		setAttrs({ "desert_thirst_area_size": area_size });
+	});	
+});
+
+on("change:bb_disease_attack", function() {
+	getAttrs(["bb_disease_attack", "boons_and_banes"], function(values) {
+		let has_disease_attack = get_bool(values.bb_disease_attack);
+		let name           = '';
+		let natural_attack = '';
+		let tier           = 0;
+		let tn             = 0;
+		let successes      = 0;
+		let duration       = '';
+	
+		if (has_disease_attack) {
+			let regex   = /(^|,)diseaseattack(\w+),tier(\d),(\w+)(,|$)/;
+			let matches = parse_textarea(values.boons_and_banes).match(regex);
+			console.log(matches);
+			name           = matches[4];
+			tier           = get_int_or_zero(matches[3]);
+			successes      = (tier < 3 ? tier : tier - 1);
+			natural_attack = matches[2];
+			tn             = 10 + (tier * 6);
+			duration       = `[[${tier}]] week` + (tier == 1 ? '' : 's');
+		}
+		
+		setAttrs({
+			"disease_attack_natural_attack": natural_attack,
+			"disease_attack_tier":           tier,
+			"disease_attack_tn":             tn,
+			"disease_attack_duration":       duration,
+			"disease_attack_successes":      successes,
+			"disease_attack_name":           name
+		});
+	});	
+});
+
+on("change:bb_explosive_death change:size_modifier_aura change:ps_improved_explosive_death change:ps_greater_explosive_death change:ps_epic_explosive_death change:ps_legendary_explosive_death", function() {
+	console.log('called explosive death change function');
+	getAttrs(["bb_explosive_death", "boons_and_banes", "size_modifier_aura", "mr_total", "mr_tier", "ps_improved_explosive_death", "ps_greater_explosive_death", "ps_epic_explosive_death", "ps_legendary_explosive_death"], function(values) {
+		let has_explosive_death           = get_bool(values.bb_explosive_death);
+		let boons_and_banes_text          = parse_textarea(values.boons_and_banes);
+		let size_mod                      = get_int_or_zero(values.size_modifier_aura);
+		let mr_total                      = get_int_or_zero(values.mr_total);
+		let mr_tier                       = get_int_or_zero(values.mr_tier);
+		let has_improved_explosive_death  = get_bool(values.ps_improved_explosive_death);
+		let has_greater_explosive_death   = get_bool(values.ps_greater_explosive_death);
+		let has_epic_explosive_death      = get_bool(values.ps_epic_explosive_death);
+		let has_legendary_explosive_death = get_bool(values.ps_legendary_explosive_death);
+
+		let explosive_death_type = '';
+		let damage_type = '';
+		let damage_multiplier = 0;
+		let ps_tier_bonus = 0;
+		let damage_total = 0;
+		let area_size = 0;
+		let description = '';
+
+		if (has_explosive_death) {
+			let regex = /(^|,)(\w+)*explosivedeath(\w+)(,|$)/;
+			let matches = boons_and_banes_text.match(regex);
+			console.log(matches);
+			if (matches) {
+				explosive_death_type = matches[2];
+				damage_type = matches[3];
+			}
+			
+			if (explosive_death_type == 'minor') {
+				damage_multiplier = 2;
+			}
+			else if (explosive_death_type == 'major') {
+				damage_multiplier = 4;
+			}
+
+			if (has_improved_explosive_death) {
+				ps_tier_bonus = Math.max(ps_tier_bonus, 1);
+			}
+			if (has_greater_explosive_death) {
+				ps_tier_bonus = Math.max(ps_tier_bonus, 2);
+			}
+			if (has_epic_explosive_death) {
+				ps_tier_bonus = Math.max(ps_tier_bonus, 3);
+			}
+			if (has_legendary_explosive_death) {
+				ps_tier_bonus = Math.max(ps_tier_bonus, 4);
+			}
+			
+			damage_total = (mr_tier + 1 + ps_tier_bonus) * damage_multiplier;
+			
+			description = `nova (${7 + size_mod} sq), ${damage_type}`;
+			
+			damage_type = capitalize_first_letter(damage_type);
+		}
+
+		setAttrs({
+			"explosive_death_damage_total": damage_total,
+			"explosive_death_damage_type":  damage_type,
+			"explosive_death_description":  description
+		});
+	});
+});
+
+on("change:bb_gaze_attack change:size_modifier_aura", function() {
+	getAttrs(["bb_gaze_attack", "boons_and_banes", "size_modifier_aura"], function(values) {
+		let has_gaze_attack = get_bool(values.bb_gaze_attack);
+		let size_mod        = get_int_or_zero(values.size_modifier_aura);
+
+		let area_size = '';
+		let spell = '';
+		let ep = '0';
+
+		if (has_gaze_attack) {
+			let regex = /(^|,)gazeattack([a-z]+),(\d+)ep(,|$)/;
+			let matches = parse_textarea(values.boons_and_banes).match(regex);
+			console.log(matches);
+
+			area_size = 7 + size_mod;
+			spell = matches[2];
+			ep = matches[3];
+		}
+		
+		setAttrs({ 
+			"gaze_attack_area_size": area_size,
+			"gaze_attack_spell":     spell,
+			"gaze_attack_ep":        ep
+		});
+	});	
+});
+
+on("change:bb_huge_size change:bb_large_size change:bb_small_size change:bb_tiny_size", function() {
+	getAttrs(["bb_huge_size", "bb_large_size", "bb_small_size", "bb_tiny_size"], function(values) {
+		let huge_size  = get_bool(values.bb_huge_size);
+		let large_size = get_bool(values.bb_large_size);
+		let small_size = get_bool(values.bb_small_size);
+		let tiny_size  = get_bool(values.bb_tiny_size);
+		
+		let size_modifier_skill  = (large_size ? -1 : (small_size ? 1 : (huge_size ? -2 : (tiny_size ? 2 : 0))));
+		let size_modifier_damage = size_modifier_skill * -1;
+		let size_modifier_hp     = (large_size ? 10 : (small_size ? -10 : (huge_size ? 30 : (tiny_size ? -20 : 0))));
+		let size_modifier_aura   = (huge_size ? 2 : (large_size ? 1 : 0 ));
+		let size_modifier_speed  = (huge_size ? 1 : 0 );
+
+		setAttrs({
+			"size_modifier_skill":  size_modifier_skill,
+			"size_modifier_damage": size_modifier_damage,
+			"size_modifier_hp" :    size_modifier_hp,
+			"size_modifier_aura":   size_modifier_aura,
+			"size_modifier_speed":  size_modifier_speed
+		});
+	});
+});
+
+const lair_action_array = [1, 2, 3];
+lair_action_array.forEach( function(number) {
+	on('change:bb_lair_action_' + number, function() {
+		let lair_action_boon_name = 'bb_lair_action_' + number;
+
+		getAttrs([lair_action_boon_name, 'boons_and_banes', 'pr_total', 'pr_tier'], function(values) {
+			let has_lair_action = get_bool(values[lair_action_boon_name]);
+			let pr_total = get_int_or_zero(values.pr_total);
+			let pr_tier  = get_int_or_zero(values.pr_tier);
+
+			lair_action_stats = get_lair_action_stats(has_lair_action, parse_textarea(values.boons_and_banes), number, pr_tier, pr_total);
+			setAttrs({ 
+				[`lair_action_${number}_range`]:       lair_action_stats.range,
+				[`lair_action_${number}_description`]: lair_action_stats.description,
+				[`lair_action_${number}_duration`]:    lair_action_stats.duration,
+				[`lair_action_${number}_area`]:        lair_action_stats.area,
+				[`lair_action_${number}_resist`]:      lair_action_stats.resist,
+				[`lair_action_${number}_text`]:        lair_action_stats.text,
+				[`lair_action_${number}_damage_type`]: lair_action_stats.damage_type,
+				[`lair_action_${number}_damage`]:      lair_action_stats.damage,
+				[`lair_action_${number}_condition`]:   lair_action_stats.condition,
+				[`lair_action_${number}_roll_text`]:   lair_action_stats.roll_text
+			});
+		});	
+	});
+});
+
+on("change:bb_poison_attack", function() {
+	getAttrs(['bb_poison_attack', 'boons_and_banes'], function (values) {
+		let has_poison_attack = get_bool(values.bb_poison_attack);
+
+		// set poison attack stats
+		var poison_stats = get_poison_attack_stats(has_poison_attack, parse_textarea(values.boons_and_banes));
+		console.log(poison_stats);
+		setAttrs({
+			"poison_natural_weapon": poison_stats.natural_weapon,
+			"poison_tier":           poison_stats.tier,
+			"poison_type":           poison_stats.type,
+			"poison_TN":             poison_stats.TN,
+			"poison_duration":       poison_stats.duration,
+			"poison_damage":         poison_stats.damage,
+			"poison_condition":      poison_stats.condition,
+			"poison_roll_text":      poison_stats.roll_text
+		});
+	});
+});
+
+on("change:bb_regeneration", function() {
+	getAttrs(["bb_regeneration", "boons_and_banes"], function(values) {
+		let has_regeneration = get_bool(values.bb_regeneration);
+		console.log(`bb_regeneration: ${values.bb_regeneration}; has_regeneration: ${has_regeneration}`);
+		let healing = '0';
+		let vulnerability = '';
+
+		if (has_regeneration) {
+			let regex = /(^|,)regeneration(\d+?d6),(.+?)(,|$)/;
+			let matches = parse_textarea(values.boons_and_banes).match(regex);
+			console.log(matches);
+			healing = matches[2];
+			vulnerability = matches[3];
+			vulnerability = vulnerability.replace('and', ' and ').replace('or', ' or ').replace('coldiron', 'cold iron');
+		}
+		
+		let roll_text = "@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Regeneration}} {{Healing=[[" + healing + "]]}}'";
+
+		setAttrs({
+			"regeneration_healing":       healing,
+			"regeneration_vulnerability": vulnerability,
+			"regeneration_roll_text":     roll_text
+		});
+	});	
+});
+
+on("change:bb_swallow_whole", function() {
+	getAttrs(["bb_swallow_whole", "hit_points", "pr_total", "pr_tier"], function(values) {
+		let has_swallow_whole = get_bool(values.bb_swallow_whole);
+		let hit_points = get_int_or_zero(values.hit_points);
+		let pr_total   = get_int_or_zero(values.pr_total);
+		let pr_tier    = get_int_or_zero(values.pr_tier);
+		
+		let damage = '';
+		let tn = 0;
+		let hp = 0;
+		let roll_text = '';
+
+		if (has_swallow_whole) {
+			damage = ((pr_tier + 1) * 2) + "d6";
+			tn = 12 + pr_total;
+			hp = Math.floor(hit_points / 10);
+			roll_text = "@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Swallow Whole}} {{Chemical damage=[[" + damage + "]]}}'";
+		}
+
+		setAttrs({
+			"swallow_whole_damage":    damage,
+			"swallow_whole_tn":        tn,
+			"swallow_whole_hp":        hp,
+			"swallow_whole_roll_text": roll_text
+		});
+	});	
+});
+
+on("change:bb_swarm", function() {
+	getAttrs(["bb_swarm", "pr_tier"], function(values) {
+		let has_swarm = get_bool(values.bb_swarm);
+		let pr_tier   = get_int_or_zero(values.pr_tier);
+		
+		let reform_roll = '';
+		let roll_text = '';
+
+		if (has_swarm) {
+			reform_roll = `1d6cs<${pr_tier}cf>${(pr_tier + 1)}`;
+			roll_text = "@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Swarm Reform}} {{Reform=[[" + reform_roll + "]]}}'";
+		}
+
+		setAttrs({ "swarm_reform_roll_text": roll_text });
+	});	
+});
 
 // Overall character CP calc
 const cp_calc_attr_array = ['cp_combat_attributes', 'cp_non_combat_attributes', 'cp_combat_skills', 'cp_non_combat_skills', 'cp_vital_stats', 'cp_damage_types', 'cp_area_types', 'cp_spell_statistics', 'cp_combat_passives', 'cp_non_combat_passives', 'cp_combat_boons_banes', 'cp_non_combat_boons_banes', 'cp_speed', 'cp_proficiencies'];
