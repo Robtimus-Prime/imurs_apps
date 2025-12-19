@@ -1072,13 +1072,35 @@
 
 		<!-- Disease Attack -->
 		<div class="monstrous-boon top-line">
-			<input name="attr_bb_disease_attack" type="hidden" class="show-ability" value="false" />
+			<input name="attr_bb_disease_attack_1" type="hidden" class="show-ability" value="false" />
 			<span class="ability">
 				<div class="skillname">
-					<label> Disease Attack <button type="action" name="act_diseaseattackinfo" class="info-button generic-skill" /> </label>
+					<label> Disease Attack <button type="action" name="act_bbdiseaseattack1info" class="info-button generic-skill" /> </label>
 				</div>
-				<input class="custom" name="attr_disease_attack_name" type="text" placeholder="Disease Name" />
-				<textarea class="large" name="attr_disease_attack_detail" placeholder="Disease Detail"></textarea>
+				<input class="custom" name="attr_bb_disease_attack_1_name" type="text" placeholder="Disease Name" />
+				<textarea class="large" name="attr_bb_disease_attack_1_detail" placeholder="Disease Detail"></textarea>
+			</span>
+		</div>	
+
+		<div class="monstrous-boon top-line">
+			<input name="attr_bb_disease_attack_2" type="hidden" class="show-ability" value="false" />
+			<span class="ability">
+				<div class="skillname">
+					<label> Disease Attack <button type="action" name="act_bbdiseaseattack2info" class="info-button generic-skill" /> </label>
+				</div>
+				<input class="custom" name="attr_bb_disease_attack_2_name" type="text" placeholder="Disease Name" />
+				<textarea class="large" name="attr_bb_disease_attack_2_detail" placeholder="Disease Detail"></textarea>
+			</span>
+		</div>	
+
+		<div class="monstrous-boon top-line">
+			<input name="attr_bb_disease_attack_3" type="hidden" class="show-ability" value="false" />
+			<span class="ability">
+				<div class="skillname">
+					<label> Disease Attack <button type="action" name="act_bbdiseaseattack3info" class="info-button generic-skill" /> </label>
+				</div>
+				<input class="custom" name="attr_bb_disease_attack_3_name" type="text" placeholder="Disease Name" />
+				<textarea class="large" name="attr_bb_disease_attack_3_detail" placeholder="Disease Detail"></textarea>
 			</span>
 		</div>	
 
@@ -8550,21 +8572,6 @@ on("clicked:blooddraininfo", function() {
 	});
 });
 
-on("clicked:diseaseattackinfo", function() {
-	getAttrs(["disease_attack_successes"], function(values) {
-		let successes = get_int_or_zero(values.disease_attack_successes);
-		let suffix    = (successes == 1 ? '' : 'es');
-
-		let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: @{disease_attack_name}}} " +
-		"Disease}} {{Natural Attack=@{disease_attack_natural_attack}}} {{Physical Resilience=TN [[@{disease_attack_tn}]]}} " +
-		"{{Duration=@{disease_attack_duration}}} {{Resist=[[@{disease_attack_successes}]] success" + suffix + 
-		"}} {{desc=@{disease_attack_detail}}}'";
-		startRoll(roll_text, (results) => {
-			finishRoll(results.rollId);
-		});
-	});
-});
-
 on("clicked:engulfinfo", function() {
 	getAttrs(["pr_total"], function(values) {
 		let pr_total = get_int_or_zero(values.pr_total);
@@ -11570,38 +11577,69 @@ on("change:bb_desert_thirst", function() {
 	});	
 });
 
-on("change:bb_disease_attack", function() {
-	getAttrs(["bb_disease_attack", "boons_and_banes"], function(values) {
-		let has_disease_attack = get_bool(values.bb_disease_attack);
-		let name           = '';
-		let natural_attack = '';
-		let tier           = 0;
-		let tn             = 0;
-		let successes      = 0;
-		let duration       = '';
-	
-		if (has_disease_attack) {
-			let regex   = /(^|,)diseaseattack(\w+),tier(\d),(\w+)(,|$)/;
-			let matches = parse_textarea(values.boons_and_banes).match(regex);
-			console.log(matches);
-			name           = matches[4];
-			tier           = get_int_or_zero(matches[3]);
-			successes      = (tier < 3 ? tier : tier - 1);
-			natural_attack = matches[2];
-			tn             = 10 + (tier * 6);
-			duration       = `[[${tier}]] week` + (tier == 1 ? '' : 's');
-		}
-		
-		setAttrs({
-			"disease_attack_natural_attack": natural_attack,
-			"disease_attack_tier":           tier,
-			"disease_attack_tn":             tn,
-			"disease_attack_duration":       duration,
-			"disease_attack_successes":      successes,
-			"disease_attack_name":           name
+let disease_attack_boon = boons_and_banes_array.find(b => b.name == 'bb_disease_attack');
+if (disease_attack_boon) {
+	for (let i = 1; i <= disease_attack_boon.max_count; i++) {
+		// Set Disease Attack values for rolls
+		let boon_name      = `bb_disease_attack_${i}`;
+		let boon_raw_name  = `${boon_name}_raw`;
+		let attack_name    = `${boon_name}_natural_attack`;
+		let tn_name        = `${boon_name}_tn`;
+		let duration_name  = `${boon_name}_duration`;
+		let successes_name = `${boon_name}_successes`;
+		let name_name      = `${boon_name}_name`;
+		on(`change:${boon_name}`, function() {
+			getAttrs([boon_name, boon_raw_name], function(values) {
+				let has_disease_attack = get_bool(values[boon_name]);
+				let boon_raw_text      = values[boon_raw_name];
+				let name               = '';
+				let natural_attack     = '';
+				let tier               = 0;
+				let tn                 = 0;
+				let successes          = 0;
+				let duration           = '';
+			
+				if (has_disease_attack) {
+					let regex   = /diseaseattack(\w+),tier(\d+),(\w+)/;
+					let matches = parse_textarea(boon_raw_text).match(regex);
+					console.log(matches);
+					name           = matches[3];
+					tier           = get_int_or_zero(matches[2]);
+					successes      = (tier < 3 ? tier : tier - 1);
+					natural_attack = matches[1];
+					tn             = 10 + (tier * 6);
+					duration       = `[[${tier}]] week` + (tier == 1 ? '' : 's');
+				}
+				
+				setAttrs({
+					[attack_name]:         natural_attack,
+					[`${boon_name}_tier`]: tier,
+					[tn_name]:             tn,
+					[duration_name]:       duration,
+					[successes_name]:      successes,
+					[name_name]:           name
+				});
+			});	
 		});
-	});	
-});
+
+		// Set Disease Attack info
+		let info_name = boon_name.replaceAll('_', '') + 'info';
+		on(`clicked:${info_name}`, function() {
+			getAttrs([successes_name], function(values) {
+				let successes   = get_int_or_zero(values[successes_name]);
+				let suffix      = (successes == 1 ? '' : 'es');
+				let detail_name = `${boon_name}_detail`;
+
+				let roll_text = `/w @{character_name} '&{template:custom} {{title=@{character_name}: Disease Attack (@{${name_name}})}} ` +
+				`{{Natural Attack=@{${attack_name}}}} {{Physical Resilience=TN [[@{${tn_name}}]]}} {{Duration=@{${duration_name}}}} ` +
+				`{{Resist=[[@{${successes_name}}]] success${suffix}}} {{desc=@{${detail_name}}}}'`;
+				startRoll(roll_text, (results) => {
+					finishRoll(results.rollId);
+				});
+			});
+		});
+	}
+}
 
 on("change:bb_explosive_death change:size_modifier_aura change:ps_improved_explosive_death change:ps_greater_explosive_death change:ps_epic_explosive_death change:ps_legendary_explosive_death", function() {
 	console.log('called explosive death change function');
