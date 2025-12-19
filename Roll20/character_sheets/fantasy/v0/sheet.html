@@ -6303,6 +6303,20 @@ const _star = '&#9734;';
 const _pow = _rn + '**Power:** ';
 const _bolt_touch = `Bolt${_n}Touch`;
 
+function get_int_or_zero(value) {
+	if (!value) {
+		return 0;
+	}
+	return parseInt(value.toString())||0;
+}
+
+function get_bool(value) {
+	if (!value) {
+		return false;
+	}
+	return (value.toString().toLowerCase() === 'true');
+}
+
 function capitalize_first_letter(word) {
 	return word.charAt(0).toUpperCase() + word.slice(1);
 }
@@ -6383,7 +6397,7 @@ function get_rake_bonus_damage(weapon_name) {
 	let matches = weapon_name.match(regex);
 	console.log(matches);
 	if (matches) {
-		let claws = parseInt(matches[1])||0;
+		let claws = get_int_or_zero(matches[1]);
 		bonus = claws - 1;
 	}
 	return bonus;
@@ -6436,7 +6450,7 @@ function get_weapon_roll_text(weapon_name, style_name, style_friendly_name, numb
 }
 
 function get_inner_magic_ep_cost(ep_cost, bb_inner_magic) {
-	let inner_magic = Boolean(bb_inner_magic)||false;
+	let inner_magic = get_bool(bb_inner_magic);
 	
 	if (ep_cost > 5 && inner_magic) {
 		ep_cost = Math.max(5, ep_cost - 10);
@@ -6924,7 +6938,7 @@ function get_poison_attack_stats(has_poison, boons_and_banes_text) {
 	
 	if (has_poison && matches) {
 		natural_weapon = matches[3];
-		tier = parseInt(matches[4])||0;
+		tier = get_int_or_zero(matches[4]);
 		type = matches[5];
 		TN = 10 + (tier * 6);
 		let plural = (tier == 1 ? '' : 'es');
@@ -7012,7 +7026,7 @@ const attribute_cp_costs = [ -60, -103, -92, -82, -72, -63, -54, -46, -38, -31, 
 attribute_array.forEach( function(attribute) {
 	on('change:' + attribute.name, function() {
 		getAttrs([attribute.name], function(values) {
-			let attribute_value = parseInt(values[attribute.name])||0;
+			let attribute_value = get_int_or_zero(values[attribute.name]);
 			
 			if (attribute_value > 50) {
 				console.error('Attribute values over 50 are not supported!');
@@ -7045,7 +7059,7 @@ attribute_array.forEach( function(attribute) {
 		getAttrs(attr_array, function(values) {
 			let cp_combat_attributes = 0;
 			for (const attr of attr_array) {
-				cp_combat_attributes += parseInt(values[attr])||0;
+				cp_combat_attributes += get_int_or_zero(values[attr]);
 			}
 			console.log(`cp_combat_attributes: ${cp_combat_attributes}`);
 			setAttrs({ 'cp_combat_attributes': cp_combat_attributes });
@@ -7091,7 +7105,7 @@ function set_carry_count() {
 			}
 		}
 		
-		let coin_count = (parseInt(values.money_gold_coins)||0) + (parseInt(values.money_silver_coins)||0) + (parseInt(values.money_copper_coins)||0);
+		let coin_count = get_int_or_zero(values.money_gold_coins) + get_int_or_zero(values.money_silver_coins) + get_int_or_zero(values.money_copper_coins);
 		let coin_carry = Math.floor( coin_count / 500 );
 		
 		count += coin_carry;
@@ -7138,15 +7152,15 @@ function cast_spell(skill_name, spell_name, ep_cost, base_duration = null, colla
 	let get_array = ['spell_duration', 'spell_duration_bonus', 'bb_inner_magic', natural_magic_name, 'keep_ep_in_use', 'essence_points_in_use', 'essence_points'];
 	
 	getAttrs(get_array, function(values) {
-		let duration = parseInt(values.spell_duration)||0;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
-		let has_natural_boon = Boolean(values[natural_magic_name])||false;
-		let ep = parseInt(values.essence_points)||0;
-		let ep_in_use = parseInt(values.essence_points_in_use)||0;
-		ep_cost = (has_natural_boon ? 0 : get_inner_magic_ep_cost(ep_cost, values.bb_inner_magic));
-		let keep_ep_in_use = (values.keep_ep_in_use == 'on' || spell_name.match(/inscribe_.+?_rune/));
-		let new_ep_in_use = (keep_ep_in_use ? ep_in_use + ep_cost : ep_in_use);
-		let skill_name_cap = (has_natural_boon ? 'Natural ' : '') + capitalize_first_letter(skill_name);
+		let duration          = get_int_or_zero(values.spell_duration);
+		let duration_bonus    = get_int_or_zero(values.spell_duration_bonus);
+		let has_natural_boon  = get_bool(values[natural_magic_name]);
+		let ep                = get_int_or_zero(values.essence_points);
+		let ep_in_use         = get_int_or_zero(values.essence_points_in_use);
+		ep_cost               = (has_natural_boon ? 0 : get_inner_magic_ep_cost(ep_cost, values.bb_inner_magic));
+		let keep_ep_in_use    = (values.keep_ep_in_use == 'on' || spell_name.match(/inscribe_.+?_rune/));
+		let new_ep_in_use     = (keep_ep_in_use ? ep_in_use + ep_cost : ep_in_use);
+		let skill_name_cap    = (has_natural_boon ? 'Natural ' : '') + capitalize_first_letter(skill_name);
 		let spell_name_spaces = spell_name.replaceAll('_', ' ');
 		
 		let duration_text = get_duration_text(base_duration, duration_bonus, collapse_high_duration_bonus);
@@ -7185,17 +7199,17 @@ const cast_spell_exception_array = [
 	'conjuration_armor', 'conjuration_fabricate', 'conjuration_summon_ally', 'displacement_telekinesis', 'displacement_teleport', 'biomancy_heal_damage', 
 	'dynamancy_attack', 'dynamancy_duration_attack', 'necromancy_shape_corpse'];
 cast_spell_exception_array.forEach( function(spell) {
-	let skill_spell_array = spell.split(/_(.*)/s);
-	let effect_name = `${spell}_effect`;
-	let effect_text_name = `${spell}_effect_text`;
+	let skill_spell_array  = spell.split(/_(.*)/s);
+	let effect_name        = `${spell}_effect`;
+	let effect_text_name   = `${spell}_effect_text`;
 	let base_duration_name = `${spell}_base_duration`;
 	let duration_text_name = `${spell}_duration_text`;
-	let ep_cost_name = `${spell}_ep_cost`;
-	let desc_name = `${spell}_desc`;
+	let ep_cost_name       = `${spell}_ep_cost`;
+	let desc_name          = `${spell}_desc`;
 	on(`change:${spell}_toggle`, function() {
 		getAttrs([effect_name, effect_text_name, base_duration_name, ep_cost_name, desc_name], function(values) {
-			let ep_cost = parseInt(values[ep_cost_name])||0;
-			let base_duration = parseInt(values[base_duration_name])||0;
+			let ep_cost       = get_int_or_zero(values[ep_cost_name]);
+			let base_duration = get_int_or_zero(values[base_duration_name]);
 			cast_spell(
 				skill_spell_array[0], 
 				skill_spell_array[1], 
@@ -7346,8 +7360,8 @@ function cast_detoxify(ep_cost) {
 
 function cast_heal_damage(ep_cost) {
 	getAttrs(["biomancy_heal_damage_toggle", "biomancy_tier", "ps_focused_healing", "use_focused_healing"], function(values) {
-		let toggle = Boolean(values.biomancy_heal_damage_toggle)||false;
-		let tier = parseInt(values.biomancy_tier)||0;
+		let toggle = get_bool(values.biomancy_heal_damage_toggle);
+		let tier = get_int_or_zero(values.biomancy_tier);
 		let multiplier = 0;
 		let size = ((ep_cost == 10 || ep_cost == 30) ? 10 : 6 );
 		if (ep_cost < 20) {
@@ -7359,7 +7373,7 @@ function cast_heal_damage(ep_cost) {
 		else {
 			multiplier = 4;
 		}
-		let has_focus = Boolean(values.ps_focused_healing)||false;
+		let has_focus = get_bool(values.ps_focused_healing);
 		let use_focus = (values.use_focused_healing == 'on');
 		let damage_tier = (has_focus && use_focus ? tier + 1 : tier);
 		let damage = ((damage_tier + 1 ) * multiplier) + "d" +  size;
@@ -7445,8 +7459,8 @@ function cast_turn_undead(ep_cost) {
 
 function cast_armor(ep_cost) {
 	getAttrs(["conjuration_armor_toggle", "conjuration_tier"], function(values) {
-		let toggle = Boolean(values.conjuration_armor_toggle)||false;
-		let tier = parseInt(values.conjuration_tier)||0;
+		let toggle = get_bool(values.conjuration_armor_toggle);
+		let tier = get_int_or_zero(values.conjuration_tier);
 		let dr_bonus = (tier + 1) * 4 * (ep_cost < 10 ? 1 : (ep_cost / 10) + 1);
 		let effect_text = `{{DR bonus=[[${dr_bonus}]]}} {{Damage Types=Up to [[${tier}]]}} `;
 		setAttrs({ 
@@ -7496,8 +7510,8 @@ function cast_difficult_terrain(ep_cost) {
 
 function cast_fabricate_create(ep_cost) {
 	getAttrs(["conjuration_fabricate_toggle", "conjuration_tier"], function(values) {
-		let toggle = Boolean(values.conjuration_fabricate_toggle)||false;
-		let tier = parseInt(values.conjuration_tier)||0;
+		let toggle = get_bool(values.conjuration_fabricate_toggle);
+		let tier = get_int_or_zero(values.conjuration_tier);
 		let item_count_multiplier = (1 / tier);
 		let weight_cost_limit_multiplier = 10;
 		if (ep_cost == 10) {
@@ -7530,9 +7544,9 @@ function cast_fabricate_create(ep_cost) {
 
 function cast_fabricate_repair(ep_cost) {
 	getAttrs(["conjuration_fabricate_toggle", "conjuration_tier", "conjuration_attribute_modifier"], function(values) {
-		let toggle = Boolean(values.conjuration_fabricate_toggle)||false;
-		let tier = parseInt(values.conjuration_tier)||0;
-		let attribute_mod = parseInt(values.conjuration_attribute_modifier)||0;
+		let toggle = get_bool(values.conjuration_fabricate_toggle);
+		let tier = get_int_or_zero(values.conjuration_tier);
+		let attribute_mod = get_int_or_zero(values.conjuration_attribute_modifier);
 		let plus = (attribute_mod < 0 ? '' : '+');
 
 		let multiplier = 0;
@@ -7569,9 +7583,9 @@ function cast_fabricate_repair(ep_cost) {
 
 function cast_fabricate_attack(ep_cost) {
 	getAttrs(["conjuration_fabricate_toggle", "conjuration_tier", "conjuration_damage_dice_modifier"], function(values) {
-		let toggle = Boolean(values.conjuration_fabricate_toggle)||false;
-		let tier = parseInt(values.conjuration_tier)||0;
-		let dice_mod = parseInt(values.conjuration_damage_dice_modifier)||0;
+		let toggle = get_bool(values.conjuration_fabricate_toggle);
+		let tier = get_int_or_zero(values.conjuration_tier);
+		let dice_mod = get_int_or_zero(values.conjuration_damage_dice_modifier);
 		let damage = (tier + 1) * (ep_cost < 10 ? 1 : (ep_cost / 10) + 1);
 		damage += dice_mod;
 
@@ -7615,15 +7629,15 @@ function cast_shield(ep_cost, skill) {
 
 function cast_summon_ally(ep_cost, porter = false) {
 	getAttrs(["conjuration_summon_ally_toggle", "conjuration_tier", "conjuration_attribute", "conjuration_attribute_modifier", "conjuration_advantage", "conjuration_explode", "summon_ally_damage_dice_modifier", "summon_ally_damage_static_modifier"], function(values) {
-		let toggle = Boolean(values.conjuration_summon_ally_toggle)||false;
-		let tier = parseInt(values.conjuration_tier)||0;
-		let attribute = parseInt(values.conjuration_attribute)||0;
-		let attribute_modifier = parseInt(values.conjuration_attribute_modifier)||0;
-		let explode = parseInt(values.conjuration_explode)||0;
-		let damage_dice_modifier = parseInt(values.summon_ally_damage_dice_modifier)||0;
-		let damage_static_modifier = parseInt(values.summon_ally_damage_static_modifier)||0;
-		let ally_type = (porter ? "Porter" : "Combatant");
-		let ally_hp = attribute * (tier + 2);
+		let toggle                 = get_bool(values.conjuration_summon_ally_toggle);
+		let tier                   = get_int_or_zero(values.conjuration_tier);
+		let attribute              = get_int_or_zero(values.conjuration_attribute);
+		let attribute_modifier     = get_int_or_zero(values.conjuration_attribute_modifier);
+		let explode                = get_int_or_zero(values.conjuration_explode);
+		let damage_dice_modifier   = get_int_or_zero(values.summon_ally_damage_dice_modifier);
+		let damage_static_modifier = get_int_or_zero(values.summon_ally_damage_static_modifier);
+		let ally_type              = (porter ? "Porter" : "Combatant");
+		let ally_hp                = attribute * (tier + 2);
 		if (!porter && ep_cost == 20) {
 			ally_hp += attribute * 3;
 		}
@@ -7767,8 +7781,8 @@ function cast_stasis(ep_cost) {
 
 function cast_telekinesis(ep_cost) {
 	getAttrs(["displacement_telekinesis_toggle", "displacement_tier"], function(values) {
-		let toggle = Boolean(values.displacement_telekinesis_toggle)||false;
-		let tier = parseInt(values.displacement_tier)||0;
+		let toggle = get_bool(values.displacement_telekinesis_toggle);
+		let tier = get_int_or_zero(values.displacement_tier);
 		let effect = "Up to " + tier + " items of up to " + (tier * 20) + " pounds" + _or + "Remote Attack check";
 		if (ep_cost == 20) {
 			effect = "Up to " + (tier * 2) +" items of up to " + (tier * 50 ) + " pounds";
@@ -7791,9 +7805,9 @@ function cast_telekinesis(ep_cost) {
 
 function cast_teleport(ep_cost) {
 	getAttrs(["displacement_teleport_toggle", "spell_range", "displacement_tier"], function(values) {
-		let toggle = Boolean(values.displacement_teleport_toggle)||false;
-		let tier = parseInt(values.displacement_tier)||0;
-		let range = parseInt(values.spell_range)||0;
+		let toggle = get_bool(values.displacement_teleport_toggle);
+		let tier = get_int_or_zero(values.displacement_tier);
+		let range = get_int_or_zero(values.spell_range);
 		let effect = "Teleport within " + range + " squares";
 		if (ep_cost == 20) {
 			effect = "Teleport within " + (tier * 100) + " miles if successful";
@@ -7874,11 +7888,11 @@ function cast_status(ep_cost) {
 
 function cast_attack(ep_cost) {
 	getAttrs(["dynamancy_attack_toggle", "dynamancy_tier", "ps_focused_blasting", "use_focused_blasting", "dynamancy_damage_dice_modifier"], function(values) {
-		let toggle = Boolean(values.dynamancy_attack_toggle)||false;
-		let tier = parseInt(values.dynamancy_tier)||0;
-		let has_focus = Boolean(values.ps_focused_blasting)||false;
+		let toggle = get_bool(values.dynamancy_attack_toggle);
+		let tier = get_int_or_zero(values.dynamancy_tier);
+		let has_focus = get_bool(values.ps_focused_blasting);
 		let use_focus = (values.use_focused_blasting == 'on');
-		let dice_mod = parseInt(values.dynamancy_damage_dice_modifier)||0;
+		let dice_mod = get_int_or_zero(values.dynamancy_damage_dice_modifier);
 		let damage_tier = (has_focus && use_focus && ep_cost > 0 ? tier + 1 : tier);
 		let damage = (damage_tier + 1) * (ep_cost < 10 ? 1 : (ep_cost / 10) + 1);
 		damage += dice_mod;
@@ -7894,8 +7908,8 @@ function cast_attack(ep_cost) {
 
 function cast_duration_attack(ep_cost) {
 	getAttrs(["dynamancy_duration_attack_toggle", "dynamancy_tier"], function(values) {
-		let toggle = Boolean(values.dynamancy_duration_attack_toggle)||false;
-		let tier = parseInt(values.dynamancy_tier)||0;
+		let toggle = get_bool(values.dynamancy_duration_attack_toggle);
+		let tier = get_int_or_zero(values.dynamancy_tier);
 		let dice = tier * (ep_cost >= 30 ? 2 : 1);
 		let die_size = (ep_cost % 20 == 0 ? 10 : 6);
 
@@ -8030,8 +8044,8 @@ function cast_decrepify(ep_cost) {
 
 function cast_shape_corpse(ep_cost) {
 	getAttrs(["necromancy_shape_corpse_toggle", "necromancy_tier"], function(values) {
-		let toggle = Boolean(values.necromancy_shape_corpse_toggle)||false;
-		let tier = parseInt(values.necromancy_tier)||0;
+		let toggle = get_bool(values.necromancy_shape_corpse_toggle);
+		let tier = get_int_or_zero(values.necromancy_tier);
 		let multiplier = 0;
 		let size = ((ep_cost == 10 || ep_cost == 30) ? 10 : 6 );
 		if (ep_cost < 20) {
@@ -8194,8 +8208,8 @@ function cast_imbue(ep_cost) {
 
 on('sheet:opened', function() {
 	getAttrs(['cp_total', 'passive_skills', 'boons_and_banes', 'mob_skill_bonus'], function(values) {
-		let cp_total        = parseInt(values.cp_total       )||0;
-		let mob_skill_bonus = parseInt(values.mob_skill_bonus)||0;
+		let cp_total        = get_int_or_zero(values.cp_total       );
+		let mob_skill_bonus = get_int_or_zero(values.mob_skill_bonus);
 		if (mob_skill_bonus == 0) {
 			//console.log(`sheet:opened - mob_skill_bonus: ${mob_skill_bonus}`);
 			setAttrs({ "mob_skill_bonus": mob_skill_bonus });
@@ -8226,11 +8240,11 @@ const rest_type_array = ['short', 'long'];
 rest_type_array.forEach( function (rest_type) {
 	on(`clicked:${rest_type}rest`, function() {
 		getAttrs(["hit_points", "hit_points_max", "essence_points", "essence_points_max", "essence_points_in_use"], function(values) {
-			let hp = parseInt(values.hit_points)||0;
-			let hp_max = parseInt(values.hit_points_max)||0;
-			let ep = parseInt(values.essence_points)||0;
-			let ep_max = parseInt(values.essence_points_max)||0;
-			let ep_in_use = parseInt(values.essence_points_in_use)||0;
+			let hp        = get_int_or_zero(values.hit_points);
+			let hp_max    = get_int_or_zero(values.hit_points_max);
+			let ep        = get_int_or_zero(values.essence_points);
+			let ep_max    = get_int_or_zero(values.essence_points_max);
+			let ep_in_use = get_int_or_zero(values.essence_points_in_use);
 			
 			let capitalized_type = capitalize_first_letter(rest_type);
 
@@ -8247,11 +8261,11 @@ rest_type_array.forEach( function (rest_type) {
 
 on("clicked:recovery", function() {
 	getAttrs(["recovery_successes", "recovery_failures", "ps_die_hard", "pr_tier"], function(values) {
-		let successes = parseInt(values.recovery_successes)||0;
-		let failures = parseInt(values.recovery_failures)||0;
-		let pr_tier = parseInt(values.pr_tier)||0;
-		let diehard = Boolean(values.ps_die_hard)||false;
-		let tn = 12 - (diehard ? pr_tier : 0);
+		let successes = get_int_or_zero(values.recovery_successes);
+		let failures  = get_int_or_zero(values.recovery_failures);
+		let pr_tier   = get_int_or_zero(values.pr_tier);
+		let diehard   = get_bool(values.ps_die_hard);
+		let tn        = 12 - (diehard ? pr_tier : 0);
 
 		startRoll("@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Recovery}} {{Recovery=[[2d10!!]]}}'", (results) => {
 			if (results.results.Recovery.result >= (tn + 10)) {
@@ -8302,9 +8316,9 @@ healing_potion_type_array.forEach( function (potion) {
 		let potion_count_name = potion.type + '_healing_potion_count';
 		
 		getAttrs(['hit_points', 'hit_points_max', potion_count_name], function(values) {
-			let count = parseInt(values[potion_count_name])||0;
-			let hp = parseInt(values.hit_points)||0;
-			let hp_max = parseInt(values.hit_points_max)||0;
+			let count  = get_int_or_zero(values[potion_count_name]);
+			let hp     = get_int_or_zero(values.hit_points);
+			let hp_max = get_int_or_zero(values.hit_points_max);
 			
 			let capitalized_type = capitalize_first_letter(potion.type);
 			
@@ -8334,8 +8348,8 @@ healing_potion_type_array.forEach( function (potion) {
 
 on("clicked:blooddraininfo", function() {
 	getAttrs(["attack_tier", "pr_tier"], function(values) {
-		let attack_tier = parseInt(values.attack_tier)||0;
-		let pr_tier = parseInt(values.pr_tier)||0;
+		let attack_tier = get_int_or_zero(values.attack_tier);
+		let pr_tier     = get_int_or_zero(values.pr_tier);
 		
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: Blood Drain}} " +
 		"{{Damage=" + value_effect('tier in Attack plus your tier in Physical Resilience', attack_tier + pr_tier) + "**d6**}} " +
@@ -8350,8 +8364,8 @@ on("clicked:blooddraininfo", function() {
 
 on("clicked:breathweaponinfo", function() {
 	getAttrs(["breath_weapon_area_type", "breath_weapon_damage_type", "breath_weapon_damage_description", "pr_tier", "pr_total"], function(values) {
-		let pr_tier  = parseInt(values.pr_tier)||0;
-		let pr_total = parseInt(values.pr_total)||0;
+		let pr_tier  = get_int_or_zero(values.pr_tier);
+		let pr_total = get_int_or_zero(values.pr_total);
 		
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: Breath Weapon}} {{Casting Time=2 AP}} {{Area Type=" + 
 		capitalize_first_letter(values.breath_weapon_area_type) + "}} {{Physical Resilience (fortitude)=**TN** " + skill_total_effect_pr(pr_total, 12) + 
@@ -8366,8 +8380,8 @@ on("clicked:breathweaponinfo", function() {
 
 on("clicked:diseaseattackinfo", function() {
 	getAttrs(["disease_attack_successes"], function(values) {
-		let successes = parseInt(values.disease_attack_successes)||0;
-		let suffix = (successes == 1 ? '' : 'es');
+		let successes = get_int_or_zero(values.disease_attack_successes);
+		let suffix    = (successes == 1 ? '' : 'es');
 
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: @{disease_attack_name}}} " +
 		"Disease}} {{Natural Attack=@{disease_attack_natural_attack}}} {{Physical Resilience=TN [[@{disease_attack_tn}]]}} " +
@@ -8381,7 +8395,7 @@ on("clicked:diseaseattackinfo", function() {
 
 on("clicked:engulfinfo", function() {
 	getAttrs(["pr_total"], function(values) {
-		let pr_total = parseInt(values.pr_total)||0;
+		let pr_total = get_int_or_zero(values.pr_total);
 		
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: Engulf}} " +
 		"{{Reflex=TN " + skill_total_effect_pr(pr_total, 12) + "}} " +
@@ -8405,7 +8419,7 @@ on("clicked:engulfinfo", function() {
 
 on("clicked:gazeattackinfo", function() {
 	getAttrs(["mr_total", "gaze_attack_area_size", "gaze_attack_spell", "gaze_attack_ep"], function(values) {
-		let mr_total = parseInt(values.mr_total)||0;
+		let mr_total = get_int_or_zero(values.mr_total);
 		
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: Gaze Attack}} {{Area=Nova (" + values.gaze_attack_area_size + 
 		" sq)}}" + "{{Spell effect=" + capitalize_first_letter(values.gaze_attack_spell) + " (" + values.gaze_attack_ep + " EP)}} {{Reflex=TN " + 
@@ -8456,7 +8470,7 @@ on("clicked:poisonattackinfo", function() {
 	getAttrs(["poison_natural_weapon", "poison_tier", "poison_type", "poison_TN", "poison_duration", "poison_damage", "poison_condition"], function(values) {
 		let damage_poison  = (values.poison_type == "damage");
 		let effect         = damage_poison ? values.poison_damage + " poison damage" : values.poison_condition;
-		let poison_tier    = parseInt(values.poison_tier)||0;
+		let poison_tier    = get_int_or_zero(values.poison_tier);
 		let attack_text    = `your ${values.poison_natural_weapon} attack`;
 		let touch_text     = '';
 		let success_text   = (poison_tier == 4 ? '' : ' If they roll the specified number of successes, they have processed the poison and no longer suffer its effects.');
@@ -8499,8 +8513,8 @@ on("clicked:regenerationinfo", function() {
 
 on("clicked:rendinfo", function() {
 	getAttrs(["attack_tier", "attack_attribute_modifier", "attack_attribute_name"], function(values) {
-		let attack_tier = parseInt(values.attack_tier)||0;
-		let attack_mod  = parseInt(values.attack_attribute_modifier)||0;
+		let attack_tier = get_int_or_zero(values.attack_tier);
+		let attack_mod  = get_int_or_zero(values.attack_attribute_modifier);
 		
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: Rend}} {{desc=When you use 1 AP to make two successful Attack " +
 		"(dual wield melee) checks and both of them cause damage to the target, you cause " + tier_effect_attack(attack_tier, 1, 'd6') + 
@@ -8535,8 +8549,8 @@ on("clicked:swallowwholeinfo", function() {
 
 on("clicked:swarminfo", function() {
 	getAttrs(["pr_tier", "pr_total"], function(values) {
-		let pr_tier = parseInt(values.pr_tier)||0;
-		let pr_total = parseInt(values.pr_total)||0;
+		let pr_tier  = get_int_or_zero(values.pr_tier);
+		let pr_total = get_int_or_zero(values.pr_total);
 		
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: Swarm}} {{Physical Resilience (constitution)=**TN** " + 
 		skill_total_effect_pr(pr_total, 12) + "}} {{Effect=Sickened}} " +
@@ -8559,7 +8573,7 @@ on("clicked:swarminfo", function() {
 
 on("clicked:tombrotinfo", function() {
 	getAttrs(["mr_total"], function(values) {
-		let mr_total = parseInt(values.mr_total)||0;
+		let mr_total = get_int_or_zero(values.mr_total);
 		
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: Tomb Rot}} " +
 		"{{Physical Resilience (constitution)=TN " + skill_total_effect_mr(mr_total, 12) + "}} " +
@@ -8586,10 +8600,10 @@ on("clicked:totalmagicimmunityinfo", function() {
 
 on("clicked:mobinfo", function() {
 	getAttrs(["mob_member_count", "mob_skill_bonus", "mob_damage_bonus", "mob_hit_points_max"], function(values) {
-		let count          = parseInt(values.mob_member_count)||0;
-		let skill_bonus    = parseInt(values.mob_skill_bonus)||0;
-		let damage_bonus   = parseInt(values.mob_damage_bonus)||0;
-		let hit_points_max = parseInt(values.mob_hit_points_max)||0;
+		let count          = get_int_or_zero(values.mob_member_count);
+		let skill_bonus    = get_int_or_zero(values.mob_skill_bonus);
+		let damage_bonus   = get_int_or_zero(values.mob_damage_bonus);
+		let hit_points_max = get_int_or_zero(values.mob_hit_points_max);
 
 		let skill_text  = value_effect(` (mob member count - 1) * 2`, skill_bonus);
 		let damage_text = value_effect(` mob member count / 2, rounded down`, damage_bonus);
@@ -8625,11 +8639,11 @@ on("clicked:endsummonally", function() {
 
 on("change:conjuration_attribute_modifier change:conjuration_tier change:summon_ally_damage_dice_modifier change:summon_ally_damage_static_modifier", function() {
 	getAttrs(["conjuration_attribute_modifier", "conjuration_tier", "summon_ally_damage_dice_modifier", "summon_ally_damage_static_modifier", "conjuration_summon_ally_ep_cost"], function(values) {
-		let attribute_mod = parseInt(values.conjuration_attribute_modifier)||0;
-		let tier = parseInt(values.conjuration_tier)||0;
-		let dice_mod = parseInt(values.summon_ally_damage_dice_modifier)||0;
-		let static_mod = parseInt(values.summon_ally_damage_static_modifier)||0;
-		let ep_cost = parseInt(values.conjuration_summon_ally_ep_cost)||0;
+		let attribute_mod = get_int_or_zero(values.conjuration_attribute_modifier);
+		let tier          = get_int_or_zero(values.conjuration_tier);
+		let dice_mod      = get_int_or_zero(values.summon_ally_damage_dice_modifier);
+		let static_mod    = get_int_or_zero(values.summon_ally_damage_static_modifier);
+		let ep_cost       = get_int_or_zero(values.conjuration_summon_ally_ep_cost);
 
 		let ally_damage = tier + (ep_cost == 20 ? 1 : (ep_cost == 30 ? 2 : 0));
 
@@ -8653,12 +8667,11 @@ on("change:gm_rolls", function() {
 
 on("change:perception_total change:agility_modifier change:bb_quick_reflexes change:bb_slow_reflexes", function() {
 	getAttrs(["perception_total", "agility_modifier", "bb_quick_reflexes", "bb_slow_reflexes"], function(values) {
-		let total = parseInt(values.perception_total)||0;
-		let mod = parseInt(values.agility_modifier)||0;
-		let quick = Boolean(values.bb_quick_reflexes)||false;
-		let slow = Boolean(values.bb_slow_reflexes)||false;
+		let total         = get_int_or_zero(values.perception_total);
+		let mod           = get_int_or_zero(values.agility_modifier);
+		let slow          = get_bool(values.bb_slow_reflexes);
 		let boon_bane_mod = (quick ? 2 : (slow ? -2 : 0));
-		let reflex = total + mod + boon_bane_mod;
+		let reflex        = total + mod + boon_bane_mod;
 		setAttrs({
 			"reflex_total": reflex
 		});
@@ -8667,10 +8680,9 @@ on("change:perception_total change:agility_modifier change:bb_quick_reflexes cha
 
 on("change:bb_aura_of_damage change:size_modifier_aura", function() {
 	getAttrs(["bb_aura_of_damage", "boons_and_banes", "size_modifier_aura", "mr_tier"], function(values) {
-		let has_aura_of_damage = Boolean(values.bb_aura_of_damage)||false;
-		console.log(`bb_aura_of_damage: ${bb_aura_of_damage}; has_aura_of_damage: ${has_aura_of_damage}`);
-		let tier = parseInt(values.mr_tier)||0;
-		let size_mod = parseInt(values.size_modifier_aura)||0;
+		let has_aura_of_damage = get_bool(values.bb_aura_of_damage);
+		let tier               = get_int_or_zero(values.mr_tier);
+		let size_mod           = get_int_or_zero(values.size_modifier_aura);
 
 		let description = '';
 		let type = '';
@@ -8699,8 +8711,8 @@ aura_type_array.forEach( function (type) {
 	on(`change:${aura_boon_name} change:size_modifier_aura`, function() {
 
 		getAttrs([aura_boon_name, 'size_modifier_aura'], function(values) {
-			let has_aura = Boolean(values[aura_boon_name])||false;
-			let size_mod = parseInt(values.size_modifier_aura)||0;
+			let has_aura = get_bool(values[aura_boon_name]);
+			let size_mod = get_int_or_zero(values.size_modifier_aura);
 
 			setAttrs({ [`aura_of_${type}_description`]: (has_aura ? `nova (${7 + size_mod} sq)` : '') });
 		});	
@@ -8717,8 +8729,8 @@ breath_weapon_explosive_death_array.forEach( function(boon) {
 	let get_array = [ boon_minor, boon_major ];
 	on('change:' + get_array.join(' change:'), function() {
 		getAttrs(get_array, function(values) {
-			let has_minor_boon = Boolean(values[boon_minor])||false;
-			let has_major_boon = Boolean(values[boon_major])||false;
+			let has_minor_boon = get_bool(values[boon_minor]);
+			let has_major_boon = get_bool(values[boon_major]);
 			let set_object = null;
 			if (has_minor_boon || has_major_boon) {
 				set_object = {
@@ -8737,14 +8749,14 @@ breath_weapon_explosive_death_array.forEach( function(boon) {
 on("change:pr_total change:pr_tier change:bb_breath_weapon change:ps_improved_breath_weapon change:ps_greater_breath_weapon change:ps_epic_breath_weapon change:ps_legendary_breath_weapon", function() {
 	console.log('called breath weapon change function');
 	getAttrs(["bb_breath_weapon", "breath_weapon_type", "boons_and_banes", "pr_total", "pr_tier", "ps_improved_breath_weapon", "ps_greater_breath_weapon", "ps_epic_breath_weapon", "ps_legendary_breath_weapon"], function(values) {
-		let has_breath_weapon           = Boolean(values.bb_breath_weapon)||false;
+		let has_breath_weapon           = get_bool(values.bb_breath_weapon);
 		let boons_and_banes_text        = parse_textarea(values.boons_and_banes);
-		let pr_total                    = parseInt(values.pr_total)||0;
-		let pr_tier                     = parseInt(values.pr_tier)||0;
-		let has_improved_breath_weapon  = Boolean(values.ps_improved_breath_weapon)||false;
-		let has_greater_breath_weapon   = Boolean(values.ps_greater_breath_weapon)||false;
-		let has_epic_breath_weapon      = Boolean(values.ps_epic_breath_weapon)||false;
-		let has_legendary_breath_weapon = Boolean(values.ps_legendary_breath_weapon)||false;
+		let pr_total                    = get_int_or_zero(values.pr_total);
+		let pr_tier                     = get_int_or_zero(values.pr_tier);
+		let has_improved_breath_weapon  = get_bool(values.ps_improved_breath_weapon);
+		let has_greater_breath_weapon   = get_bool(values.ps_greater_breath_weapon);
+		let has_epic_breath_weapon      = get_bool(values.ps_epic_breath_weapon);
+		let has_legendary_breath_weapon = get_bool(values.ps_legendary_breath_weapon);
 
 		let area_type          = '';
 		let damage_type        = '';
@@ -8825,8 +8837,8 @@ on("change:pr_total change:pr_tier change:bb_breath_weapon change:ps_improved_br
 
 on("change:bb_corrosive_blood", function() {
 	getAttrs(["bb_corrosive_blood", "pr_tier"], function(values) {
-		let has_corrosive_blood = Boolean(values.bb_corrosive_blood)||false;
-		let tier = parseInt(values.pr_tier)||0;
+		let has_corrosive_blood = get_bool(values.bb_corrosive_blood);
+		let tier = get_int_or_zero(values.pr_tier);
 
 		let damage = '';
 
@@ -8840,8 +8852,8 @@ on("change:bb_corrosive_blood", function() {
 
 on("change:bb_desert_thirst", function() {
 	getAttrs(["bb_desert_thirst", "mr_tier"], function(values) {
-		let has_desert_thirst = Boolean(values.bb_desert_thirst)||false;
-		let tier = parseInt(values.mr_tier)||0;
+		let has_desert_thirst = get_bool(values.bb_desert_thirst);
+		let tier = get_int_or_zero(values.mr_tier);
 
 		let area_size = '';
 
@@ -8855,7 +8867,7 @@ on("change:bb_desert_thirst", function() {
 
 on("change:bb_disease_attack", function() {
 	getAttrs(["bb_disease_attack", "boons_and_banes"], function(values) {
-		let has_disease_attack = Boolean(values.bb_disease_attack)||false;
+		let has_disease_attack = get_bool(values.bb_disease_attack);
 		let name           = '';
 		let natural_attack = '';
 		let tier           = 0;
@@ -8868,7 +8880,7 @@ on("change:bb_disease_attack", function() {
 			let matches = parse_textarea(values.boons_and_banes).match(regex);
 			console.log(matches);
 			name           = matches[4];
-			tier           = parseInt(matches[3])||0;
+			tier           = get_int_or_zero(matches[3]);
 			successes      = (tier < 3 ? tier : tier - 1);
 			natural_attack = matches[2];
 			tn             = 10 + (tier * 6);
@@ -8889,15 +8901,15 @@ on("change:bb_disease_attack", function() {
 on("change:bb_explosive_death change:size_modifier_aura change:ps_improved_explosive_death change:ps_greater_explosive_death change:ps_epic_explosive_death change:ps_legendary_explosive_death", function() {
 	console.log('called explosive death change function');
 	getAttrs(["bb_explosive_death", "boons_and_banes", "size_modifier_aura", "mr_total", "mr_tier", "ps_improved_explosive_death", "ps_greater_explosive_death", "ps_epic_explosive_death", "ps_legendary_explosive_death"], function(values) {
-		let has_explosive_death = Boolean(values.bb_explosive_death)||false;
-		let boons_and_banes_text = parse_textarea(values.boons_and_banes);
-		let size_mod = parseInt(values.size_modifier_aura)||0;
-		let mr_total = parseInt(values.mr_total)||0;
-		let mr_tier = parseInt(values.mr_tier)||0;
-		let has_improved_explosive_death = Boolean(values.ps_improved_explosive_death)||false;
-		let has_greater_explosive_death = Boolean(values.ps_greater_explosive_death)||false;
-		let has_epic_explosive_death = Boolean(values.ps_epic_explosive_death)||false;
-		let has_legendary_explosive_death = Boolean(values.ps_legendary_explosive_death)||false;
+		let has_explosive_death           = get_bool(values.bb_explosive_death);
+		let boons_and_banes_text          = parse_textarea(values.boons_and_banes);
+		let size_mod                      = get_int_or_zero(values.size_modifier_aura);
+		let mr_total                      = get_int_or_zero(values.mr_total);
+		let mr_tier                       = get_int_or_zero(values.mr_tier);
+		let has_improved_explosive_death  = get_bool(values.ps_improved_explosive_death);
+		let has_greater_explosive_death   = get_bool(values.ps_greater_explosive_death);
+		let has_epic_explosive_death      = get_bool(values.ps_epic_explosive_death);
+		let has_legendary_explosive_death = get_bool(values.ps_legendary_explosive_death);
 
 		let explosive_death_type = '';
 		let damage_type = '';
@@ -8953,8 +8965,8 @@ on("change:bb_explosive_death change:size_modifier_aura change:ps_improved_explo
 
 on("change:bb_gaze_attack change:size_modifier_aura", function() {
 	getAttrs(["bb_gaze_attack", "boons_and_banes", "size_modifier_aura"], function(values) {
-		let has_gaze_attack = Boolean(values.bb_gaze_attack)||false;
-		let size_mod = parseInt(values.size_modifier_aura)||0;
+		let has_gaze_attack = get_bool(values.bb_gaze_attack);
+		let size_mod        = get_int_or_zero(values.size_modifier_aura);
 
 		let area_size = '';
 		let spell = '';
@@ -8980,10 +8992,10 @@ on("change:bb_gaze_attack change:size_modifier_aura", function() {
 
 on("change:bb_huge_size change:bb_large_size change:bb_small_size change:bb_tiny_size", function() {
 	getAttrs(["bb_huge_size", "bb_large_size", "bb_small_size", "bb_tiny_size"], function(values) {
-		let huge_size  = Boolean(values.bb_huge_size)||false;
-		let large_size = Boolean(values.bb_large_size)||false;
-		let small_size = Boolean(values.bb_small_size)||false;
-		let tiny_size  = Boolean(values.bb_tiny_size)||false;
+		let huge_size  = get_bool(values.bb_huge_size);
+		let large_size = get_bool(values.bb_large_size);
+		let small_size = get_bool(values.bb_small_size);
+		let tiny_size  = get_bool(values.bb_tiny_size);
 		
 		let size_modifier_skill  = (large_size ? -1 : (small_size ? 1 : (huge_size ? -2 : (tiny_size ? 2 : 0))));
 		let size_modifier_damage = size_modifier_skill * -1;
@@ -9007,9 +9019,9 @@ lair_action_array.forEach( function(number) {
 		let lair_action_boon_name = 'bb_lair_action_' + number;
 
 		getAttrs([lair_action_boon_name, 'boons_and_banes', 'pr_total', 'pr_tier'], function(values) {
-			let has_lair_action = Boolean(values[lair_action_boon_name])||false;
-			let pr_total = parseInt(values.pr_total)||0;
-			let pr_tier = parseInt(values.pr_tier)||0;
+			let has_lair_action = get_bool(values[lair_action_boon_name]);
+			let pr_total = get_int_or_zero(values.pr_total);
+			let pr_tier  = get_int_or_zero(values.pr_tier);
 
 			lair_action_stats = get_lair_action_stats(has_lair_action, parse_textarea(values.boons_and_banes), number, pr_tier, pr_total);
 			setAttrs({ 
@@ -9030,7 +9042,7 @@ lair_action_array.forEach( function(number) {
 
 on("change:bb_poison_attack", function() {
 	getAttrs(['bb_poison_attack', 'boons_and_banes'], function (values) {
-		let has_poison_attack = Boolean(values.bb_poison_attack)||false;
+		let has_poison_attack = get_bool(values.bb_poison_attack);
 
 		// set poison attack stats
 		var poison_stats = get_poison_attack_stats(has_poison_attack, parse_textarea(values.boons_and_banes));
@@ -9050,7 +9062,7 @@ on("change:bb_poison_attack", function() {
 
 on("change:bb_regeneration", function() {
 	getAttrs(["bb_regeneration", "boons_and_banes"], function(values) {
-		let has_regeneration = (values.bb_regeneration.toString().toLowerCase() === 'true');
+		let has_regeneration = get_bool(values.bb_regeneration);
 		console.log(`bb_regeneration: ${values.bb_regeneration}; has_regeneration: ${has_regeneration}`);
 		let healing = '0';
 		let vulnerability = '';
@@ -9076,10 +9088,10 @@ on("change:bb_regeneration", function() {
 
 on("change:bb_swallow_whole", function() {
 	getAttrs(["bb_swallow_whole", "hit_points", "pr_total", "pr_tier"], function(values) {
-		let has_swallow_whole = Boolean(values.bb_swallow_whole)||false;
-		let hit_points = parseInt(values.hit_points)||0;
-		let pr_total = parseInt(values.pr_total)||0;
-		let pr_tier = parseInt(values.pr_tier)||0;
+		let has_swallow_whole = get_bool(values.bb_swallow_whole);
+		let hit_points = get_int_or_zero(values.hit_points);
+		let pr_total   = get_int_or_zero(values.pr_total);
+		let pr_tier    = get_int_or_zero(values.pr_tier);
 		
 		let damage = '';
 		let tn = 0;
@@ -9104,8 +9116,8 @@ on("change:bb_swallow_whole", function() {
 
 on("change:bb_swarm", function() {
 	getAttrs(["bb_swarm", "pr_tier"], function(values) {
-		let has_swarm = Boolean(values.bb_swarm)||false;
-		let pr_tier = parseInt(values.pr_tier)||0;
+		let has_swarm = get_bool(values.bb_swarm);
+		let pr_tier   = get_int_or_zero(values.pr_tier);
 		
 		let reform_roll = '';
 		let roll_text = '';
@@ -9121,8 +9133,8 @@ on("change:bb_swarm", function() {
 
 on('change:attack_tier change:ps_combat_expertise', function() {
 	getAttrs(['attack_tier', 'ps_combat_expertise'], function(values) {
-		let tier = parseInt(values.attack_tier)||0;
-		let has_combat_expertise = Boolean(values.ps_combat_expertise)||false;
+		let tier = get_int_or_zero(values.attack_tier);
+		let has_combat_expertise = get_bool(values.ps_combat_expertise);
 
 		setAttrs({ 'combat_expertise_modifier': (has_combat_expertise ? Math.floor(tier / 2) : 0) });
 	});	
@@ -9130,8 +9142,8 @@ on('change:attack_tier change:ps_combat_expertise', function() {
 
 on('change:ps_deadly_precision change:perception_tier', function() {
 	getAttrs(['ps_deadly_precision', 'perception_tier'], function(values) {
-		let has_deadly_precision = Boolean(values.ps_deadly_precision)||false;
-		let perception_tier      = parseInt(values.perception_tier)||0;
+		let has_deadly_precision = get_bool(values.ps_deadly_precision);
+		let perception_tier      = get_int_or_zero(values.perception_tier);
 
 		setAttrs({ 'deadly_precision_modifier': (has_deadly_precision ? perception_tier : 0) });
 	});
@@ -9139,8 +9151,8 @@ on('change:ps_deadly_precision change:perception_tier', function() {
 
 on('change:ps_sneak_attack change:sneak_tier', function() {
 	getAttrs(['ps_sneak_attack', 'sneak_tier'], function(values) {
-		let has_sneak_attack = Boolean(values.ps_sneak_attack)||false;
-		let sneak_tier       = parseInt(values.sneak_tier)||0;
+		let has_sneak_attack = get_bool(values.ps_sneak_attack);
+		let sneak_tier       = get_int_or_zero(values.sneak_tier);
 
 		setAttrs({ 'sneak_attack_modifier': (has_sneak_attack ? sneak_tier : 0) });
 	});
@@ -9148,8 +9160,8 @@ on('change:ps_sneak_attack change:sneak_tier', function() {
 
 on('change:ps_rage change:pr_tier', function() {
 	getAttrs(['ps_rage', 'pr_tier'], function(values) {
-		let has_rage = Boolean(values.ps_rage)||false;
-		let pr_tier  = parseInt(values.pr_tier)||0;
+		let has_rage = get_bool(values.ps_rage);
+		let pr_tier  = get_int_or_zero(values.pr_tier);
 
 		setAttrs({ 'rage_modifier': (has_rage ? pr_tier : 0) });
 	});
@@ -9162,9 +9174,9 @@ const ps_damage_array = [
 ps_damage_array.forEach( function(ps) {
 	on(`change:${ps.name} change:attack_attribute_modifier change:attack_damage_static_modifier`, function() {
 		getAttrs([ps.name, 'attack_attribute_modifier', 'attack_damage_static_modifier'], function(values) {
-			let has_ps    = Boolean(values[ps.name])||false;
-			let damage    = parseInt(values.attack_attribute_modifier)||0;
-			let modifier  = parseInt(values.attack_damage_static_modifier)||0;
+			let has_ps    = get_bool(values[ps.name]);
+			let damage    = get_int_or_zero(values.attack_attribute_modifier);
+			let modifier  = get_int_or_zero(values.attack_damage_static_modifier);
 			let ps_damage = (has_ps ? damage : 0);
 			let display   = (damage + ps_damage + modifier);
 			if (display >= 0) {
@@ -9192,8 +9204,8 @@ on('change:ps_mob', function() {
 
 on('change:mob_member_count change:hit_points_max', function() {
 	getAttrs(['mob_member_count', 'hit_points_max'], function(values) {
-		let mob_count = parseInt(values.mob_member_count)||0;
-		let hp_max    = parseInt(values.hit_points_max)||0;
+		let mob_count = get_int_or_zero(values.mob_member_count);
+		let hp_max    = get_int_or_zero(values.hit_points_max);
 		
 		if (mob_count > 0) {
 			mob_count = Math.max(4, Math.min(6, mob_count));
@@ -9213,7 +9225,7 @@ on('change:mob_member_count change:hit_points_max', function() {
 
 on('change:mob_member_count', function() {
 	getAttrs(['mob_member_count'], function(values) {
-		let mob_count    = parseInt(values.mob_member_count)||0;
+		let mob_count    = get_int_or_zero(values.mob_member_count);
 		let skill_bonus  = (mob_count > 0 ? (mob_count - 1) * 2 : 0);
 		let damage_bonus = Math.floor(mob_count / 2);
 
@@ -9279,18 +9291,18 @@ vital_stats_array.forEach( function(stat) {
 	
 	on(change_stat, function() {
 		getAttrs(getAttrs_array_stat, function(values) {
-			let stat_current          = parseInt(values[stat.name])||0;
-			let stat_max              = parseInt(values[stat_max_name])||0;
-			let primary_attribute     = parseInt(values[stat.primary.attribute])||0;
-			let secondary_attribute   = parseInt(values[stat.secondary.attribute])||0;
-			let primary_skill_tier    = Math.max(parseInt(values[primary_skill_tier_name])||0, 0.5);
-			let primary_skill_total   = parseInt(values[primary_skill_total_name])||0;
-			let secondary_skill_tier  = Math.max(parseInt(values[secondary_skill_tier_name])||0, 0.5);
-			let secondary_skill_total = parseInt(values[secondary_skill_total_name])||0;
-			let has_passive_skill     = Boolean(values[stat.ps_stat])||false;
-			let extra_stat            = parseInt(values[extra_stat_name])||0;
-			let modifier              = parseInt(values[stat.modifier])||0;
-			let bane_ignore_primary   = Boolean(values[stat.bane_ignore_primary])||false;
+			let stat_current          = get_int_or_zero(values[stat.name]);
+			let stat_max              = get_int_or_zero(values[stat_max_name]);
+			let primary_attribute     = get_int_or_zero(values[stat.primary.attribute]);
+			let secondary_attribute   = get_int_or_zero(values[stat.secondary.attribute]);
+			let primary_skill_tier    = Math.max(get_int_or_zero(values[primary_skill_tier_name])||0, 0.5);
+			let primary_skill_total   = get_int_or_zero(values[primary_skill_total_name]);
+			let secondary_skill_tier  = Math.max(get_int_or_zero(values[secondary_skill_tier_name])||0, 0.5);
+			let secondary_skill_total = get_int_or_zero(values[secondary_skill_total_name]);
+			let has_passive_skill     = get_bool(values[stat.ps_stat]);
+			let extra_stat            = get_int_or_zero(values[extra_stat_name]);
+			let modifier              = get_int_or_zero(values[stat.modifier]);
+			let bane_ignore_primary   = get_bool(values[stat.bane_ignore_primary]);
 			
 			if (bane_ignore_primary) {
 				primary_attribute = 0;
@@ -9325,10 +9337,10 @@ vital_stats_array.forEach( function(stat) {
 
 	on(change_rest, function(values) {
 		getAttrs(getAttrs_array_rest, function(values) {
-			let attribute_mod        = parseInt(values[primary_attribute_mod])||0;
-			let primary_skill_tier   = parseInt(values[primary_skill_tier_name])||0;
-			let secondary_skill_tier = parseInt(values[secondary_skill_tier_name])||0;
-			let has_passive_skill    = Boolean(values[stat.ps_short_rest])||false;
+			let attribute_mod        = get_int_or_zero(values[primary_attribute_mod]);
+			let primary_skill_tier   = get_int_or_zero(values[primary_skill_tier_name]);
+			let secondary_skill_tier = get_int_or_zero(values[secondary_skill_tier_name]);
+			let has_passive_skill    = get_bool(values[stat.ps_short_rest]);
 			let dice                 = primary_skill_tier * (has_passive_skill ? 2 : 1) + secondary_skill_tier;
 			let roll                 = '{1d1, ' + dice + 'd6 + ' + attribute_mod + '}k1';
 			
@@ -9340,8 +9352,8 @@ vital_stats_array.forEach( function(stat) {
 
 on('change:hit_points_extra change:essence_points_extra', function() {
 	getAttrs(['hit_points_extra', 'essence_points_extra'], function(values) {
-		let hp_extra = parseInt(values.hit_points_extra    )||0;
-		let ep_extra = parseInt(values.essence_points_extra)||0;
+		let hp_extra = get_int_or_zero(values.hit_points_extra    );
+		let ep_extra = get_int_or_zero(values.essence_points_extra);
 		
 		let cp_vital_stats = (hp_extra + ep_extra) / 2;
 		console.log(`cp_vital_stats: ${cp_vital_stats}`);
@@ -9351,9 +9363,9 @@ on('change:hit_points_extra change:essence_points_extra', function() {
 
 on("change:speed_base change:agility_modifier change:size_modifier_speed", function() {
 	getAttrs(["speed_base", "agility_modifier", "size_modifier_speed"], function(values) {
-		let base = parseInt(values.speed_base)||0;
-		let agi_mod = parseInt(values.agility_modifier)||0;
-		let size_mod = parseInt(values.size_modifier_speed)||0;
+		let base        = get_int_or_zero(values.speed_base);
+		let agi_mod     = get_int_or_zero(values.agility_modifier);
+		let size_mod    = get_int_or_zero(values.size_modifier_speed);
 		let extra_speed = (agi_mod / 2);
 		if (agi_mod < 0) { extra_speed -= 0.5; }
 		let total = base + Math.floor(extra_speed) + size_mod;
@@ -9383,7 +9395,7 @@ on("clicked:recoveryinfo", function() {
 
 on("clicked:perceptionnoticeinfo", function() {
 	getAttrs(["perception_total"], function(values) {
-		let total = parseInt(values.perception_total)||0;
+		let total = get_int_or_zero(values.perception_total);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Perception (notice) info}} " +
 		"{{Notice=TN per GM or Sneak (stealth) check}} " +
 		"{{desc=You notice a hidden threat or something otherwise amiss. The GM might make this roll for you, but you might make it if you’re looking " +
@@ -9399,7 +9411,7 @@ on("clicked:perceptionnoticeinfo", function() {
 
 on("clicked:perceptionscaninfo", function() {
 	getAttrs(["perception_total"], function(values) {
-		let total = parseInt(values.perception_total)||0;
+		let total = get_int_or_zero(values.perception_total);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Perception (scan) info}} " +
 		"{{Scan=TN per GM or Sneak (stealth) check}} " +
 		"{{desc=You actively scan an area, searching for something specific (triggers for traps or alarms, an item you think has been hidden, etc.). " +
@@ -10274,26 +10286,26 @@ active_skill_array.forEach( function(skill) {
 	
 	on(change, function() {
 		getAttrs(getAttrs_array, function(values) {
-			let skill_points = parseInt(values[skill_points_name])||0;
+			let skill_points   = get_int_or_zero(values[skill_points_name]);
 			let attribute_name = skill.attribute;
-			let attribute_mod = parseInt(values[attribute_mod_name])||0;
+			let attribute_mod  = get_int_or_zero(values[attribute_mod_name]);
 			if (is_versatile) {
-				let has_passive_skill = Boolean(values[skill.passive_skill])||false;
+				let has_passive_skill = get_bool(values[skill.passive_skill]);
 				if (has_passive_skill) { 
 					attribute_name = skill.alternate_attribute;
-					attribute_mod = parseInt(values[alternate_attribute_mod_name])||0;
+					attribute_mod  = get_int_or_zero(values[alternate_attribute_mod_name]);
 				}
 			}
 			if (apply_no_metabolism_bane) {
-				let has_no_metabolism_bane = Boolean(values.bb_no_metabolism)||false;
+				let has_no_metabolism_bane = get_bool(values.bb_no_metabolism);
 				if (has_no_metabolism_bane) {
 					attribute_mod = 0;
 				}
 			}
-			let pool_extra = parseInt(values[skill_extra_pool_name])||0;
-			let total = skill_points + attribute_mod;
+			let pool_extra = get_int_or_zero(values[skill_extra_pool_name]);
+			let total      = skill_points + attribute_mod;
 			if (apply_size_modifier) {
-				let size_modifier_skill = parseInt(values.size_modifier_skill)||0;
+				let size_modifier_skill = get_int_or_zero(values.size_modifier_skill);
 				total += (size_modifier_skill * skill.size_modifier_multiplier);
 			}
 			let tier = get_tier(skill_points);
@@ -10361,9 +10373,9 @@ active_skill_array.forEach( function(skill) {
 		
 		on(`change:${advantage_name} change:${explode_name} change:${training}`, function() {
 			getAttrs([advantage_name, explode_name, training, count], function(values) {
-				let app_count = parseInt(values[count])||0;
+				let app_count    = get_int_or_zero(values[count]);
 				let count_change = (values[training] == 'on' ? 1 : -1);
-				let new_count = Math.max(0, (app_count + count_change));
+				let new_count    = Math.max(0, (app_count + count_change));
 				console.log(`${skill.name}_application_count = ${new_count}`);
 				setAttrs({
 					[roll]:  get_roll(values[training], values[advantage_name], values[explode_name]),
@@ -10388,10 +10400,9 @@ active_skill_array.forEach( function(skill) {
 			// Sets the recharge roll if they have the natural magic boon for this skill
 			on(`change:${tier_name} change:${natural_boon_name}`, function() {
 				getAttrs([natural_boon_name, tier_name], function(values) {
-					let has_natural_magic = Boolean(values[natural_boon_name])||false;
-					let tier = parseInt(values[tier_name])||0;
-					
-					let recharge_roll = '';
+					let has_natural_magic = get_bool(values[natural_boon_name]);
+					let tier              = get_int_or_zero(values[tier_name]);
+					let recharge_roll     = '';
 
 					if (has_natural_magic) {
 						recharge_roll = `1d6cs<${tier}cf>${(tier + 1)}`;
@@ -10405,9 +10416,9 @@ active_skill_array.forEach( function(skill) {
 			// Sets the show/hide for each EP version of a spell
 			on(change_spell, function() {
 				getAttrs(getAttrs_array_spell, function(values) {
-					let tier             = parseInt(values[tier_name])||0;
+					let tier             = get_int_or_zero(values[tier_name]);
 					let has_training     = (values[training] == 'on');
-					let has_natural_boon = Boolean(values[natural_boon_name])||false;
+					let has_natural_boon = get_bool(values[natural_boon_name]);
 //					console.log(`has ${natural_boon_name}: ${has_natural_boon}`);
 
 					if (has_natural_boon) {
@@ -10423,7 +10434,7 @@ active_skill_array.forEach( function(skill) {
 								(
 									has_training && 
 									tier >= spell.tier && 
-									(spell.ps === null || (Boolean(values[`ps_${spell.ps}_natural_magic_${skill.name}`])||false))
+									(spell.ps === null || (get_bool(values[`ps_${spell.ps}_natural_magic_${skill.name}`])))
 								);
 //								let ps_nat_name = `ps_${spell.ps}_natural_magic_${skill.name}`;
 //								let log_msg = `has_training: ${has_training}; tier: ${tier}; `;
@@ -10453,7 +10464,7 @@ active_skill_array.forEach( function(skill) {
 	// Update CP cost of skill applications
 	on(`change:${count}`, function() {
 		getAttrs([count], function(values) {
-			let app_count = parseInt(values[count])||0;
+			let app_count = get_int_or_zero(values[count]);
 			setAttrs({ [cp_apps]: cp_calc_skill_applications(app_count) });
 		});
 	});
@@ -10461,9 +10472,9 @@ active_skill_array.forEach( function(skill) {
 	// Update total skill CP cost
 	on(`change:${cp_points} change:${cp_apps} change:${cp_pool}`, function() {
 		getAttrs([cp_points, cp_apps, cp_pool], function(values) {
-			let points_val = parseInt(values[cp_points])||0;
-			let apps_val   = parseInt(values[cp_apps]  )||0;
-			let pool_val   = parseInt(values[cp_pool]  )||0;
+			let points_val = get_int_or_zero(values[cp_points]);
+			let apps_val   = get_int_or_zero(values[cp_apps]  );
+			let pool_val   = get_int_or_zero(values[cp_pool]  );
 			let cp_total = (points_val + apps_val + pool_val);
 			console.log(`${skill.name} points CP: ${points_val}, apps CP: ${apps_val}, pool CP: ${pool_val}; total = ${cp_total}`);
 			setAttrs({ [`cp_${skill.name}`]: cp_total });
@@ -10480,7 +10491,7 @@ on('change:' + combat_score_skill_array.join(' change:'), function() {
 	getAttrs(combat_score_skill_array, function(values) {
 		let cp_total = 0;
 		combat_score_skill_array.forEach( function(cp_skill) {
-			cp_total += parseInt(values[cp_skill])||0;
+			cp_total += get_int_or_zero(values[cp_skill]);
 		});
 		console.log(`cp_combat_skills: ${cp_total}`);
 		setAttrs({ 'cp_combat_skills': cp_total });
@@ -10496,7 +10507,7 @@ on('change:' + non_combat_score_skill_array.join(' change:'), function() {
 	getAttrs(non_combat_score_skill_array, function(values) {
 		let cp_total = 0;
 		non_combat_score_skill_array.forEach( function(cp_skill) {
-			cp_total += parseInt(values[cp_skill])||0;
+			cp_total += get_int_or_zero(values[cp_skill]);
 		});
 		console.log(`cp_non_combat_skills: ${cp_total}`);
 		setAttrs({ 'cp_non_combat_skills': cp_total });
@@ -10529,23 +10540,23 @@ combat_style_array.forEach( function(style) {
 	on(change, function() {
 		console.log(`${style.name} weapon changed`);
 		getAttrs(getAttrs_array, function(values) {
-			let tier                      = parseInt(values.attack_tier)||0;
-			let size_modifier             = parseInt(values.size_modifier_damage)||0;
-			let combat_expertise_modifier = parseInt(values.combat_expertise_modifier)||0;
-			let damage_dice_modifier      = parseInt(values.attack_damage_dice_modifier)||0;
-			let damage_static_modifier    = parseInt(values.attack_damage_static_modifier)||0;
-			let mob_damage_bonus          = parseInt(values.mob_damage_bonus)||0;
+			let tier                      = get_int_or_zero(values.attack_tier);
+			let size_modifier             = get_int_or_zero(values.size_modifier_damage);
+			let combat_expertise_modifier = get_int_or_zero(values.combat_expertise_modifier);
+			let damage_dice_modifier      = get_int_or_zero(values.attack_damage_dice_modifier);
+			let damage_static_modifier    = get_int_or_zero(values.attack_damage_static_modifier);
+			let mob_damage_bonus          = get_int_or_zero(values.mob_damage_bonus);
 			let set_array = {};
 
 			let precise_strike_on         = (values.use_precise_strike == 'on');
-			let deadly_precision_modifier = parseInt(values.deadly_precision_modifier)||0;
+			let deadly_precision_modifier = get_int_or_zero(values.deadly_precision_modifier);
 
 			if (values.use_sneak_attack == 'on') {
-				deadly_precision_modifier += parseInt(values.sneak_attack_modifier)||0;
+				deadly_precision_modifier += get_int_or_zero(values.sneak_attack_modifier);
 			}
 			
 			let rage_on       = (values.use_rage == 'on');
-			let rage_modifier = parseInt(values.rage_modifier)||0;
+			let rage_modifier = get_int_or_zero(values.rage_modifier);
 			
 			let modifier = size_modifier + style.damage_bonus(tier) + mob_damage_bonus +
 				(precise_strike_on ? 1 + deadly_precision_modifier : (rage_on ? rage_modifier : combat_expertise_modifier));
@@ -10577,8 +10588,8 @@ const use_pool_points_for_damage_array = [ 'attack', 'conjuration', 'dynamancy' 
 use_pool_points_for_damage_array.forEach( function(skill) {
 	on(`change:${skill}_pool_points_to_use`, function() {
 		getAttrs([`${skill}_pool_points_to_use`, `${skill}_pool_total`], function(values) {
-			let pool_total = parseInt(values[`${skill}_pool_total`])||0;
-			let use_pool   = parseInt(values[`${skill}_pool_points_to_use`])||0;
+			let pool_total = get_int_or_zero(values[`${skill}_pool_total`]);
+			let use_pool   = get_int_or_zero(values[`${skill}_pool_points_to_use`]);
 			
 			if (use_pool > pool_total) {
 				setAttrs({ [`${skill}_pool_points_to_use`]: Math.min(pool_total, use_pool) });
@@ -10592,8 +10603,8 @@ use_pool_points_for_damage_array.forEach( function(skill) {
 			let damage_static_mod = '';
 			
 			if (values[`use_${skill}_pool_points`] == 'on') {
-				let pool_total = parseInt(values[`${skill}_pool_total`])||0;
-				let use_pool   = parseInt(values[`${skill}_pool_points_to_use`])||0;
+				let pool_total = get_int_or_zero(values[`${skill}_pool_total`]);
+				let use_pool   = get_int_or_zero(values[`${skill}_pool_points_to_use`]);
 				
 				if (use_pool % 2 == 1) {
 					damage_static_mod = 1;
@@ -10615,8 +10626,8 @@ use_pool_points_for_damage_array.forEach( function(skill) {
 
 on('change:attack_attribute_modifier change:attack_damage_static_modifier', function() {
 	getAttrs(['attack_attribute_modifier', 'attack_damage_static_modifier'], function(values) {
-		let attack_attribute_modifier         = parseInt(values.attack_attribute_modifier)||0;
-		let attack_damage_static_modifier     = parseInt(values.attack_damage_static_modifier)||0;
+		let attack_attribute_modifier         = get_int_or_zero(values.attack_attribute_modifier);
+		let attack_damage_static_modifier     = get_int_or_zero(values.attack_damage_static_modifier);
 		let attack_attribute_modifier_display = attack_attribute_modifier + attack_damage_static_modifier;
 		if (attack_attribute_modifier >= 0) {
 			attack_attribute_modifier_display = '+' + attack_attribute_modifier_display;
@@ -10687,14 +10698,13 @@ proficiency_skill_array.forEach( function(skill) {
 	
 	on(change, function() {
 		getAttrs(getAttrs_array, function(values) {
-			let skill_points = parseInt(values[skill_points_name])||0;
+			let skill_points   = get_int_or_zero(values[skill_points_name]);
 			let attribute_name = skill.attribute;
-			let attribute_mod = parseInt(values[attribute_mod_name])||0;
-			let pool_extra = parseInt(values[skill_extra_pool_name])||0;
-			let total = skill_points + attribute_mod;
-			let tier = parseInt(values[skill_tier_name])||0;
-			tier = Math.max(tier, get_tier(skill_points));
-			let pool = tier + pool_extra;
+			let attribute_mod  = get_int_or_zero(values[attribute_mod_name]);
+			let pool_extra     = get_int_or_zero(values[skill_extra_pool_name]);
+			let total          = skill_points + attribute_mod;
+			let tier           = Math.max(get_int_or_zero(values[skill_tier_name]), get_tier(skill_points));
+			let pool           = tier + pool_extra;
 			
 			console.log(`${cp_points}: ${(skill_points / 2)}`);
 			setAttrs({
@@ -10749,7 +10759,7 @@ proficiency_names.forEach( function(skill) {
 		getAttrs(array, function(values) {
 			let cp_total = 0;
 			array.forEach( function(cp_item) {
-				let item_value = parseInt(values[cp_item])||0;
+				let item_value = get_int_or_zero(values[cp_item]);
 				if (cp_item.includes('pool')) {
 					item_value = cp_calc_skill_pool(item_value);
 				}
@@ -10768,7 +10778,7 @@ on('change:' + proficiency_skill_cp_names.join(' change:'), function() {
 	getAttrs(proficiency_skill_cp_names, function(values) {
 		let cp_total = 0;
 		proficiency_skill_cp_names.forEach( function(cp_skill) {
-			cp_total += parseInt(values[cp_skill])||0;
+			cp_total += get_int_or_zero(values[cp_skill]);
 		});
 		console.log(`cp_proficiencies: ${cp_total}`);
 		setAttrs({ 'cp_proficiencies': cp_total });
@@ -10791,7 +10801,7 @@ function toggle_skills(active_skill_names) {
 
 		active_skill_names.forEach( function(skill) {
 			setAttrs({
-				[`show_${skill}`]: (any_hidden ? true : ((parseInt(values[`${skill}_points`])||0) > 0))
+				[`show_${skill}`]: (any_hidden ? true : (get_int_or_zero(values[`${skill}_points`]) > 0))
 			});
 		});
 	});
@@ -10810,7 +10820,7 @@ proficiency_array.forEach( function(prof) {
 			
 			let show_proficiency = false;
 			get_array.forEach( function(show) {
-				show_proficiency ||= (Boolean(values[show])||false);
+				show_proficiency ||= (get_bool(values[show]));
 			});
 			
 			setAttrs({ [`show_${prof.name}_tier`]: show_proficiency });
@@ -10833,7 +10843,7 @@ on("clicked:toggleactiveskills", function() {
 
 on("clicked:togglepassiveskills", function() {
 	getAttrs(["show_passive_skills"], function(values) {
-		let show_passive_skills = Boolean(values.show_passive_skills)||false;
+		let show_passive_skills = get_bool(values.show_passive_skills);
 		setAttrs({
 			"show_passive_skills": !show_passive_skills
 		});
@@ -10842,7 +10852,7 @@ on("clicked:togglepassiveskills", function() {
 
 on("clicked:toggleboonsbanes", function() {
 	getAttrs(["show_boons_and_banes"], function(values) {
-		let show_boons_and_banes = Boolean(values.show_boons_and_banes)||false;
+		let show_boons_and_banes = get_bool(values.show_boons_and_banes);
 		setAttrs({
 			"show_boons_and_banes": !show_boons_and_banes
 		});
@@ -10851,7 +10861,7 @@ on("clicked:toggleboonsbanes", function() {
 
 on("clicked:togglecarry", function() {
 	getAttrs(["show_carry"], function(values) {
-		let show_carry = Boolean(values.show_carry)||false;
+		let show_carry = get_bool(values.show_carry);
 		setAttrs({
 			"show_carry": !show_carry
 		});
@@ -10870,7 +10880,7 @@ on("clicked:toggleproficiencies", function() {
 
 on("clicked:togglelanguages", function() {
 	getAttrs(["show_languages"], function(values) {
-		let show_languages = Boolean(values.show_languages)||false;
+		let show_languages = get_bool(values.show_languages);
 		setAttrs({
 			"show_languages": !show_languages
 		});
@@ -10879,7 +10889,7 @@ on("clicked:togglelanguages", function() {
 
 on("clicked:togglemodesofconveyance", function() {
 	getAttrs(["show_modes_of_conveyance"], function(values) {
-		let show_modes_of_conveyance = Boolean(values.show_modes_of_conveyance)||false;
+		let show_modes_of_conveyance = get_bool(values.show_modes_of_conveyance);
 		setAttrs({
 			"show_modes_of_conveyance": !show_modes_of_conveyance
 		});
@@ -10958,8 +10968,8 @@ damage_type_array.forEach( function(damage_type) {
 	on(`change:${has_damage_type_name}`, function() {
 		if (has_damage_type_name === 'damage_type_physical') { return; }
 		getAttrs([has_damage_type_name, 'cp_damage_types'], function(values) {
-			let cp_damage = parseInt(values.cp_damage_types)||0;
-			let cp_change = (values[has_damage_type_name] == 'on' ? 3 : -3);
+			let cp_damage     = get_int_or_zero(values.cp_damage_types);
+			let cp_change     = (values[has_damage_type_name] == 'on' ? 3 : -3);
 			let new_cp_damage = Math.max(0, cp_damage + cp_change);
 			console.log(`cp_damage_types: ${new_cp_damage}`);
 			setAttrs({ 'cp_damage_types': new_cp_damage });
@@ -10968,8 +10978,8 @@ damage_type_array.forEach( function(damage_type) {
 	
 	on(`change:${has_secondary_effect_name}`, function() {
 		getAttrs([has_secondary_effect_name, 'cp_damage_types'], function(values) {
-			let cp_damage = parseInt(values.cp_damage_types)||0;
-			let cp_change = (values[has_secondary_effect_name] == 'on' ? 3 : -3);
+			let cp_damage     = get_int_or_zero(values.cp_damage_types);
+			let cp_change     = (values[has_secondary_effect_name] == 'on' ? 3 : -3);
 			let new_cp_damage = Math.max(0, cp_damage + cp_change);
 			console.log(`cp_damage_types: ${new_cp_damage}`);
 			setAttrs({ 'cp_damage_types': new_cp_damage });
@@ -11115,8 +11125,8 @@ magic_skill_base_array.forEach( function(skill) {
 
 function set_passive_skills(eventInfo) {
 	getAttrs(['cp_combat_passives', 'cp_non_combat_passives'], function(values) {
-		let cp_cs_passive  = parseInt(values.cp_combat_passives    )||0;
-		let cp_ncs_passive = parseInt(values.cp_non_combat_passives)||0;
+		let cp_cs_passive  = get_int_or_zero(values.cp_combat_passives    );
+		let cp_ncs_passive = get_int_or_zero(values.cp_non_combat_passives);
 
 //		console.log('set_passive_skills');
 //		console.log(eventInfo);
@@ -11166,14 +11176,11 @@ function parse_movement_boon(bb_raw) {
 		{ search_text: 'slowmovement', base_cost:  0, bane: true },
 		{ search_text: 'swim',         base_cost:  0 }
 	];
-	let boon = movement_boons.find(b => bb_raw.startsWith(b.search_text));
-	let movement = parseInt(bb_raw.split(boon.search_text)[1].split('sq')[0])||0;
-	let cp_cost = boon.base_cost + (movement * 4) * (boon.bane ? -1 : 1);
-	let return_object = { 
-		cs_cp_cost: 0,
-		ncs_cp_cost: cp_cost
-	};
-	return return_object;
+	let boon     = movement_boons.find(b => bb_raw.startsWith(b.search_text));
+	let movement = get_int_or_zero(bb_raw.split(boon.search_text)[1].split('sq')[0]);
+	let cp_cost  = boon.base_cost + (movement * 4) * (boon.bane ? -1 : 1);
+	let cp_costs = { cs_cp_cost: 0, ncs_cp_cost: cp_cost };
+	return cp_costs;
 }
 
 function parse_breath_weapon_boon(bb_raw) {
@@ -11181,7 +11188,7 @@ function parse_breath_weapon_boon(bb_raw) {
 	let multiplier = (bb_array[0].includes('minor') ? 1 : 10);
 	let base_cost  = (bb_array[1] == 'physical' ? 3 : 9);
 	let cs_cp_cost = base_cost * multiplier;
-	let cp_costs = { cs_cp_cost: cs_cp_cost, ncs_cp_cost: 0 };
+	let cp_costs   = { cs_cp_cost: cs_cp_cost, ncs_cp_cost: 0 };
 	return cp_costs;
 }
 
@@ -11203,7 +11210,7 @@ function parse_natural_attack_boon(bb_raw) {
 	if (boon_parts[1].includes('x')) {
 		let attack_parts = boon_parts[1].split('x');
 		if (attack_parts.length > 1 && !isNaN(parseInt(attack_parts[1]))) {
-			multiplier = parseInt(attack_parts[1]);
+			multiplier = get_int_or_zero(attack_parts[1]);
 		}
 	}
 	if (!['', 'energy'].includes(boon_parts[0])) {
@@ -11271,9 +11278,9 @@ const boons_and_banes_array = [
 	{ name: 'bb_desert_thirst',                       search_text: 'desertthirst',              cs_cp_cost:  30, ncs_cp_cost:   0, increment: 0, max_count:  1 },
 	{ name: 'bb_disease_attack',                      search_text: 'diseaseattack',             cs_cp_cost:  15, ncs_cp_cost:   0, increment: 2, max_count:  3,
 		cp_function: function(bb_raw) {
-			let disease_attack_tier = parseInt(bb_raw.split(',')[1].substring(4, 5))||0;
-			let cs_cp_cost = disease_attack_tier * 30;
-			let cp_costs = { cs_cp_cost: cs_cp_cost, ncs_cp_cost: 0 };
+			let tier       = get_int_or_zero(bb_raw.split(',')[1].substring(4, 5));
+			let cs_cp_cost = tier * 30;
+			let cp_costs   = { cs_cp_cost: cs_cp_cost, ncs_cp_cost: 0 };
 			return cp_costs;
 		}
 	},
@@ -11296,7 +11303,7 @@ const boons_and_banes_array = [
 	{ name: 'bb_gaze_attack',                         search_text: 'gazeattack',                cs_cp_cost:   0, ncs_cp_cost:   0, increment: 1, max_count:  3,
 		cp_function: function(bb_raw) {
 			let gaze_parts  = bb_raw.split('gazeattack')[1].split(',');
-			let ep_cost     = parseInt(gaze_parts[1].split('ep')[0])||0;
+			let ep_cost     = get_int_or_zero(gaze_parts[1].split('ep')[0]);
 			let magic_skill = active_skill_array.find(s => s.applications.find(a => a.name == gaze_parts[0]));
 			let cp_costs    = {
 				cs_cp_cost:  (magic_skill.combat_score ? ep_cost : 0),
@@ -11326,7 +11333,7 @@ const boons_and_banes_array = [
 		cp_function: function(bb_raw) {
 			let bb_array   = bb_raw.split(',');
 			let weapon     = bb_array[0].split('poisonattack')[1];
-			let tier       = parseInt(bb_array[1].substring(4, 5))||0;
+			let tier       = get_int_or_zero(bb_array[1].substring(4, 5));
 			let cs_cp_cost = tier * (weapon == 'touch' ? 75 : 50);
 			let cp_costs   = { cs_cp_cost: cs_cp_cost, ncs_cp_cost: 0 };
 			return cp_costs;
@@ -11339,7 +11346,7 @@ const boons_and_banes_array = [
 	{ name: 'bb_rake',                                search_text: 'rake',                      cs_cp_cost:  10, ncs_cp_cost:   0, increment: 0, max_count:  1 },
 	{ name: 'bb_regeneration',                        search_text: 'regeneration',              cs_cp_cost:   0, ncs_cp_cost:   0, increment: 1, max_count:  1,
 		cp_function: function(bb_raw) {
-			let dice       = parseInt(bb_raw.split('regeneration')[1].split('d6,')[0])||0;
+			let dice       = get_int_or_zero(bb_raw.split('regeneration')[1].split('d6,')[0]);
 			let cs_cp_cost = dice * 20;
 			let cp_costs   = { cs_cp_cost: cs_cp_cost, ncs_cp_cost: 0 };
 			return cp_costs;
@@ -11482,7 +11489,7 @@ damage_type_list.forEach( function(type) {
 			increment:   0,
 			max_count:   1,
 			cp_function: function(bb_raw) {
-				let ndr = parseInt(bb_raw.split(type)[1])||0;
+				let ndr        = get_int_or_zero(bb_raw.split(type)[1]);
 				let cs_cp_cost = ndr * (type == 'physical' ? 3 : 1);
 				let cp_costs   = { cs_cp_cost: cs_cp_cost, ncs_cp_cost: 0 };
 				return cp_costs;
@@ -11625,20 +11632,20 @@ function set_boons_and_banes(eventInfo) {
 const cp_calc_attr_array = ['cp_combat_attributes', 'cp_non_combat_attributes', 'cp_combat_skills', 'cp_non_combat_skills', 'cp_vital_stats', 'cp_damage_types', 'cp_area_types', 'cp_spell_statistics', 'cp_combat_passives', 'cp_non_combat_passives', 'cp_combat_boons_banes', 'cp_non_combat_boons_banes', 'cp_speed', 'cp_proficiencies'];
 on('change:' + cp_calc_attr_array.join(' change:'), function() {
 	getAttrs(cp_calc_attr_array, function(values) {
-		let cp_cs_atts     = parseInt(values.cp_combat_attributes      )||0;
-		let cp_ncs_atts    = parseInt(values.cp_non_combat_attributes  )||0;
-		let cp_cs_skills   = parseInt(values.cp_combat_skills          )||0;
-		let cp_ncs_skills  = parseInt(values.cp_non_combat_skills      )||0;
-		let cp_vital_stats = parseInt(values.cp_vital_stats            )||0;
-		let cp_cs_pass     = parseInt(values.cp_combat_passives        )||0;
-		let cp_ncs_pass    = parseInt(values.cp_non_combat_passives    )||0;
-		let cp_cs_bb       = parseInt(values.cp_combat_boons_banes     )||0;
-		let cp_ncs_bb      = parseInt(values.cp_non_combat_boons_banes )||0;
-		let cp_speed       = parseInt(values.cp_speed                  )||0;
-		let cp_damage      = parseInt(values.cp_damage_types           )||0;
-		let cp_area_types  = parseInt(values.cp_area_types             )||0;
-		let cp_spell_stats = parseInt(values.cp_spell_statistics       )||0;
-		let cp_profs       = parseInt(values.cp_proficiencies          )||0;
+		let cp_cs_atts     = get_int_or_zero(values.cp_combat_attributes      );
+		let cp_ncs_atts    = get_int_or_zero(values.cp_non_combat_attributes  );
+		let cp_cs_skills   = get_int_or_zero(values.cp_combat_skills          );
+		let cp_ncs_skills  = get_int_or_zero(values.cp_non_combat_skills      );
+		let cp_vital_stats = get_int_or_zero(values.cp_vital_stats            );
+		let cp_cs_pass     = get_int_or_zero(values.cp_combat_passives        );
+		let cp_ncs_pass    = get_int_or_zero(values.cp_non_combat_passives    );
+		let cp_cs_bb       = get_int_or_zero(values.cp_combat_boons_banes     );
+		let cp_ncs_bb      = get_int_or_zero(values.cp_non_combat_boons_banes );
+		let cp_speed       = get_int_or_zero(values.cp_speed                  );
+		let cp_damage      = get_int_or_zero(values.cp_damage_types           );
+		let cp_area_types  = get_int_or_zero(values.cp_area_types             );
+		let cp_spell_stats = get_int_or_zero(values.cp_spell_statistics       );
+		let cp_profs       = get_int_or_zero(values.cp_proficiencies          );
 
 		let combat_score     = (cp_cs_atts + cp_cs_skills + cp_vital_stats + cp_cs_pass + cp_cs_bb + cp_damage) / 10;
 		let non_combat_score = (cp_ncs_atts + cp_ncs_skills + cp_ncs_pass + cp_ncs_bb + cp_speed + cp_area_types + cp_profs + cp_spell_stats) / 10;
@@ -11781,8 +11788,8 @@ function get_attack_two_handed_info(type, tier, trained = false) {
 
 on("clicked:attackdwmeleeinfo", function() {
 	getAttrs(["attack_total", "attack_tier"], function(values) {
-		let total = parseInt(values.attack_total)||0;
-		let tier = parseInt(values.attack_tier)||0;
+		let total     = get_int_or_zero(values.attack_total);
+		let tier      = get_int_or_zero(values.attack_tier);
 		let roll_text = get_attack_dw_info("Melee", tier);
 		startRoll(roll_text, (results) => {
 			finishRoll(results.rollId);
@@ -11792,10 +11799,10 @@ on("clicked:attackdwmeleeinfo", function() {
 
 on("clicked:attackdwmissileinfo", function() {
 	getAttrs(["attack_total", "attack_tier", "attack_attribute_modifier", "attack_attribute_name", "attack_dw_missile_training"], function(values) {
-		let total = parseInt(values.attack_total)||0;
-		let tier = parseInt(values.attack_tier)||0;
-		let mod = parseInt(values.attack_attribute_modifier)||0;
-		let trained = (values.attack_dw_missile_training == 'on');
+		let total     = get_int_or_zero(values.attack_total);
+		let tier      = get_int_or_zero(values.attack_tier);
+		let mod       = get_int_or_zero(values.attack_attribute_modifier);
+		let trained   = (values.attack_dw_missile_training == 'on');
 		let roll_text = get_attack_dw_info("Missile", tier, mod, trained, values.attack_attribute_name);
 		startRoll(roll_text, (results) => {
 			finishRoll(results.rollId);
@@ -11805,8 +11812,8 @@ on("clicked:attackdwmissileinfo", function() {
 
 on("clicked:attackfreehandmeleeinfo", function() {
 	getAttrs(["attack_total", "attack_tier"], function(values) {
-		let total = parseInt(values.attack_total)||0;
-		let tier = parseInt(values.attack_tier)||0;
+		let total     = get_int_or_zero(values.attack_total);
+		let tier      = get_int_or_zero(values.attack_tier);
 		let roll_text = get_attack_free_hand_info("Melee", tier);
 		startRoll(roll_text, (results) => {
 			finishRoll(results.rollId);
@@ -11816,10 +11823,10 @@ on("clicked:attackfreehandmeleeinfo", function() {
 
 on("clicked:attackfreehandmissileinfo", function() {
 	getAttrs(["attack_total", "attack_tier", "attack_attribute_modifier", "attack_attribute_name", "attack_free_hand_missile_training"], function(values) {
-		let total = parseInt(values.attack_total)||0;
-		let tier = parseInt(values.attack_tier)||0;
-		let mod = parseInt(values.attack_attribute_modifier)||0;
-		let trained = (values.attack_free_hand_missile_training == 'on');
+		let total     = get_int_or_zero(values.attack_total);
+		let tier      = get_int_or_zero(values.attack_tier);
+		let mod       = get_int_or_zero(values.attack_attribute_modifier);
+		let trained   = (values.attack_free_hand_missile_training == 'on');
 		let roll_text = get_attack_free_hand_info("Missile", tier, mod, trained, values.attack_attribute_name);
 		startRoll(roll_text, (results) => {
 			finishRoll(results.rollId);
@@ -11829,8 +11836,8 @@ on("clicked:attackfreehandmissileinfo", function() {
 
 on("clicked:attackmeleewithshieldinfo", function() {
 	getAttrs(["attack_total", "attack_tier"], function(values) {
-		let total = parseInt(values.attack_total)||0;
-		let tier = parseInt(values.attack_tier)||0;
+		let total     = get_int_or_zero(values.attack_total);
+		let tier      = get_int_or_zero(values.attack_tier);
 		let roll_text = get_attack_with_shield_info("Melee", tier);
 		startRoll(roll_text, (results) => {
 			finishRoll(results.rollId);
@@ -11840,10 +11847,10 @@ on("clicked:attackmeleewithshieldinfo", function() {
 
 on("clicked:attackmissilewithshieldinfo", function() {
 	getAttrs(["attack_total", "attack_tier", "attack_attribute_modifier", "attack_attribute_name", "attack_missile_with_shield_training"], function(values) {
-		let total = parseInt(values.attack_total)||0;
-		let tier = parseInt(values.attack_tier)||0;
-		let mod = parseInt(values.attack_attribute_modifier)||0;
-		let trained = (values.attack_missile_with_shield_training == 'on');
+		let total     = get_int_or_zero(values.attack_total);
+		let tier      = get_int_or_zero(values.attack_tier);
+		let mod       = get_int_or_zero(values.attack_attribute_modifier);
+		let trained   = (values.attack_missile_with_shield_training == 'on');
 		let roll_text = get_attack_with_shield_info("Missile", tier, mod, trained, values.attack_attribute_name);
 		startRoll(roll_text, (results) => {
 			finishRoll(results.rollId);
@@ -11853,8 +11860,8 @@ on("clicked:attackmissilewithshieldinfo", function() {
 
 on("clicked:attacktwohandedmeleeinfo", function() {
 	getAttrs(["attack_total", "attack_tier"], function(values) {
-		let total = parseInt(values.attack_total)||0;
-		let tier = parseInt(values.attack_tier)||0;
+		let total     = get_int_or_zero(values.attack_total);
+		let tier      = get_int_or_zero(values.attack_tier);
 		let roll_text = get_attack_two_handed_info("Melee", tier);
 		startRoll(roll_text, (results) => {
 			finishRoll(results.rollId);
@@ -11864,9 +11871,9 @@ on("clicked:attacktwohandedmeleeinfo", function() {
 
 on("clicked:attacktwohandedmissileinfo", function() {
 	getAttrs(["attack_total", "attack_tier", "attack_two_handed_missile_training"], function(values) {
-		let total = parseInt(values.attack_total)||0;
-		let tier = parseInt(values.attack_tier)||0;
-		let trained = (values.attack_two_handed_missile_training == 'on');
+		let total     = get_int_or_zero(values.attack_total);
+		let tier      = get_int_or_zero(values.attack_tier);
+		let trained   = (values.attack_two_handed_missile_training == 'on');
 		let roll_text = get_attack_two_handed_info("Missile", tier, trained);
 		startRoll(roll_text, (results) => {
 			finishRoll(results.rollId);
@@ -11876,7 +11883,7 @@ on("clicked:attacktwohandedmissileinfo", function() {
 
 on("clicked:attackgrappleinfo", function() {
 	getAttrs(["attack_total"], function(values) {
-		let total = parseInt(values.attack_total)||0;
+		let total     = get_int_or_zero(values.attack_total);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Attack (grapple) info}} " +
 		"{{Escape=An Attack (grapple) check or a Sneak (escapology) check to end the grapple or escape a hold}} " +
 		"{{Hold=An Attack (grapple) check to get your foe in a hold – while in a hold you suffer disadvantage on physical " +
@@ -11896,10 +11903,10 @@ on("clicked:attackgrappleinfo", function() {
 
 on("clicked:attackrepositioninfo", function() {
 	getAttrs(["attack_total", "attack_attribute_modifier", "attack_attribute_name", "speed_total"], function(values) {
-		let total = parseInt(values.attack_total)||0;
+		let total          = get_int_or_zero(values.attack_total);
 		let attribute_name = values.attack_attribute_name;
-		let mod = parseInt(values.attack_attribute_modifier)||0;
-		let speed = parseInt(values.speed_total)||0;
+		let mod            = get_int_or_zero(values.attack_attribute_modifier);
+		let speed          = get_int_or_zero(values.speed_total);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Attack (reposition) info}} " +
 		"{{Spin=Move an adjacent opponent to any other square adjacent to you, provided they have a clear path of adjacent squares in between. " +
 		"If you fail, your opponent does not move at all.}} " +
@@ -11921,9 +11928,9 @@ on("clicked:attackrepositioninfo", function() {
 
 on("clicked:attacktacticalcombatinfo", function() {
 	getAttrs(["attack_total", "attack_attribute_modifier", "attack_attribute_name"], function(values) {
-		let total = parseInt(values.attack_total)||0;
+		let total          = get_int_or_zero(values.attack_total);
 		let attribute_name = values.attack_attribute_name;
-		let mod = parseInt(values.attack_attribute_modifier)||0;
+		let mod            = get_int_or_zero(values.attack_attribute_modifier);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Attack (tactical combat) info}} " +
 		"{{Disarm=You disarm your opponent of one item they are holding, and the item falls to the ground. Your Attack (tactical combat) check " +
 		"is opposed by their Attack (tactical combat) check." + get_crit_text('you choose *one* of the following:' + _bull + 'The item is knocked away ' + 
@@ -11953,7 +11960,7 @@ function get_defend_text() {
 
 on("clicked:defendblockinfo", function() {
 	getAttrs(["defend_total"], function(values) {
-		let total = parseInt(values.defend_total)||0;
+		let total = get_int_or_zero(values.defend_total);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Defend (block) info}} {{Block=TN Attack check}} " +
 		"{{desc=You block an attack with a shield, parry it with a weapon, or intercept it with an item or even your bare hands. This does not cost " +
 		"any Action Points. If you are not holding a melee weapon or other object you could reasonably use to block (GM’s discretion), you suffer " +
@@ -11968,7 +11975,7 @@ on("clicked:defendblockinfo", function() {
 
 on("clicked:defenddodgeinfo", function() {
 	getAttrs(["defend_total"], function(values) {
-		let total = parseInt(values.defend_total)||0;
+		let total = get_int_or_zero(values.defend_total);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Defend (dodge) info}} " +
 		"{{Dodge=TN Attack check}} " +
 		"{{desc=You avoid an attack entirely. This does not cost any Action Points. You suffer disadvantage on Defend (dodge) checks when wearing " +
@@ -11987,7 +11994,7 @@ function get_pr_text() {
 
 on("clicked:prconstitutioninfo", function() {
 	getAttrs(["pr_total"], function(values) {
-		let total = parseInt(values.pr_total)||0;
+		let total = get_int_or_zero(values.pr_total);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Physical Resilience (constitution) info}} " +
 		"{{Constitution=TN per GM}} " +
 		"{{desc=You make a Physical Resilience (constitution) check to defend against poison, disease or the effects of extreme temperatures. " +
@@ -12003,7 +12010,7 @@ on("clicked:prconstitutioninfo", function() {
 
 on("clicked:prfortitudeinfo", function() {
 	getAttrs(["pr_total"], function(values) {
-		let total = parseInt(values.pr_total)||0;
+		let total = get_int_or_zero(values.pr_total);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Physical Resilience (fortitude) info}} " +
 		"{{Fortitude=TN per spell or effect}} " +
 		"{{desc=You make a Physical Resilience (fortitude) check to defend against supernatural attacks that affect your body. This includes " +
@@ -12022,7 +12029,7 @@ on("clicked:prfortitudeinfo", function() {
 
 on("clicked:mrconcentrationinfo", function() {
 	getAttrs(["mr_total"], function(values) {
-		let total = parseInt(values.mr_total)||0;
+		let total = get_int_or_zero(values.mr_total);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Mental Resilience (concentration) info}} " +
 		"{{Concentrate=TN damage taken or per GM}} " +
 		"{{desc=You make a Mental Resilience (concentration) check in response to being interrupted when you’re trying to concentrate. " +
@@ -12044,7 +12051,7 @@ on("clicked:mrconcentrationinfo", function() {
 
 on("clicked:mrwillpowerinfo", function() {
 	getAttrs(["mr_total"], function(values) {
-		let total = parseInt(values.mr_total)||0;
+		let total = get_int_or_zero(values.mr_total);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Mental Resilience (willpower) info}} " +
 		"{{Willpower=TN per spell or effect}} " +
 		"{{desc=You make a Mental Resilience (willpower) check to defend against supernatural attacks that affect your mind, or to resist " +
@@ -12072,7 +12079,7 @@ function get_athletics_text(elusive_movement_training) {
 
 on("clicked:athleticselusivemovementinfo", function() {
 	getAttrs(["athletics_total", "athletics_elusive_movement_training"], function(values) {
-		let total = parseInt(values.athletics_total)||0;
+		let total = get_int_or_zero(values.athletics_total);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Athletics (elusive movement) info}} " +
 		"{{Elusive movement=TN 12 + enemy's Attack total }} " +
 		"{{desc=You can spend one Action Point to attempt elusive movement. You make an Athletics (elusive movement) check, and move up to " +
@@ -12090,7 +12097,7 @@ on("clicked:athleticselusivemovementinfo", function() {
 
 on("clicked:athleticsgymnasticsinfo", function() {
 	getAttrs(["athletics_tier", "athletics_elusive_movement_training"], function(values) {
-		let tier = parseInt(values.athletics_tier)||0;
+		let tier = get_int_or_zero(values.athletics_tier);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Athletics (gymnastics) info}} " +
 		"{{Gymnastics=TN per GM}} {{Fall lightly=TN 15 + 3 per 10 feet}} " +
 		"{{desc=You can balance on narrow ledges or slippery surfaces, perform backflips, or swing from a rope, pole or other affixed item. " +
@@ -12113,7 +12120,7 @@ on("clicked:athleticsgymnasticsinfo", function() {
 
 on("clicked:athleticsclimbinfo", function() {
 	getAttrs(["athletics_total", "athletics_elusive_movement_training"], function(values) {
-		let total = parseInt(values.athletics_total)||0;
+		let total = get_int_or_zero(values.athletics_total);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Athletics (climb) info}} {{Climb=TN per GM}} " +
 		"{{desc=You can spend one Action Point to attempt to climb a rope or steep surface. You make an Athletics (climb) check, and move up " +
 		"to half your speed. The Target Number is determined by how difficult the climb is. " +
@@ -12133,7 +12140,7 @@ on("clicked:athleticsclimbinfo", function() {
 
 on("clicked:athleticsfeatinfo", function() {
 	getAttrs(["athletics_total", "athletics_elusive_movement_training"], function(values) {
-		let total = parseInt(values.athletics_total)||0;
+		let total = get_int_or_zero(values.athletics_total);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Athletics (feat) info}} {{Feat=TN per GM}} " +
 		"{{desc=You perform some feat of athletics, using leverage or just plain brawn. This is usually lifting or moving something heavy, holding a door " +
 		"closed or bashing one down, or something similar. The TN of the check is based on the task, or it’s an opposed Athletics (feat) check." +
@@ -12146,7 +12153,7 @@ on("clicked:athleticsfeatinfo", function() {
 
 on("clicked:athleticsjumpinfo", function() {
 	getAttrs(["athletics_total", "athletics_elusive_movement_training"], function(values) {
-		let total = parseInt(values.athletics_total)||0;
+		let total = get_int_or_zero(values.athletics_total);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Athletics (jump) info}} " +
 		"{{Long Jump=TN squares &times; 8}} {{High Jump=TN feet &times; 6}} " +
 		"{{desc=You can jump, and your Athletics (jump) check determines how far. Jumping costs at least one Action Point and counts as running. " +
@@ -12165,7 +12172,7 @@ on("clicked:athleticsjumpinfo", function() {
 
 on("clicked:athleticsswiminfo", function() {
 	getAttrs(["athletics_total", "athletics_elusive_movement_training"], function(values) {
-		let total = parseInt(values.athletics_total)||0;
+		let total = get_int_or_zero(values.athletics_total);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Athletics (swim) info}} {{Swim=TN per GM}} " +
 		"{{desc=As long as you have training in this skill application, you know how to swim and do not need to make checks to move through the water. " +
 		"You can spend one Action Point to swim up to half your speed." +
@@ -12189,8 +12196,8 @@ function get_medicine_text() {
 
 on("clicked:medicinediagnoseinfo", function() {
 	getAttrs(["medicine_total", "medicine_tier"], function(values) {
-		let total = parseInt(values.medicine_total)||0;
-		let tier = parseInt(values.medicine_tier)||0;
+		let total = get_int_or_zero(values.medicine_total);
+		let tier  = get_int_or_zero(values.medicine_tier);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Medicine (diagnose) info}} " +
 		"{{desc=You can attempt to diagnose a medical condition afflicting a creature. For diseases and poisons, the TN is the TN of the specific disease or " +
 		"poison. For other conditions, the GM will set the TN. This skill application can also be used forensically, to determine cause of death in a corpse." + 
@@ -12203,8 +12210,8 @@ on("clicked:medicinediagnoseinfo", function() {
 
 on("clicked:medicinefirstaidinfo", function() {
 	getAttrs(["medicine_total", "medicine_tier"], function(values) {
-		let total = parseInt(values.medicine_total)||0;
-		let tier = parseInt(values.medicine_tier)||0;
+		let total = get_int_or_zero(values.medicine_total);
+		let tier  = get_int_or_zero(values.medicine_tier);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Medicine (first aid) info}} " +
 		"{{Boost Short Rest=TN 20}} {{Stabilize=TN 16}} {{Treat Poison=Poison TN}} " +
 		"{{desc=You can apply immediate medical attention, which can be used for one of the following actions. " +
@@ -12227,8 +12234,8 @@ on("clicked:medicinefirstaidinfo", function() {
 
 on("clicked:medicinelongtermcareinfo", function() {
 	getAttrs(["medicine_total", "medicine_tier"], function(values) {
-		let total = parseInt(values.medicine_total)||0;
-		let tier = parseInt(values.medicine_tier)||0;
+		let total = get_int_or_zero(values.medicine_total);
+		let tier  = get_int_or_zero(values.medicine_tier);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Medicine (long-term care) info}} " +
 		"{{Boost Long Rest=TN 20}} {{Treat Disease=Disease TN}} " +
 		"{{desc=You give medical care once per day to a number of patients in a hospital or similar environment, which can be used for one " +
@@ -12254,7 +12261,7 @@ function get_persuade_text() {
 
 on("clicked:persuadebluffinfo", function() {
 	getAttrs(["persuade_total"], function(values) {
-		let total = parseInt(values.persuade_total)||0;
+		let total = get_int_or_zero(values.persuade_total);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Persuade (bluff) info}} " +
 		"{{Distract=Perception (notice) check}} {{Impersonate=Intuition check}} {{Lie=Intuition check}} " +
 		"{{desc=Bluff has three uses: distract, impersonate, and lie." +
@@ -12277,7 +12284,7 @@ on("clicked:persuadebluffinfo", function() {
 
 on("clicked:persuadediplomacyinfo", function() {
 	getAttrs(["persuade_total"], function(values) {
-		let total = parseInt(values.persuade_total)||0;
+		let total = get_int_or_zero(values.persuade_total);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Persuade (diplomacy) info}} " +
 		"{{Gather information=TN per GM}} {{Improve attitude=TN per GM}} " +
 		"{{desc=Diplomacy has two uses: gather information and improve attitude." +
@@ -12296,8 +12303,8 @@ on("clicked:persuadediplomacyinfo", function() {
 
 on("clicked:persuadeintimidateinfo", function() {
 	getAttrs(["persuade_total", "persuade_tier"], function(values) {
-		let total = parseInt(values.persuade_total)||0;
-		let tier = parseInt(values.persuade_tier)||0;
+		let total       = get_int_or_zero(values.persuade_total);
+		let tier        = get_int_or_zero(values.persuade_tier);
 		let effect_tier = tier_effect(tier, 1, ' rounds', 'Persuade');
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Persuade (intimidate) info}} " +
 		"{{Coerce=Mental Resilience (willpower) check}} {{Demoralize=Mental Resilience (willpower) check}} {{Taunt=Mental Resilience (willpower) check}} " +
@@ -12319,7 +12326,7 @@ on("clicked:persuadeintimidateinfo", function() {
 
 on("clicked:persuadeintuitioninfo", function() {
 	getAttrs(["persuade_total"], function(values) {
-		let total = parseInt(values.persuade_total)||0;
+		let total = get_int_or_zero(values.persuade_total);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Persuade (intuition) info}} " +
 		"{{desc=Intuition is your ability to tell when someone is lying to you, not telling you the whole story, has an ulterior motive, or is candy-coating something. It is used to oppose other Persuade checks.}}'";
 		startRoll(roll_text, (results) => {
@@ -12330,7 +12337,7 @@ on("clicked:persuadeintuitioninfo", function() {
 
 on("clicked:securitydisabledeviceinfo", function() {
 	getAttrs(["security_total"], function(values) {
-		let total = parseInt(values.security_total)||0;
+		let total = get_int_or_zero(values.security_total);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Security (disable device) info}} " +
 		"{{Disable device=TN per GM}} {{Bypass device=TN + 6}} " +
 		"{{desc=You can spend 6 Action Points to attempt to disable an alarm system or trap, making a Security (disable) check. " +
@@ -12347,7 +12354,7 @@ on("clicked:securitydisabledeviceinfo", function() {
 
 on("clicked:securitypicklocksinfo", function() {
 	getAttrs(["security_total"], function(values) {
-		let total = parseInt(values.security_total)||0;
+		let total = get_int_or_zero(values.security_total);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Security (pick locks) info}} " +
 		"{{Pick lock=TN per GM}} " +
 		"{{desc=You can spend 4 Action Points to attempt to pick a lock, making a Security (pick locks) check. The Target number depends on the lock " +
@@ -12362,7 +12369,7 @@ on("clicked:securitypicklocksinfo", function() {
 
 on("clicked:sneakescapologyinfo", function() {
 	getAttrs(["sneak_total"], function(values) {
-		let total = parseInt(values.sneak_total)||0;
+		let total = get_int_or_zero(values.sneak_total);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Sneak (escapology) info}} " +
 		"{{Escape grapple=Attack (grapple) check}} {{Escape bonds=TN per GM}} " +
 		"{{desc=You can spend one Action Point to attempt to escape a grapple, hold or bonds, like ropes or manacles. " +
@@ -12375,7 +12382,7 @@ on("clicked:sneakescapologyinfo", function() {
 
 on("clicked:sneaksleightofhandinfo", function() {
 	getAttrs(["sneak_total"], function(values) {
-		let total = parseInt(values.sneak_total)||0;
+		let total = get_int_or_zero(values.sneak_total);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Sneak (sleight of hand) info}} " +
 		"{{Conceal item=Perception check}} " +
 		"{{desc=You can spend one Action Point to hide a small item from sight. You make a Sneak (sleight of hand) check, which sets the " +
@@ -12391,7 +12398,7 @@ on("clicked:sneaksleightofhandinfo", function() {
 
 on("clicked:sneakstealthinfo", function() {
 	getAttrs(["sneak_total"], function(values) {
-		let total = parseInt(values.sneak_total)||0;
+		let total = get_int_or_zero(values.sneak_total);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Sneak (stealth) info}} " +
 		"{{Avoid detection=Perception check}}" +
 		"{{desc=You can spend one Action Point to attempt to avoid being seen or heard. You make a Sneak (stealth) check, and can move " +
@@ -12411,7 +12418,7 @@ function get_nature_text() {
 
 on("clicked:naturehandleanimalinfo", function() {
 	getAttrs(["nature_total"], function(values) {
-		let total = parseInt(values.nature_total)||0;
+		let total = get_int_or_zero(values.nature_total);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Nature (handle animal) info}} " +
 		"{{desc=You can use this skill application to improve the attitude of an animal (or similar creature) as per Persuade (diplomacy). " + _rn + 
 		"You can also use this to get an animal to perform an action it might not normally do, like stay, heel, guard, or attack. In this case, your " +
@@ -12426,8 +12433,8 @@ on("clicked:naturehandleanimalinfo", function() {
 
 on("clicked:naturesustaininfo", function() {
 	getAttrs(["nature_total", "nature_tier"], function(values) {
-		let total = parseInt(values.nature_total)||0;
-		let tier = parseInt(values.nature_tier)||0;
+		let total       = get_int_or_zero(values.nature_total);
+		let tier        = get_int_or_zero(values.nature_tier);
 		let effect_tier = tier_effect(tier, 2, ' people', 'Nature');
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Nature (sustain) info}} " +
 		"{{Food, water, shelter=TN 12}} {{Predict weather=TN 20}} {{Recognize hazard=TN per GM}} {{Find north=TN 12}}" +
@@ -12445,7 +12452,7 @@ on("clicked:naturesustaininfo", function() {
 
 on("clicked:naturetrackinfo", function() {
 	getAttrs(["nature_total"], function(values) {
-		let total = parseInt(values.nature_total)||0;
+		let total = get_int_or_zero(values.nature_total);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Nature (track) info}} " +
 		"{{Track=TN per GM}} {{Find north=TN 12}}" +
 		"{{desc=You can attempt to track one or more creatures by making a Nature (track) check. The Target Number is based on many different factors, " +
@@ -12461,7 +12468,7 @@ on("clicked:naturetrackinfo", function() {
 
 on("clicked:cinemapointsinfo", function() {
 	getAttrs(["ps_action_hero"], function(values) {
-		let has_action_hero = Boolean(values.ps_action_hero)||false;
+		let has_action_hero = get_bool(values.ps_action_hero);
 		let cinema_point_max = (has_action_hero ? 6 : 3);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Cinema Points}} " +
 		"{{desc=Cinema Points are awarded by the GM; you can hold up to [[" + cinema_point_max + "]] at a time. You can spend one Cinema Point to do any " +
@@ -12548,7 +12555,7 @@ on("change:equipment_carry change:money_gold_coins change:money_silver_coins cha
 
 on('change:arcana_points', function() {
 	getAttrs(['arcana_points', 'area_type_bolt', 'area_type_touch', 'area_type_self'], function(values) {
-		let skill_points = parseInt(values.arcana_points)||0;
+		let skill_points = get_int_or_zero(values.arcana_points);
 		let defaults = '0';
 		if (skill_points >= 1) {
 			defaults = 'on';
@@ -12564,9 +12571,9 @@ on('change:arcana_points', function() {
 
 on('change:arcana_tier', function() {
 	getAttrs(['arcana_tier'], function(values) {
-		let tier = parseInt(values.arcana_tier)||0;
+		let tier           = get_int_or_zero(values.arcana_tier);
 		let duration_bonus = tier - 1;
-		let duration_text = 'Base';
+		let duration_text  = 'Base';
 		if (duration_bonus > 0) {
 			duration_text += ' + ' + duration_bonus;
 		}
@@ -12582,7 +12589,7 @@ on('change:arcana_tier', function() {
 on("clicked:arcanainfo", function() {
 	getAttrs(["arcana_total"], function(values) {
 	
-		let total = parseInt(values.arcana_total)||0;
+		let total = get_int_or_zero(values.arcana_total);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Arcana info}} " +
 		"{{EFFECT OR TRAP:" + _n + "Detect" + _n + "Identify magic skill" + _n + "Identify spell" + _n + "Identify specific version=" + _n + "TN" + _n + 
 		"TN + 2" + _n + "TN + 5" + _n + "TN + 10}} " +
@@ -12624,9 +12631,9 @@ spell_statistics.forEach( function(statistic) {
 	let key_array = ['arcana_points', 'arcana_total', extra_name];
 	on('change:' + key_array.join(' change:'), function() {
 		getAttrs(key_array, function(values) {
-			let arcana_points = parseInt(values.arcana_points)||0;
-			let arcana_total  = parseInt(values.arcana_total )||0;
-			let extra         = parseInt(values[extra_name]  )||0;
+			let arcana_points = get_int_or_zero(values.arcana_points);
+			let arcana_total  = get_int_or_zero(values.arcana_total );
+			let extra         = get_int_or_zero(values[extra_name]  );
 			setAttrs({
 				[`spell_${statistic.name}`]:    (arcana_points >= 1 ? Math.max(1, Math.floor(arcana_total / statistic.divisor)) + extra : ''),
 				[`cp_spell_${statistic.name}`]: (extra * statistic.divisor)
@@ -12637,8 +12644,8 @@ spell_statistics.forEach( function(statistic) {
 
 on('change:cp_spell_range change:cp_spell_area_size', function() {
 	getAttrs(['cp_spell_range', 'cp_spell_area_size'], function(values) {
-		let cp_spell_range     = parseInt(values.cp_spell_range    )||0;
-		let cp_spell_area_size = parseInt(values.cp_spell_area_size)||0;
+		let cp_spell_range     = get_int_or_zero(values.cp_spell_range    );
+		let cp_spell_area_size = get_int_or_zero(values.cp_spell_area_size);
 		console.log(`cp_spell_statistics: ${(cp_spell_range + cp_spell_area_size)}`);
 		setAttrs({ 'cp_spell_statistics': (cp_spell_range + cp_spell_area_size) });
 	});
@@ -12720,13 +12727,13 @@ function get_prowess_imbue_info(tier, show_tier1, show_tier2, show_tier3, show_t
 
 on("clicked:alterationadoptaspectinfo", function() {
 	getAttrs(["alteration_tier", "show_alteration_adopt_aspect_10_ep", "show_alteration_adopt_aspect_20_ep", "show_alteration_adopt_aspect_30_ep", "ps_supernatural_aspect", "spell_duration_bonus", "spell_range"], function(values) {
-		let tier = parseInt(values.alteration_tier)||0;
-		let show_alteration_adopt_aspect_10_ep = Boolean(values.show_alteration_adopt_aspect_10_ep)||false;
-		let show_alteration_adopt_aspect_20_ep = Boolean(values.show_alteration_adopt_aspect_20_ep)||false;
-		let show_alteration_adopt_aspect_30_ep = Boolean(values.show_alteration_adopt_aspect_30_ep)||false;
-		let has_supernatural_aspect = Boolean(values.ps_supernatural_aspect)||false;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
-		let range = parseInt(values.spell_range)||0;
+		let tier = get_int_or_zero(values.alteration_tier);
+		let show_alteration_adopt_aspect_10_ep = get_bool(values.show_alteration_adopt_aspect_10_ep);
+		let show_alteration_adopt_aspect_20_ep = get_bool(values.show_alteration_adopt_aspect_20_ep);
+		let show_alteration_adopt_aspect_30_ep = get_bool(values.show_alteration_adopt_aspect_30_ep);
+		let has_supernatural_aspect = get_bool(values.ps_supernatural_aspect);
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
+		let range = get_int_or_zero(values.spell_range);
 		let tier1_effect = '{{5 EP=5 EP boon list}} {{10 EP=10 EP boon list}} ';
 		let tier2_effect = (show_alteration_adopt_aspect_20_ep ? '{{20 EP=20 EP boon list}} ' : '');
 		let tier3_effect = (show_alteration_adopt_aspect_30_ep ? '{{30 EP=30 EP boon list}} ' : '');
@@ -12769,18 +12776,18 @@ on("clicked:alterationadoptaspect30ep", function() {
 
 on("clicked:alterationalterarmorinfo", function() {
 	getAttrs(["alteration_tier", "show_alteration_alter_armor_10_ep", "show_alteration_alter_armor_20_ep", "show_alteration_alter_armor_30_ep", "show_alteration_alter_armor_40_ep", "spell_duration_bonus", "spell_range", "spell_area_size", "area_type_blast", "area_type_burst"], function(values) {
-		let tier = parseInt(values.alteration_tier)||0;
-		let show_alteration_alter_armor_10_ep = Boolean(values.show_alteration_alter_armor_10_ep)||false;
-		let show_alteration_alter_armor_20_ep = Boolean(values.show_alteration_alter_armor_20_ep)||false;
-		let show_alteration_alter_armor_30_ep = Boolean(values.show_alteration_alter_armor_30_ep)||false;
-		let show_alteration_alter_armor_40_ep = Boolean(values.show_alteration_alter_armor_40_ep)||false;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
+		let tier = get_int_or_zero(values.alteration_tier);
+		let show_alteration_alter_armor_10_ep = get_bool(values.show_alteration_alter_armor_10_ep);
+		let show_alteration_alter_armor_20_ep = get_bool(values.show_alteration_alter_armor_20_ep);
+		let show_alteration_alter_armor_30_ep = get_bool(values.show_alteration_alter_armor_30_ep);
+		let show_alteration_alter_armor_40_ep = get_bool(values.show_alteration_alter_armor_40_ep);
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
 		let base_duration = [
 			{ name: 'add magic',    duration: dur_concentration         },
 			{ name: 'remove magic', duration: dur_short_rest_w_checks_1 }
 		];
-		let range = parseInt(values.spell_range)||0;
-		let area_size = parseInt(values.spell_area_size)||0;
+		let range = get_int_or_zero(values.spell_range);
+		let area_size = get_int_or_zero(values.spell_area_size);
 		let area_type_list = get_area_type_list(area_size, values.area_type_blast, values.area_type_burst, '0', '0', '0');
 		let tier1_effect = 										'{{10 EP=Add/remove magic}} ';
 		let tier2_effect = (show_alteration_alter_armor_20_ep ? `{{20 EP=Add/remove eldritch${_or}Energy armor}} ` : '');
@@ -12819,18 +12826,18 @@ on("clicked:alterationalterarmor40ep", function() {
 
 on("clicked:alterationalterweaponinfo", function() {
 	getAttrs(["alteration_tier", "show_alteration_alter_weapon_10_ep", "show_alteration_alter_weapon_20_ep", "show_alteration_alter_weapon_30_ep", "show_alteration_alter_weapon_40_ep", "spell_duration_bonus", "spell_range", "spell_area_size", "area_type_blast", "area_type_burst"], function(values) {
-		let tier = parseInt(values.alteration_tier)||0;
-		let show_alteration_alter_weapon_10_ep = Boolean(values.show_alteration_alter_weapon_10_ep)||false;
-		let show_alteration_alter_weapon_20_ep = Boolean(values.show_alteration_alter_weapon_20_ep)||false;
-		let show_alteration_alter_weapon_30_ep = Boolean(values.show_alteration_alter_weapon_30_ep)||false;
-		let show_alteration_alter_weapon_40_ep = Boolean(values.show_alteration_alter_weapon_40_ep)||false;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
+		let tier = get_int_or_zero(values.alteration_tier);
+		let show_alteration_alter_weapon_10_ep = get_bool(values.show_alteration_alter_weapon_10_ep);
+		let show_alteration_alter_weapon_20_ep = get_bool(values.show_alteration_alter_weapon_20_ep);
+		let show_alteration_alter_weapon_30_ep = get_bool(values.show_alteration_alter_weapon_30_ep);
+		let show_alteration_alter_weapon_40_ep = get_bool(values.show_alteration_alter_weapon_40_ep);
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
 		let base_duration = [
 			{ name: 'add magic',    duration: dur_concentration         },
 			{ name: 'remove magic', duration: dur_short_rest_w_checks_1 }
 		];
-		let range = parseInt(values.spell_range)||0;
-		let area_size = parseInt(values.spell_area_size)||0;
+		let range = get_int_or_zero(values.spell_range);
+		let area_size = get_int_or_zero(values.spell_area_size);
 		let area_type_list = get_area_type_list(area_size, values.area_type_blast, values.area_type_burst, '0', '0', '0');
 		let tier1_effect = 										 '{{10 EP=Add/remove magic}} ';
 		let tier2_effect = (show_alteration_alter_weapon_20_ep ? `{{20 EP=Add/remove eldritch${_or}Energy weapon}} ` : '');
@@ -12869,13 +12876,13 @@ on("clicked:alterationalterweapon40ep", function() {
 
 on("clicked:alterationchangesizeinfo", function() {
 	getAttrs(["alteration_tier", "show_alteration_change_size_10_ep", "show_alteration_change_size_20_ep", "show_alteration_change_size_30_ep", "spell_duration_bonus", "spell_range", "spell_area_size", "area_type_blast", "area_type_burst", "area_type_line", "area_type_nova", "area_type_wall"], function(values) {
-		let tier = parseInt(values.alteration_tier)||0;
-		let show_alteration_change_size_10_ep = Boolean(values.show_alteration_change_size_10_ep)||false;
-		let show_alteration_change_size_20_ep = Boolean(values.show_alteration_change_size_20_ep)||false;
-		let show_alteration_change_size_30_ep = Boolean(values.show_alteration_change_size_30_ep)||false;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
-		let range = parseInt(values.spell_range)||0;
-		let area_size = parseInt(values.spell_area_size)||0;
+		let tier = get_int_or_zero(values.alteration_tier);
+		let show_alteration_change_size_10_ep = get_bool(values.show_alteration_change_size_10_ep);
+		let show_alteration_change_size_20_ep = get_bool(values.show_alteration_change_size_20_ep);
+		let show_alteration_change_size_30_ep = get_bool(values.show_alteration_change_size_30_ep);
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
+		let range = get_int_or_zero(values.spell_range);
+		let area_size = get_int_or_zero(values.spell_area_size);
 		let area_type_list = get_area_type_list(area_size, values.area_type_blast, values.area_type_burst, values.area_type_line, values.area_type_nova, values.area_type_wall);
 		let area_types = _bolt_touch;
 		if (show_alteration_change_size_30_ep) {
@@ -12916,11 +12923,11 @@ on("clicked:alterationchangesize30ep", function() {
 
 on("clicked:alterationilluminateinfo", function() {
 	getAttrs(["alteration_tier", "show_alteration_illuminate_10_ep", "show_alteration_illuminate_20_ep", "show_alteration_illuminate_30_ep", "spell_duration_bonus", "spell_range", "spell_area_size", "area_type_blast", "area_type_burst", "area_type_line", "area_type_nova", "area_type_wall"], function(values) {
-		let tier = parseInt(values.alteration_tier)||0;
-		let show_alteration_illuminate_10_ep = Boolean(values.show_alteration_illuminate_10_ep)||false;
-		let show_alteration_illuminate_20_ep = Boolean(values.show_alteration_illuminate_20_ep)||false;
-		let show_alteration_illuminate_30_ep = Boolean(values.show_alteration_illuminate_30_ep)||false;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
+		let tier = get_int_or_zero(values.alteration_tier);
+		let show_alteration_illuminate_10_ep = get_bool(values.show_alteration_illuminate_10_ep);
+		let show_alteration_illuminate_20_ep = get_bool(values.show_alteration_illuminate_20_ep);
+		let show_alteration_illuminate_30_ep = get_bool(values.show_alteration_illuminate_30_ep);
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
 		let base_duration = dur_concentration_w_pool;
 		if (show_alteration_illuminate_30_ep) {
 			base_duration = [
@@ -12928,8 +12935,8 @@ on("clicked:alterationilluminateinfo", function() {
 				{ name: '30 EP',       duration: dur_short_rest_p_linger  }
 			];
 		}
-		let range = parseInt(values.spell_range)||0;
-		let area_size = parseInt(values.spell_area_size)||0;
+		let range = get_int_or_zero(values.spell_range);
+		let area_size = get_int_or_zero(values.spell_area_size);
 		let area_type_list = get_area_type_list(area_size, values.area_type_blast, values.area_type_burst, '0', values.area_type_nova, '0');
 		let tier3_ep = (show_alteration_illuminate_30_ep ? '20 or 30' : '20');
 		let tier1_effect = `{{10 EP=Items shine like torches${_or}Area covered in darkness}} `;
@@ -12967,13 +12974,13 @@ on("clicked:alterationilluminate30ep", function() {
 
 on("clicked:alterationindurateinfo", function() {
 	getAttrs(["alteration_tier", "show_alteration_indurate_15_ep", "show_alteration_indurate_30_ep", "show_alteration_indurate_45_ep", "spell_duration_bonus", "spell_range"], function(values) {
-		let tier = parseInt(values.alteration_tier)||0;
-		let show_alteration_indurate_15_ep = Boolean(values.show_alteration_indurate_15_ep)||false;
-		let show_alteration_indurate_30_ep = Boolean(values.show_alteration_indurate_30_ep)||false;
-		let show_alteration_indurate_45_ep = Boolean(values.show_alteration_indurate_45_ep)||false;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
+		let tier = get_int_or_zero(values.alteration_tier);
+		let show_alteration_indurate_15_ep = get_bool(values.show_alteration_indurate_15_ep);
+		let show_alteration_indurate_30_ep = get_bool(values.show_alteration_indurate_30_ep);
+		let show_alteration_indurate_45_ep = get_bool(values.show_alteration_indurate_45_ep);
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
 		let base_duration = dur_short_rest_w_checks_1;
-		let range = parseInt(values.spell_range)||0;
+		let range = get_int_or_zero(values.spell_range);
 		let tier1_effect = 									 '{{15 EP=Fatigued, move –1 sq}} ';
 		let tier2_effect = (show_alteration_indurate_30_ep ? '{{30 EP=Indurated}} ' : '');
 		let tier1_text = 								   _rn + "For 15 EP, you partially indurate the target, causing them the fatigued condition for the duration. The target also loses an additional square of movement."
@@ -13015,12 +13022,12 @@ on("clicked:alterationindurate45ep", function() {
 
 on("clicked:biomancydetoxifyinfo", function() {
 	getAttrs(["biomancy_tier", "show_biomancy_detoxify_10_ep", "show_biomancy_detoxify_20_ep", "show_biomancy_detoxify_30_ep", "spell_range", "spell_area_size", "area_type_nova"], function(values) {
-		let tier = parseInt(values.biomancy_tier)||0;
-		let show_biomancy_detoxify_10_ep = Boolean(values.show_biomancy_detoxify_10_ep)||false;
-		let show_biomancy_detoxify_20_ep = Boolean(values.show_biomancy_detoxify_20_ep)||false;
-		let show_biomancy_detoxify_30_ep = Boolean(values.show_biomancy_detoxify_30_ep)||false;
-		let range = parseInt(values.spell_range)||0;
-		let area_size = parseInt(values.spell_area_size)||0;
+		let tier = get_int_or_zero(values.biomancy_tier);
+		let show_biomancy_detoxify_10_ep = get_bool(values.show_biomancy_detoxify_10_ep);
+		let show_biomancy_detoxify_20_ep = get_bool(values.show_biomancy_detoxify_20_ep);
+		let show_biomancy_detoxify_30_ep = get_bool(values.show_biomancy_detoxify_30_ep);
+		let range = get_int_or_zero(values.spell_range);
+		let area_size = get_int_or_zero(values.spell_area_size);
 		let nova_area = (values.area_type_nova == 'on' ? `${_n}Nova (${area_size} sq)` : '');
 		let tier1_effect =								   '{{5 EP=Advantage one PR check}} ' +
 														   '{{10 EP=Advantage all PR checks}} ';
@@ -13068,16 +13075,16 @@ on("clicked:biomancydetoxify30ep", function() {
 
 on("clicked:biomancyhealdamageinfo", function() {
 	getAttrs(["biomancy_tier", "biomancy_attribute_name", "biomancy_attribute_modifier", "show_biomancy_heal_damage_10_ep", "show_biomancy_heal_damage_20_ep", "show_biomancy_heal_damage_30_ep", "show_biomancy_heal_damage_40_ep", "spell_duration", "spell_range", "spell_area_size", "area_type_blast", "area_type_burst", "area_type_line", "area_type_nova", "area_type_wall"], function(values) {
-		let tier = parseInt(values.biomancy_tier)||0;
+		let tier = get_int_or_zero(values.biomancy_tier);
 		let attribute_name = values.biomancy_attribute_name;
-		let attribute_mod = parseInt(values.biomancy_attribute_modifier)||0;
-		let show_biomancy_heal_damage_10_ep = Boolean(values.show_biomancy_heal_damage_10_ep)||false;
-		let show_biomancy_heal_damage_20_ep = Boolean(values.show_biomancy_heal_damage_20_ep)||false;
-		let show_biomancy_heal_damage_30_ep = Boolean(values.show_biomancy_heal_damage_30_ep)||false;
-		let show_biomancy_heal_damage_40_ep = Boolean(values.show_biomancy_heal_damage_40_ep)||false;
-		let duration = parseInt(values.spell_duration)||0;
-		let range = parseInt(values.spell_range)||0;
-		let area_size = parseInt(values.spell_area_size)||0;
+		let attribute_mod = get_int_or_zero(values.biomancy_attribute_modifier);
+		let show_biomancy_heal_damage_10_ep = get_bool(values.show_biomancy_heal_damage_10_ep);
+		let show_biomancy_heal_damage_20_ep = get_bool(values.show_biomancy_heal_damage_20_ep);
+		let show_biomancy_heal_damage_30_ep = get_bool(values.show_biomancy_heal_damage_30_ep);
+		let show_biomancy_heal_damage_40_ep = get_bool(values.show_biomancy_heal_damage_40_ep);
+		let duration = get_int_or_zero(values.spell_duration);
+		let range = get_int_or_zero(values.spell_range);
+		let area_size = get_int_or_zero(values.spell_area_size);
 		let area_type_list = get_area_type_list(area_size, values.area_type_blast, values.area_type_burst, values.area_type_line, values.area_type_nova, values.area_type_wall);
 		let damage_text = attribute_mod_effect(attribute_name, attribute_mod) + ' damage'; 
 		let tier1_effect = 									  '{{5'  + tier_effect_biomancy(tier, 1, 'd6',  ' EP=Heal ', 1) + damage_text + '}} ' +
@@ -13118,11 +13125,11 @@ on("clicked:biomancyhealdamage40ep", function() {
 
 on("clicked:biomancyresurrectinfo", function() {
 	getAttrs(["biomancy_tier", "show_biomancy_resurrect_30_ep", "show_biomancy_resurrect_60_ep", "show_biomancy_resurrect_90_ep", "show_biomancy_resurrect_120_ep"], function(values) {
-		let tier = parseInt(values.biomancy_tier)||0;
-		let show_biomancy_resurrect_30_ep  = Boolean(values.show_biomancy_resurrect_30_ep )||false;
-		let show_biomancy_resurrect_60_ep  = Boolean(values.show_biomancy_resurrect_60_ep )||false;
-		let show_biomancy_resurrect_90_ep  = Boolean(values.show_biomancy_resurrect_90_ep )||false;
-		let show_biomancy_resurrect_120_ep = Boolean(values.show_biomancy_resurrect_120_ep)||false;
+		let tier = get_int_or_zero(values.biomancy_tier);
+		let show_biomancy_resurrect_30_ep  = get_bool(values.show_biomancy_resurrect_30_ep );
+		let show_biomancy_resurrect_60_ep  = get_bool(values.show_biomancy_resurrect_60_ep );
+		let show_biomancy_resurrect_90_ep  = get_bool(values.show_biomancy_resurrect_90_ep );
+		let show_biomancy_resurrect_120_ep = get_bool(values.show_biomancy_resurrect_120_ep);
 		let tier1_value = tier_effect_biomancy(tier,  3, ' rounds');
 		let tier2_value = tier_effect_biomancy(tier,  5, ' days');
 		let tier3_value = tier_effect_biomancy(tier,  5, ' years');
@@ -13179,12 +13186,12 @@ on("clicked:biomancyresurrect120ep", function() {
 
 on("clicked:biomancyrevivifyinfo", function() {
 	getAttrs(["biomancy_tier", "show_biomancy_revivify_10_ep", "show_biomancy_revivify_20_ep", "show_biomancy_revivify_30_ep", "spell_range", "spell_area_size", "area_type_nova"], function(values) {
-		let tier = parseInt(values.biomancy_tier)||0;
-		let show_biomancy_revivify_10_ep = Boolean(values.show_biomancy_revivify_10_ep )||false;
-		let show_biomancy_revivify_20_ep = Boolean(values.show_biomancy_revivify_20_ep )||false;
-		let show_biomancy_revivify_30_ep = Boolean(values.show_biomancy_revivify_30_ep )||false;
-		let range = parseInt(values.spell_range)||0;
-		let area_size = parseInt(values.spell_area_size)||0;
+		let tier = get_int_or_zero(values.biomancy_tier);
+		let show_biomancy_revivify_10_ep = get_bool(values.show_biomancy_revivify_10_ep );
+		let show_biomancy_revivify_20_ep = get_bool(values.show_biomancy_revivify_20_ep );
+		let show_biomancy_revivify_30_ep = get_bool(values.show_biomancy_revivify_30_ep );
+		let range = get_int_or_zero(values.spell_range);
+		let area_size = get_int_or_zero(values.spell_area_size);
 		let nova_area = (values.area_type_nova == 'on' ? `${_n}Nova (${area_size} sq)` : '');
 		let tier1_effect = 								   '{{10 EP=10 EP list}} ';
 		let tier2_effect = (show_biomancy_revivify_20_ep ? '{{20 EP=20 EP list}} ' : '');
@@ -13220,11 +13227,11 @@ on("clicked:biomancyrevivify30ep", function() {
 
 on("clicked:biomancysustaininfo", function() {
 	getAttrs(["biomancy_tier", "show_biomancy_sustain_10_ep", "show_biomancy_sustain_20_ep", "spell_range", "spell_area_size", "area_type_nova"], function(values) {
-		let tier = parseInt(values.biomancy_tier)||0;
-		let show_biomancy_sustain_10_ep = Boolean(values.show_biomancy_sustain_10_ep )||false;
-		let show_biomancy_sustain_20_ep = Boolean(values.show_biomancy_sustain_20_ep )||false;
-		let range = parseInt(values.spell_range)||0;
-		let area_size = parseInt(values.spell_area_size)||0;
+		let tier = get_int_or_zero(values.biomancy_tier);
+		let show_biomancy_sustain_10_ep = get_bool(values.show_biomancy_sustain_10_ep );
+		let show_biomancy_sustain_20_ep = get_bool(values.show_biomancy_sustain_20_ep );
+		let range = get_int_or_zero(values.spell_range);
+		let area_size = get_int_or_zero(values.spell_area_size);
 		let nova_area = (values.area_type_nova == 'on' ? `${_n}Nova (${area_size} sq)` : '');
 		let effect_3 = tier_effect_biomancy(tier, 3, ' people');
 		let effect_6 = tier_effect_biomancy(tier, 6, ' people');
@@ -13262,12 +13269,12 @@ on("clicked:biomancysustain20ep", function() {
 
 on("clicked:biomancyturnundeadinfo", function() {
 	getAttrs(["biomancy_tier", "show_biomancy_turn_undead_10_ep", "show_biomancy_turn_undead_30_ep", "spell_duration_bonus", "spell_range", "spell_area_size", "area_type_blast", "area_type_burst", "area_type_line", "area_type_nova", "area_type_wall"], function(values) {
-		let tier = parseInt(values.biomancy_tier)||0;
-		let show_biomancy_turn_undead_10_ep = Boolean(values.show_biomancy_turn_undead_10_ep )||false;
-		let show_biomancy_turn_undead_30_ep = Boolean(values.show_biomancy_turn_undead_30_ep )||false;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
-		let range = parseInt(values.spell_range)||0;
-		let area_size = parseInt(values.spell_area_size)||0;
+		let tier = get_int_or_zero(values.biomancy_tier);
+		let show_biomancy_turn_undead_10_ep = get_bool(values.show_biomancy_turn_undead_10_ep );
+		let show_biomancy_turn_undead_30_ep = get_bool(values.show_biomancy_turn_undead_30_ep );
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
+		let range = get_int_or_zero(values.spell_range);
+		let area_size = get_int_or_zero(values.spell_area_size);
 		let area_type_list = get_area_type_list(area_size, values.area_type_blast, values.area_type_burst, values.area_type_line, values.area_type_nova, values.area_type_wall);
 		let tier1_effect = 									  '{{10 EP=Targets are **scared**}} ';
 		let tier3_effect = (show_biomancy_turn_undead_30_ep ? '{{30 EP=Targets are **terrified**}} ' : '');
@@ -13300,14 +13307,14 @@ on("clicked:biomancyturnundead30ep", function() {
 
 on("clicked:conjurationarmorinfo", function() {
 	getAttrs(["conjuration_tier", "show_conjuration_armor_10_ep", "show_conjuration_armor_20_ep", "show_conjuration_armor_30_ep", "show_conjuration_armor_40_ep", "spell_duration_bonus", "spell_range", "spell_area_size", "area_type_blast", "area_type_burst", "area_type_line", "area_type_nova", "area_type_wall"], function(values) {
-		let tier = parseInt(values.conjuration_tier)||0;
-		let show_conjuration_armor_10_ep = Boolean(values.show_conjuration_armor_10_ep )||false;
-		let show_conjuration_armor_20_ep = Boolean(values.show_conjuration_armor_20_ep )||false;
-		let show_conjuration_armor_30_ep = Boolean(values.show_conjuration_armor_30_ep )||false;
-		let show_conjuration_armor_40_ep = Boolean(values.show_conjuration_armor_40_ep )||false;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
-		let range = parseInt(values.spell_range)||0;
-		let area_size = parseInt(values.spell_area_size)||0;
+		let tier = get_int_or_zero(values.conjuration_tier);
+		let show_conjuration_armor_10_ep = get_bool(values.show_conjuration_armor_10_ep );
+		let show_conjuration_armor_20_ep = get_bool(values.show_conjuration_armor_20_ep );
+		let show_conjuration_armor_30_ep = get_bool(values.show_conjuration_armor_30_ep );
+		let show_conjuration_armor_40_ep = get_bool(values.show_conjuration_armor_40_ep );
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
+		let range = get_int_or_zero(values.spell_range);
+		let area_size = get_int_or_zero(values.spell_area_size);
 		let area_type_list = get_area_type_list(area_size, values.area_type_blast, values.area_type_burst, values.area_type_line, values.area_type_nova, values.area_type_wall);
 		let tier1_effect = 								   '{{5 EP='  + tier_effect_conjuration(tier,  4, '', 'DR ', 1) + '}} ' +
 														   '{{10 EP=' + tier_effect_conjuration(tier,  8, '', 'DR ', 1) + '}} ';
@@ -13352,15 +13359,15 @@ on("clicked:conjurationarmor40ep", function() {
 
 on("clicked:conjurationbarrierinfo", function() {
 	getAttrs(["conjuration_tier", "show_conjuration_barrier_15_ep", "show_conjuration_barrier_30_ep", "show_conjuration_barrier_45_ep", "show_conjuration_barrier_60_ep", "spell_duration_bonus", "spell_range", "spell_area_size", "area_type_blast", "area_type_burst", "area_type_line", "area_type_nova", "area_type_wall"], function(values) {
-		let tier = parseInt(values.conjuration_tier)||0;
-		let show_conjuration_barrier_15_ep = Boolean(values.show_conjuration_barrier_15_ep )||false;
-		let show_conjuration_barrier_30_ep = Boolean(values.show_conjuration_barrier_30_ep )||false;
-		let show_conjuration_barrier_45_ep = Boolean(values.show_conjuration_barrier_45_ep )||false;
-		let show_conjuration_barrier_60_ep = Boolean(values.show_conjuration_barrier_60_ep )||false;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
+		let tier = get_int_or_zero(values.conjuration_tier);
+		let show_conjuration_barrier_15_ep = get_bool(values.show_conjuration_barrier_15_ep );
+		let show_conjuration_barrier_30_ep = get_bool(values.show_conjuration_barrier_30_ep );
+		let show_conjuration_barrier_45_ep = get_bool(values.show_conjuration_barrier_45_ep );
+		let show_conjuration_barrier_60_ep = get_bool(values.show_conjuration_barrier_60_ep );
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
 		let base_duration = dur_concentration;
-		let range = parseInt(values.spell_range)||0;
-		let area_size = parseInt(values.spell_area_size)||0;
+		let range = get_int_or_zero(values.spell_range);
+		let area_size = get_int_or_zero(values.spell_area_size);
 		let area_type_list = get_area_type_list(area_size, values.area_type_blast, values.area_type_burst, values.area_type_line, values.area_type_nova, values.area_type_wall);
 		let tier1_effect = 								     '{{15 EP=Standard barrier}} ';
 		let tier2_effect = (show_conjuration_barrier_30_ep ? '{{30 EP=Fortified barrier, blocks spells and magic weapons}} ' : '');
@@ -13423,14 +13430,14 @@ on("clicked:conjurationbarrier60ep", function() {
 
 on("clicked:conjurationdifficultterraininfo", function() {
 	getAttrs(["conjuration_tier", "show_conjuration_difficult_terrain_10_ep", "show_conjuration_difficult_terrain_20_ep", "show_conjuration_difficult_terrain_30_ep", "show_conjuration_difficult_terrain_40_ep", "spell_duration_bonus", "spell_range", "spell_area_size", "area_type_blast", "area_type_burst", "area_type_line", "area_type_nova", "area_type_wall"], function(values) {
-		let tier = parseInt(values.conjuration_tier)||0;
-		let show_conjuration_difficult_terrain_10_ep = Boolean(values.show_conjuration_difficult_terrain_10_ep )||false;
-		let show_conjuration_difficult_terrain_20_ep = Boolean(values.show_conjuration_difficult_terrain_20_ep )||false;
-		let show_conjuration_difficult_terrain_30_ep = Boolean(values.show_conjuration_difficult_terrain_30_ep )||false;
-		let show_conjuration_difficult_terrain_40_ep = Boolean(values.show_conjuration_difficult_terrain_40_ep )||false;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
-		let range = parseInt(values.spell_range)||0;
-		let area_size = parseInt(values.spell_area_size)||0;
+		let tier = get_int_or_zero(values.conjuration_tier);
+		let show_conjuration_difficult_terrain_10_ep = get_bool(values.show_conjuration_difficult_terrain_10_ep );
+		let show_conjuration_difficult_terrain_20_ep = get_bool(values.show_conjuration_difficult_terrain_20_ep );
+		let show_conjuration_difficult_terrain_30_ep = get_bool(values.show_conjuration_difficult_terrain_30_ep );
+		let show_conjuration_difficult_terrain_40_ep = get_bool(values.show_conjuration_difficult_terrain_40_ep );
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
+		let range = get_int_or_zero(values.spell_range);
+		let area_size = get_int_or_zero(values.spell_area_size);
 		let area_type_list = get_area_type_list(area_size, values.area_type_blast, values.area_type_burst, values.area_type_line, values.area_type_nova, values.area_type_wall);
 		let tier1_effect = 											   '{{5 EP=Difficult terrain}} ' +
 																	   '{{10 EP=Difficult terrain and slippery}} ';
@@ -13485,21 +13492,21 @@ on("clicked:conjurationdifficultterrain40ep", function() {
 
 on("clicked:conjurationfabricateinfo", function() {
 	getAttrs(["conjuration_tier", "conjuration_attribute_name", "conjuration_attribute_modifier", "show_conjuration_fabricate_10_ep", "show_conjuration_fabricate_20_ep", "show_conjuration_fabricate_30_ep", "show_conjuration_fabricate_40_ep", "ps_conjuration_attack", "spell_duration_bonus", "spell_range", "spell_area_size", "area_type_blast", "area_type_burst", "area_type_line", "area_type_nova", "area_type_wall"], function(values) {
-		let tier = parseInt(values.conjuration_tier)||0;
+		let tier = get_int_or_zero(values.conjuration_tier);
 		let attribute_name = values.conjuration_attribute_name;
-		let attribute_mod = parseInt(values.conjuration_attribute_modifier)||0;
-		let show_conjuration_fabricate_10_ep = Boolean(values.show_conjuration_fabricate_10_ep)||false;
-		let show_conjuration_fabricate_20_ep = Boolean(values.show_conjuration_fabricate_20_ep)||false;
-		let show_conjuration_fabricate_30_ep = Boolean(values.show_conjuration_fabricate_30_ep)||false;
-		let show_conjuration_fabricate_40_ep = Boolean(values.show_conjuration_fabricate_40_ep)||false;
-		let has_conjuration_attack = Boolean(values.ps_conjuration_attack)||false;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
+		let attribute_mod = get_int_or_zero(values.conjuration_attribute_modifier);
+		let show_conjuration_fabricate_10_ep = get_bool(values.show_conjuration_fabricate_10_ep);
+		let show_conjuration_fabricate_20_ep = get_bool(values.show_conjuration_fabricate_20_ep);
+		let show_conjuration_fabricate_30_ep = get_bool(values.show_conjuration_fabricate_30_ep);
+		let show_conjuration_fabricate_40_ep = get_bool(values.show_conjuration_fabricate_40_ep);
+		let has_conjuration_attack = get_bool(values.ps_conjuration_attack);
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
 		let base_duration = [
 			{ name: 'fabricate',   duration: dur_concentration },
 			{ name: 'repair/heal', duration: dur_instantaneous }
 		];
-		let range = parseInt(values.spell_range)||0;
-		let area_size = parseInt(values.spell_area_size)||0;
+		let range = get_int_or_zero(values.spell_range);
+		let area_size = get_int_or_zero(values.spell_area_size);
 		let area_type_list = get_area_type_list(area_size, values.area_type_blast, values.area_type_burst, values.area_type_line, values.area_type_nova, values.area_type_wall);
 
 		let damage_text = attribute_mod_effect(attribute_name, attribute_mod) + ' damage'; 
@@ -13592,14 +13599,14 @@ on("clicked:conjurationfabricateattack40ep", function() {
 
 on("clicked:conjurationshelterinfo", function() {
 	getAttrs(["conjuration_tier", "show_conjuration_shelter_10_ep", "show_conjuration_shelter_20_ep", "show_conjuration_shelter_30_ep", "show_conjuration_shelter_40_ep", "spell_range", "spell_duration_bonus", "spell_area_size", "area_type_nova"], function(values) {
-		let tier = parseInt(values.conjuration_tier)||0;
-		let show_conjuration_shelter_10_ep = Boolean(values.show_conjuration_shelter_10_ep)||false;
-		let show_conjuration_shelter_20_ep = Boolean(values.show_conjuration_shelter_20_ep)||false;
-		let show_conjuration_shelter_30_ep = Boolean(values.show_conjuration_shelter_30_ep)||false;
-		let show_conjuration_shelter_40_ep = Boolean(values.show_conjuration_shelter_40_ep)||false;
-		let range = parseInt(values.spell_range)||0;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
-		let area_size = parseInt(values.spell_area_size)||0;
+		let tier = get_int_or_zero(values.conjuration_tier);
+		let show_conjuration_shelter_10_ep = get_bool(values.show_conjuration_shelter_10_ep);
+		let show_conjuration_shelter_20_ep = get_bool(values.show_conjuration_shelter_20_ep);
+		let show_conjuration_shelter_30_ep = get_bool(values.show_conjuration_shelter_30_ep);
+		let show_conjuration_shelter_40_ep = get_bool(values.show_conjuration_shelter_40_ep);
+		let range = get_int_or_zero(values.spell_range);
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
+		let area_size = get_int_or_zero(values.spell_area_size);
 		let nova_area = (values.area_type_nova == 'on' ? `Nova (${area_size} sq)` : '');
 		let tier1_effect = 									 "{{10 EP=Cottage}} ";
 		let tier2_effect = (show_conjuration_shelter_20_ep ? "{{20 EP=House}} " : "");
@@ -13655,12 +13662,12 @@ on("clicked:conjurationshelter40ep", function() {
 
 on("clicked:conjurationshieldinfo", function() {
 	getAttrs(["conjuration_tier", "show_conjuration_shield_15_ep", "show_conjuration_shield_30_ep", "spell_duration_bonus", "spell_range", "spell_area_size", "area_type_blast", "area_type_burst", "area_type_line", "area_type_nova", "area_type_wall"], function(values) {
-		let tier = parseInt(values.conjuration_tier)||0;
-		let show_conjuration_shield_15_ep = Boolean(values.show_conjuration_shield_15_ep)||false;
-		let show_conjuration_shield_30_ep = Boolean(values.show_conjuration_shield_30_ep)||false;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
-		let range = parseInt(values.spell_range)||0;
-		let area_size = parseInt(values.spell_area_size)||0;
+		let tier = get_int_or_zero(values.conjuration_tier);
+		let show_conjuration_shield_15_ep = get_bool(values.show_conjuration_shield_15_ep);
+		let show_conjuration_shield_30_ep = get_bool(values.show_conjuration_shield_30_ep);
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
+		let range = get_int_or_zero(values.spell_range);
+		let area_size = get_int_or_zero(values.spell_area_size);
 		let area_type_list = get_area_type_list(area_size, values.area_type_blast, values.area_type_burst, values.area_type_line, values.area_type_nova, values.area_type_wall);
 		let tier1_effect = 									"{{15 EP=Advantage}} ";
 		let tier3_effect = (show_conjuration_shield_30_ep ? "{{30 EP=Great Advantage}} " : "" );
@@ -13706,8 +13713,8 @@ on("clicked:conjurationshield30eppr", function() {
 
 on('change:conjuration_attribute_name', function() {
 	getAttrs(['conjuration_attribute_name', 'intelligence', 'wit'], function(values) {
-		let intelligence = parseInt(values.intelligence)||0;
-		let wit = parseInt(values.wit)||0;
+		let intelligence = get_int_or_zero(values.intelligence);
+		let wit = get_int_or_zero(values.wit);
 		let conjuration_attribute = (values.conjuration_attribute_name.toLowerCase() == 'intelligence' ? intelligence : wit);
 		setAttrs({
 			'conjuration_attribute': conjuration_attribute
@@ -13717,20 +13724,20 @@ on('change:conjuration_attribute_name', function() {
 
 on("clicked:conjurationsummonallyinfo", function() {
 	getAttrs(["conjuration_tier", "conjuration_attribute_name", "conjuration_attribute", "conjuration_attribute_modifier", "show_conjuration_summon_ally_10_ep", "show_conjuration_summon_ally_20_ep", "show_conjuration_summon_ally_30_ep", "spell_duration_bonus", "spell_range"], function(values) {
-		let tier = parseInt(values.conjuration_tier)||0;
+		let tier = get_int_or_zero(values.conjuration_tier);
 		let attribute_name = values.conjuration_attribute_name;
-		let attribute = parseInt(values.conjuration_attribute)||0;
-		let attribute_mod = parseInt(values.conjuration_attribute_modifier)||0;
+		let attribute = get_int_or_zero(values.conjuration_attribute);
+		let attribute_mod = get_int_or_zero(values.conjuration_attribute_modifier);
 		let attribute_mod_text = attribute_mod_effect(attribute_name, attribute_mod);
-		let show_conjuration_summon_ally_10_ep = Boolean(values.show_conjuration_summon_ally_10_ep)||false;
-		let show_conjuration_summon_ally_20_ep = Boolean(values.show_conjuration_summon_ally_20_ep)||false;
-		let show_conjuration_summon_ally_30_ep = Boolean(values.show_conjuration_summon_ally_30_ep)||false;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
+		let show_conjuration_summon_ally_10_ep = get_bool(values.show_conjuration_summon_ally_10_ep);
+		let show_conjuration_summon_ally_20_ep = get_bool(values.show_conjuration_summon_ally_20_ep);
+		let show_conjuration_summon_ally_30_ep = get_bool(values.show_conjuration_summon_ally_30_ep);
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
 		let base_duration = [
 			{ name: 'combatant', duration: dur_concentration },
 			{ name: 'porter',    duration: dur_short_rest    }
 		];
-		let range = parseInt(values.spell_range)||0;
+		let range = get_int_or_zero(values.spell_range);
 		let effect_tier_plus_4 = tier_effect_conjuration(tier, 1, '', '', 4);
 		let effect_tier_plus_6 = tier_effect_conjuration(tier, 1, '', '', 6);
 		let tier1_text = header_text('Combatant') + "For 10 EP, you summon an ally to fight for you. The duration unit of this version of " +
@@ -13809,7 +13816,7 @@ on("clicked:conjurationsummonallyporter30ep", function() {
 
 on("clicked:familiarinfo", function() {
 	getAttrs(["conjuration_tier"], function(values) {
-		let tier = parseInt(values.conjuration_tier)||0;
+		let tier = get_int_or_zero(values.conjuration_tier);
 		let tier2_text = (tier >= 2 ? _rn + "*Speech:* Your familiar gains the ability to speak, and knows every language you do. It can also speak with creatures of its general type (e.g. cats with other felines; GM's discretion)." : '');
 		let tier3_text = (tier >= 3 ? _rn + '*Magic Resistance:* Your familiar gains the Magic Resistance boon, and gains advantage on resilience checks versus spells.' +
 		_rn + '*Share senses:* You can spend 1 AP to shift one or more of your senses to your familiar, and 1 AP to shift them back. While shifted, you gain sensory input from your familiar and not your own senses.' : '');
@@ -13839,11 +13846,11 @@ on("clicked:familiarinfo", function() {
 
 on("clicked:displacementbindinfo", function() {
 	getAttrs(["displacement_tier", "show_displacement_bind_10_ep", "show_displacement_bind_20_ep", "show_displacement_bind_30_ep", "spell_duration_bonus", "spell_range", "spell_area_size", "area_type_blast", "area_type_burst"], function(values) {
-		let tier = parseInt(values.displacement_tier)||0;
-		let show_displacement_bind_10_ep = Boolean(values.show_displacement_bind_10_ep)||false;
-		let show_displacement_bind_20_ep = Boolean(values.show_displacement_bind_20_ep)||false;
-		let show_displacement_bind_30_ep = Boolean(values.show_displacement_bind_30_ep)||false;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
+		let tier = get_int_or_zero(values.displacement_tier);
+		let show_displacement_bind_10_ep = get_bool(values.show_displacement_bind_10_ep);
+		let show_displacement_bind_20_ep = get_bool(values.show_displacement_bind_20_ep);
+		let show_displacement_bind_30_ep = get_bool(values.show_displacement_bind_30_ep);
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
 		let base_duration = dur_short_rest_w_checks_1;
 		if (show_displacement_bind_20_ep) {
 			base_duration = [
@@ -13854,8 +13861,8 @@ on("clicked:displacementbindinfo", function() {
 		if (show_displacement_bind_30_ep) {
 			base_duration.push({ name: '30 EP', duration: dur_short_rest_p_linger });
 		}
-		let range = parseInt(values.spell_range)||0;
-		let area_size = parseInt(values.spell_area_size)||0;
+		let range = get_int_or_zero(values.spell_range);
+		let area_size = get_int_or_zero(values.spell_area_size);
 		let area_type_list = get_area_type_list(area_size, values.area_type_blast, values.area_type_burst, '0', '0', '0');		
 		let tier2_text = (show_displacement_bind_20_ep ? _rn + "The base duration of this spell increases based on the EP spent on it. " : "");
 		let desc = "*Bind* prevents affected targets from using *teleport* or being affected by another creature’s *teleport* spell or any similar " +
@@ -13882,12 +13889,12 @@ on("clicked:displacementbind30ep", function() {
 
 on("clicked:displacementchronofieldinfo", function() {
 	getAttrs(["displacement_tier", "show_displacement_chronofield_10_ep", "show_displacement_chronofield_20_ep", "show_displacement_chronofield_30_ep", "show_displacement_chronofield_40_ep", "spell_duration_bonus", "spell_range", "spell_area_size", "area_type_nova"], function(values) {
-		let tier = parseInt(values.displacement_tier)||0;
-		let show_displacement_chronofield_10_ep = Boolean(values.show_displacement_chronofield_10_ep)||false;
-		let show_displacement_chronofield_20_ep = Boolean(values.show_displacement_chronofield_20_ep)||false;
-		let show_displacement_chronofield_30_ep = Boolean(values.show_displacement_chronofield_30_ep)||false;
-		let show_displacement_chronofield_40_ep = Boolean(values.show_displacement_chronofield_40_ep)||false;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
+		let tier = get_int_or_zero(values.displacement_tier);
+		let show_displacement_chronofield_10_ep = get_bool(values.show_displacement_chronofield_10_ep);
+		let show_displacement_chronofield_20_ep = get_bool(values.show_displacement_chronofield_20_ep);
+		let show_displacement_chronofield_30_ep = get_bool(values.show_displacement_chronofield_30_ep);
+		let show_displacement_chronofield_40_ep = get_bool(values.show_displacement_chronofield_40_ep);
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
 		let base_duration = dur_short_rest_w_checks_1;
 		if (show_displacement_chronofield_20_ep) {
 			base_duration = [
@@ -13902,8 +13909,8 @@ on("clicked:displacementchronofieldinfo", function() {
 			base_duration[1].name += ', 30 EP';
 			base_duration.push({ name: 'paralyze, 40 EP', duration: dur_short_rest_p_linger });
 		}
-		let range = parseInt(values.spell_range)||0;
-		let area_size = parseInt(values.spell_area_size)||0;
+		let range = get_int_or_zero(values.spell_range);
+		let area_size = get_int_or_zero(values.spell_area_size);
 		let nova_area = (values.area_type_nova == 'on' ? `${_n}Nova (${area_size} sq)` : '');
 		let tier1_effect = 										  "{{10 EP=&ndash;1 AP}} ";
 		let tier2_effect = (show_displacement_chronofield_20_ep ? "{{20 EP=+1 AP" + _or + "&ndash;2 AP}} " : "");
@@ -13939,11 +13946,11 @@ on("clicked:displacementchronofield40ep", function() {
 
 on("clicked:displacementflyinfo", function() {
 	getAttrs(["displacement_tier", "show_displacement_fly_10_ep", "show_displacement_fly_20_ep", "show_displacement_fly_30_ep", "spell_duration_bonus", "spell_range", "spell_area_size", "area_type_nova"], function(values) {
-		let tier = parseInt(values.displacement_tier)||0;
-		let show_displacement_fly_10_ep = Boolean(values.show_displacement_fly_10_ep)||false;
-		let show_displacement_fly_20_ep = Boolean(values.show_displacement_fly_20_ep)||false;
-		let show_displacement_fly_30_ep = Boolean(values.show_displacement_fly_30_ep)||false;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
+		let tier = get_int_or_zero(values.displacement_tier);
+		let show_displacement_fly_10_ep = get_bool(values.show_displacement_fly_10_ep);
+		let show_displacement_fly_20_ep = get_bool(values.show_displacement_fly_20_ep);
+		let show_displacement_fly_30_ep = get_bool(values.show_displacement_fly_30_ep);
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
 		let base_duration = dur_concentration;
 		if (show_displacement_fly_30_ep) {
 			base_duration = [
@@ -13951,8 +13958,8 @@ on("clicked:displacementflyinfo", function() {
 				{ name: '30 EP',       duration: dur_short_rest    }
 			];
 		}
-		let range = parseInt(values.spell_range)||0;
-		let area_size = parseInt(values.spell_area_size)||0;
+		let range = get_int_or_zero(values.spell_range);
+		let area_size = get_int_or_zero(values.spell_area_size);
 		let nova_area = (values.area_type_nova == 'on' ? `${_n}Nova (${area_size} sq)` : '');
 		let effect_tier = tier_effect_displacement(tier, 1, '');
 		let tier1_effect = 								  "{{10 EP=Levitate}} ";
@@ -13992,12 +13999,12 @@ on("clicked:displacementfly30ep", function() {
 
 on("clicked:displacementstasisinfo", function() {
 	getAttrs(["displacement_tier", "show_displacement_stasis_10_ep", "show_displacement_stasis_20_ep", "show_displacement_stasis_30_ep", "spell_duration_bonus", "spell_range"], function(values) {
-		let tier = parseInt(values.displacement_tier)||0;
-		let show_displacement_stasis_10_ep = Boolean(values.show_displacement_stasis_10_ep)||false;
-		let show_displacement_stasis_20_ep = Boolean(values.show_displacement_stasis_20_ep)||false;
-		let show_displacement_stasis_30_ep = Boolean(values.show_displacement_stasis_30_ep)||false;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
-		let range = parseInt(values.spell_range)||0;
+		let tier = get_int_or_zero(values.displacement_tier);
+		let show_displacement_stasis_10_ep = get_bool(values.show_displacement_stasis_10_ep);
+		let show_displacement_stasis_20_ep = get_bool(values.show_displacement_stasis_20_ep);
+		let show_displacement_stasis_30_ep = get_bool(values.show_displacement_stasis_30_ep);
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
+		let range = get_int_or_zero(values.spell_range);
 		let duration_text = get_duration_text(dur_short_rest_p_linger, duration_bonus);
 		let target = "{{Target=Item}} ";
 		let resist = "{{Resist=Auto (item)}} ";
@@ -14044,13 +14051,13 @@ on("clicked:displacementstasis30ep", function() {
 
 on("clicked:displacementtelekinesisinfo", function() {
 	getAttrs(["displacement_tier", "show_displacement_telekinesis_10_ep", "show_displacement_telekinesis_20_ep", "show_displacement_telekinesis_30_ep", "show_displacement_telekinesis_40_ep", "spell_duration_bonus", "spell_range"], function(values) {
-		let tier = parseInt(values.displacement_tier)||0;
-		let show_displacement_telekinesis_10_ep = Boolean(values.show_displacement_telekinesis_10_ep)||false;
-		let show_displacement_telekinesis_20_ep = Boolean(values.show_displacement_telekinesis_20_ep)||false;
-		let show_displacement_telekinesis_30_ep = Boolean(values.show_displacement_telekinesis_30_ep)||false;
-		let show_displacement_telekinesis_40_ep = Boolean(values.show_displacement_telekinesis_40_ep)||false;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
-		let range = parseInt(values.spell_range)||0;
+		let tier = get_int_or_zero(values.displacement_tier);
+		let show_displacement_telekinesis_10_ep = get_bool(values.show_displacement_telekinesis_10_ep);
+		let show_displacement_telekinesis_20_ep = get_bool(values.show_displacement_telekinesis_20_ep);
+		let show_displacement_telekinesis_30_ep = get_bool(values.show_displacement_telekinesis_30_ep);
+		let show_displacement_telekinesis_40_ep = get_bool(values.show_displacement_telekinesis_40_ep);
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
+		let range = get_int_or_zero(values.spell_range);
 		let tier1_targets = tier_effect_displacement(tier, 1, ' targets');
 		let tier1_pounds = tier_effect_displacement(tier, 20, ' pounds');
 		let tier1_effect = 										  '{{10 EP=Up to ' + tier1_targets + 								 ' of up to ' + tier1_pounds + _or + "Remote Attack check}} ";
@@ -14102,14 +14109,14 @@ on("clicked:displacementtelekinesis40ep", function() {
 
 on("clicked:displacementteleportinfo", function() {
 	getAttrs(["displacement_tier", "show_displacement_teleport_10_ep", "show_displacement_teleport_20_ep", "show_displacement_teleport_30_ep", "show_displacement_teleport_40_ep", "spell_duration", "spell_range", "spell_area_size", "area_type_nova"], function(values) {
-		let tier = parseInt(values.displacement_tier)||0;
-		let show_displacement_teleport_10_ep = Boolean(values.show_displacement_teleport_10_ep)||false;
-		let show_displacement_teleport_20_ep = Boolean(values.show_displacement_teleport_20_ep)||false;
-		let show_displacement_teleport_30_ep = Boolean(values.show_displacement_teleport_30_ep)||false;
-		let show_displacement_teleport_40_ep = Boolean(values.show_displacement_teleport_40_ep)||false;
-		let duration = parseInt(values.spell_duration)||0;
-		let range = parseInt(values.spell_range)||0;
-		let area_size = parseInt(values.spell_area_size)||0;
+		let tier = get_int_or_zero(values.displacement_tier);
+		let show_displacement_teleport_10_ep = get_bool(values.show_displacement_teleport_10_ep);
+		let show_displacement_teleport_20_ep = get_bool(values.show_displacement_teleport_20_ep);
+		let show_displacement_teleport_30_ep = get_bool(values.show_displacement_teleport_30_ep);
+		let show_displacement_teleport_40_ep = get_bool(values.show_displacement_teleport_40_ep);
+		let duration = get_int_or_zero(values.spell_duration);
+		let range = get_int_or_zero(values.spell_range);
+		let area_size = get_int_or_zero(values.spell_area_size);
 		let nova_area = (values.area_type_nova == 'on' ? `${_n}Nova (${area_size} sq)` : '');
 		let effect_100_miles = tier_effect_displacement(tier, 100, ' miles');
 		let effect_500_miles = tier_effect_displacement(tier, 500, ' miles');
@@ -14166,10 +14173,10 @@ on("clicked:displacementteleport40ep", function() {
 
 on("clicked:divinationanalyzeinfo", function() {
 	getAttrs(["divination_tier", "show_divination_analyze_10_ep", "show_divination_analyze_20_ep", "show_divination_analyze_30_ep"], function(values) {
-		let tier = parseInt(values.divination_tier)||0;
-		let show_divination_analyze_10_ep = Boolean(values.show_divination_analyze_10_ep)||false;
-		let show_divination_analyze_20_ep = Boolean(values.show_divination_analyze_20_ep)||false;
-		let show_divination_analyze_30_ep = Boolean(values.show_divination_analyze_30_ep)||false;
+		let tier = get_int_or_zero(values.divination_tier);
+		let show_divination_analyze_10_ep = get_bool(values.show_divination_analyze_10_ep);
+		let show_divination_analyze_20_ep = get_bool(values.show_divination_analyze_20_ep);
+		let show_divination_analyze_30_ep = get_bool(values.show_divination_analyze_30_ep);
 		let area_types = 'Touch'
 		if (show_divination_analyze_20_ep) {
 			area_types = [
@@ -14218,12 +14225,12 @@ on("clicked:divinationanalyze30ep", function() {
 
 on("clicked:divinationcomprehendinfo", function() {
 	getAttrs(["divination_tier", "show_divination_comprehend_10_ep", "show_divination_comprehend_20_ep", "spell_duration_bonus", "spell_range", "spell_area_size", "area_type_nova"], function(values) {
-		let tier = parseInt(values.divination_tier)||0;
-		let show_divination_comprehend_10_ep = Boolean(values.show_divination_comprehend_10_ep)||false;
-		let show_divination_comprehend_20_ep = Boolean(values.show_divination_comprehend_20_ep)||false;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
-		let range = parseInt(values.spell_range)||0;
-		let area_size = parseInt(values.spell_area_size)||0;
+		let tier = get_int_or_zero(values.divination_tier);
+		let show_divination_comprehend_10_ep = get_bool(values.show_divination_comprehend_10_ep);
+		let show_divination_comprehend_20_ep = get_bool(values.show_divination_comprehend_20_ep);
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
+		let range = get_int_or_zero(values.spell_range);
+		let area_size = get_int_or_zero(values.spell_area_size);
 		let effect_languages = tier_effect_divination(tier, 1, ' languages');
 		let nova_area = (values.area_type_nova == 'on' ? `${_n}Nova (${area_size} sq)` : '');
 		let tier1_effect = 									   '{{10 EP=Understand ' + effect_languages + '}} ';
@@ -14255,11 +14262,11 @@ on("clicked:divinationcomprehend20ep", function() {
 
 on("clicked:divinationdetectinfo", function() {
 	getAttrs(["divination_tier", "show_divination_detect_10_ep", "show_divination_detect_20_ep", "spell_duration_bonus", "spell_range"], function(values) {
-		let tier = parseInt(values.divination_tier)||0;
-		let show_divination_detect_10_ep = Boolean(values.show_divination_detect_10_ep)||false;
-		let show_divination_detect_20_ep = Boolean(values.show_divination_detect_20_ep)||false;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
-		let range = parseInt(values.spell_range)||0;
+		let tier = get_int_or_zero(values.divination_tier);
+		let show_divination_detect_10_ep = get_bool(values.show_divination_detect_10_ep);
+		let show_divination_detect_20_ep = get_bool(values.show_divination_detect_20_ep);
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
+		let range = get_int_or_zero(values.spell_range);
 		let tier1_effect = 								   "{{5 EP=Detect concrete thing}} " +
 														   "{{10 EP=Detect abstract thing}} ";
 		let tier2_effect = (show_divination_detect_20_ep ? "{{20 EP=Sense or detect any}} " : "");
@@ -14300,13 +14307,13 @@ on("clicked:divinationdetect20ep", function() {
 
 on("clicked:divinationprowessinfo", function() {
 	getAttrs(["divination_tier", "show_divination_prowess_10_ep", "show_divination_prowess_20_ep", "show_divination_prowess_30_ep", "show_divination_prowess_40_ep", "spell_duration_bonus", "spell_range"], function(values) {
-		let tier = parseInt(values.divination_tier)||0;
-		let show_divination_prowess_10_ep = Boolean(values.show_divination_prowess_10_ep)||false;
-		let show_divination_prowess_20_ep = Boolean(values.show_divination_prowess_20_ep)||false;
-		let show_divination_prowess_30_ep = Boolean(values.show_divination_prowess_30_ep)||false;
-		let show_divination_prowess_40_ep = Boolean(values.show_divination_prowess_40_ep)||false;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
-		let range = parseInt(values.spell_range)||0;
+		let tier = get_int_or_zero(values.divination_tier);
+		let show_divination_prowess_10_ep = get_bool(values.show_divination_prowess_10_ep);
+		let show_divination_prowess_20_ep = get_bool(values.show_divination_prowess_20_ep);
+		let show_divination_prowess_30_ep = get_bool(values.show_divination_prowess_30_ep);
+		let show_divination_prowess_40_ep = get_bool(values.show_divination_prowess_40_ep);
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
+		let range = get_int_or_zero(values.spell_range);
 		let roll_text = get_prowess_imbue_info(tier, show_divination_prowess_10_ep, show_divination_prowess_20_ep, show_divination_prowess_30_ep, 
 		show_divination_prowess_40_ep, duration_bonus, range);
 		startRoll(roll_text, (results) => {
@@ -14333,12 +14340,12 @@ on("clicked:divinationprowess40ep", function() {
 
 on("clicked:divinationscryinfo", function() {
 	getAttrs(["divination_tier", "show_divination_scry_10_ep", "show_divination_scry_20_ep", "show_divination_scry_30_ep", "spell_duration_bonus", "spell_area_size"], function(values) {
-		let tier = parseInt(values.divination_tier)||0;
-		let show_divination_scry_10_ep = Boolean(values.show_divination_scry_10_ep)||false;
-		let show_divination_scry_20_ep = Boolean(values.show_divination_scry_20_ep)||false;
-		let show_divination_scry_30_ep = Boolean(values.show_divination_scry_30_ep)||false;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
-		let area_size = parseInt(values.spell_area_size)||0;
+		let tier = get_int_or_zero(values.divination_tier);
+		let show_divination_scry_10_ep = get_bool(values.show_divination_scry_10_ep);
+		let show_divination_scry_20_ep = get_bool(values.show_divination_scry_20_ep);
+		let show_divination_scry_30_ep = get_bool(values.show_divination_scry_30_ep);
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
+		let area_size = get_int_or_zero(values.spell_area_size);
 		let effect_50_miles = tier_effect_divination(tier, 50, ' miles');
 		let tier1_effect = 								 "{{10 EP=Scry within " + effect_50_miles + "}} ";
 		let tier2_effect = (show_divination_scry_20_ep ? "{{20 EP=Scry on same plane or planet}} " : "");
@@ -14400,12 +14407,12 @@ on("clicked:divinationscry30ep", function() {
 
 on("clicked:divinationstatusinfo", function() {
 	getAttrs(["divination_tier", "show_divination_status_10_ep", "show_divination_status_20_ep", "spell_duration_bonus", "spell_range", "spell_area_size", "area_type_nova"], function(values) {
-		let tier = parseInt(values.divination_tier)||0;
-		let show_divination_status_10_ep = Boolean(values.show_divination_status_10_ep)||false;
-		let show_divination_status_20_ep = Boolean(values.show_divination_status_20_ep)||false;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
-		let range = parseInt(values.spell_range)||0;
-		let area_size = parseInt(values.spell_area_size)||0;
+		let tier = get_int_or_zero(values.divination_tier);
+		let show_divination_status_10_ep = get_bool(values.show_divination_status_10_ep);
+		let show_divination_status_20_ep = get_bool(values.show_divination_status_20_ep);
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
+		let range = get_int_or_zero(values.spell_range);
+		let area_size = get_int_or_zero(values.spell_area_size);
 		let nova_area = (values.area_type_nova == 'on' ? `${_n}Nova (${area_size} sq)` : '');
 		let tier1_effect = 								   "{{10 EP=Know status on same plane or planet}} ";
 		let tier2_effect = (show_divination_status_20_ep ? "{{20 EP=Know status anywhere}} " : "");
@@ -14439,17 +14446,17 @@ on("clicked:divinationstatus20ep", function() {
 
 on("clicked:dynamancyattackinfo", function() {
 	getAttrs(["dynamancy_tier", "dynamancy_attribute_modifier", "dynamancy_attribute_name", "bb_natural_magic_dynamancy", "show_dynamancy_attack_10_ep", "show_dynamancy_attack_20_ep", "show_dynamancy_attack_30_ep", "show_dynamancy_attack_40_ep", "spell_duration", "spell_range", "spell_area_size", "area_type_blast", "area_type_burst", "area_type_line", "area_type_nova", "area_type_wall"], function(values) {
-		let tier = parseInt(values.dynamancy_tier)||0;
+		let tier = get_int_or_zero(values.dynamancy_tier);
 		let attribute_name = values.dynamancy_attribute_name;
-		let attribute_mod = parseInt(values.dynamancy_attribute_modifier)||0;
-		let show_dynamancy_attack_10_ep = Boolean(values.show_dynamancy_attack_10_ep)||false;
-		let show_dynamancy_attack_20_ep = Boolean(values.show_dynamancy_attack_20_ep)||false;
-		let show_dynamancy_attack_30_ep = Boolean(values.show_dynamancy_attack_30_ep)||false;
-		let show_dynamancy_attack_40_ep = Boolean(values.show_dynamancy_attack_40_ep)||false;
-		let natural_magic_dynamancy = Boolean(values.bb_natural_magic_dynamancy)||false;
-		let duration = parseInt(values.spell_duration)||0;
-		let range = parseInt(values.spell_range)||0;
-		let area_size = parseInt(values.spell_area_size)||0;
+		let attribute_mod = get_int_or_zero(values.dynamancy_attribute_modifier);
+		let show_dynamancy_attack_10_ep = get_bool(values.show_dynamancy_attack_10_ep);
+		let show_dynamancy_attack_20_ep = get_bool(values.show_dynamancy_attack_20_ep);
+		let show_dynamancy_attack_30_ep = get_bool(values.show_dynamancy_attack_30_ep);
+		let show_dynamancy_attack_40_ep = get_bool(values.show_dynamancy_attack_40_ep);
+		let natural_magic_dynamancy = get_bool(values.bb_natural_magic_dynamancy);
+		let duration = get_int_or_zero(values.spell_duration);
+		let range = get_int_or_zero(values.spell_range);
+		let area_size = get_int_or_zero(values.spell_area_size);
 		let area_type_list = get_area_type_list(area_size, values.area_type_blast, values.area_type_burst, values.area_type_line, values.area_type_nova, values.area_type_wall);
 		let effect_free_5ep = tier_effect_dynamancy(tier, 1, 'd6', '', 1);
 		let effect_10ep = tier_effect_dynamancy(tier, 2, 'd6', '', 1);
@@ -14532,17 +14539,17 @@ on("clicked:dynamancyattack40ep", function() {
 
 on("clicked:dynamancydurationattackinfo", function() {
 	getAttrs(["dynamancy_tier", "dynamancy_attribute_modifier", "dynamancy_attribute_name", "bb_natural_magic_dynamancy", "show_dynamancy_duration_attack_10_ep", "show_dynamancy_duration_attack_20_ep", "show_dynamancy_duration_attack_30_ep", "show_dynamancy_duration_attack_40_ep", "spell_duration_bonus", "spell_range", "spell_area_size", "area_type_blast", "area_type_burst", "area_type_line", "area_type_nova", "area_type_wall"], function(values) {
-		let tier = parseInt(values.dynamancy_tier)||0;
+		let tier = get_int_or_zero(values.dynamancy_tier);
 		let attribute_name = values.dynamancy_attribute_name;
-		let attribute_mod = parseInt(values.dynamancy_attribute_modifier)||0;
-		let show_dynamancy_duration_attack_10_ep = Boolean(values.show_dynamancy_duration_attack_10_ep)||false;
-		let show_dynamancy_duration_attack_20_ep = Boolean(values.show_dynamancy_duration_attack_20_ep)||false;
-		let show_dynamancy_duration_attack_30_ep = Boolean(values.show_dynamancy_duration_attack_30_ep)||false;
-		let show_dynamancy_duration_attack_40_ep = Boolean(values.show_dynamancy_duration_attack_40_ep)||false;
-		let natural_magic_dynamancy = Boolean(values.bb_natural_magic_dynamancy)||false;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
-		let range = parseInt(values.spell_range)||0;
-		let area_size = parseInt(values.spell_area_size)||0;
+		let attribute_mod = get_int_or_zero(values.dynamancy_attribute_modifier);
+		let show_dynamancy_duration_attack_10_ep = get_bool(values.show_dynamancy_duration_attack_10_ep);
+		let show_dynamancy_duration_attack_20_ep = get_bool(values.show_dynamancy_duration_attack_20_ep);
+		let show_dynamancy_duration_attack_30_ep = get_bool(values.show_dynamancy_duration_attack_30_ep);
+		let show_dynamancy_duration_attack_40_ep = get_bool(values.show_dynamancy_duration_attack_40_ep);
+		let natural_magic_dynamancy = get_bool(values.bb_natural_magic_dynamancy);
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
+		let range = get_int_or_zero(values.spell_range);
+		let area_size = get_int_or_zero(values.spell_area_size);
 		let area_type_list = get_area_type_list(area_size, values.area_type_blast, values.area_type_burst, values.area_type_line, values.area_type_nova, values.area_type_wall);
 		let effect_10ep = tier_effect_dynamancy(tier, 1, 'd6');
 		let effect_20ep = tier_effect_dynamancy(tier, 1, 'd10');
@@ -14618,19 +14625,19 @@ on("clicked:dynamancydurationattack40ep", function() {
 
 on("clicked:dynamancyforceeffectinfo", function() {
 	getAttrs(["dynamancy_tier", "dynamancy_attribute_modifier", "dynamancy_attribute_name", "bb_natural_magic_dynamancy", "show_dynamancy_force_effect_15_ep", "show_dynamancy_force_effect_30_ep", "spell_duration_bonus", "spell_range", "spell_area_size", "area_type_blast", "area_type_burst", "area_type_line", "area_type_nova", "area_type_wall"], function(values) {
-		let tier = parseInt(values.dynamancy_tier)||0;
+		let tier = get_int_or_zero(values.dynamancy_tier);
 		let attribute_name = values.dynamancy_attribute_name;
-		let attribute_mod = parseInt(values.dynamancy_attribute_modifier)||0;
-		let natural_magic_dynamancy = Boolean(values.bb_natural_magic_dynamancy)||false;
-		let show_dynamancy_force_effect_15_ep = Boolean(values.show_dynamancy_force_effect_15_ep)||false;
-		let show_dynamancy_force_effect_30_ep = Boolean(values.show_dynamancy_force_effect_30_ep)||false;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
+		let attribute_mod = get_int_or_zero(values.dynamancy_attribute_modifier);
+		let natural_magic_dynamancy = get_bool(values.bb_natural_magic_dynamancy);
+		let show_dynamancy_force_effect_15_ep = get_bool(values.show_dynamancy_force_effect_15_ep);
+		let show_dynamancy_force_effect_30_ep = get_bool(values.show_dynamancy_force_effect_30_ep);
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
 		let base_duration = [
 			{ name: 'offensive', duration: dur_instantaneous },
 			{ name: 'defensive', duration: dur_concentration }
 		];
-		let range = parseInt(values.spell_range)||0;
-		let area_size = parseInt(values.spell_area_size)||0;
+		let range = get_int_or_zero(values.spell_range);
+		let area_size = get_int_or_zero(values.spell_area_size);
 		let area_type_list = get_area_type_list(area_size, values.area_type_blast, values.area_type_burst, values.area_type_line, values.area_type_nova, values.area_type_wall);
 		let effect_15ep_off = 'Move creatures';
 		let effect_15ep_def = 'Wall of force';
@@ -14701,7 +14708,7 @@ on("clicked:dynamancyforceeffectdefensive30ep", function() {
 
 on("change:illusion_tier", function() {
 	getAttrs(["illusion_tier"], function(values) {
-		let illusion_tier = parseInt(values.illusion_tier)||0;
+		let illusion_tier = get_int_or_zero(values.illusion_tier);
 
 		setAttrs({
 			"mirror_image_recharge_roll": `1d6cs<${illusion_tier}cf>${(illusion_tier + 1)}`
@@ -14723,16 +14730,16 @@ function get_interacting_with_illusions_text() {
 
 on("clicked:illusiondisguiseinfo", function() {
 	getAttrs(["illusion_total", "illusion_tier", "show_illusion_disguise_10_ep", "show_illusion_disguise_20_ep", "show_illusion_disguise_30_ep", "show_illusion_disguise_40_ep", "spell_range", "spell_duration_bonus", "spell_area_size", "area_type_blast"], function(values) {
-		let total = parseInt(values.illusion_total)||0;
-		let tier = parseInt(values.illusion_tier)||0;
-		let show_illusion_disguise_10_ep = Boolean(values.show_illusion_disguise_10_ep)||false;
-		let show_illusion_disguise_20_ep = Boolean(values.show_illusion_disguise_20_ep)||false;
-		let show_illusion_disguise_30_ep = Boolean(values.show_illusion_disguise_30_ep)||false;
-		let show_illusion_disguise_40_ep = Boolean(values.show_illusion_disguise_40_ep)||false;
-		let range = parseInt(values.spell_range)||0;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
+		let total = get_int_or_zero(values.illusion_total);
+		let tier = get_int_or_zero(values.illusion_tier);
+		let show_illusion_disguise_10_ep = get_bool(values.show_illusion_disguise_10_ep);
+		let show_illusion_disguise_20_ep = get_bool(values.show_illusion_disguise_20_ep);
+		let show_illusion_disguise_30_ep = get_bool(values.show_illusion_disguise_30_ep);
+		let show_illusion_disguise_40_ep = get_bool(values.show_illusion_disguise_40_ep);
+		let range = get_int_or_zero(values.spell_range);
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
 		let base_duration = dur_concentration;
-		let area_size = parseInt(values.spell_area_size)||0;
+		let area_size = get_int_or_zero(values.spell_area_size);
 		let blast_area = (values.area_type_blast == 'on' ? `Blast (${area_size} sq)${_n}` : '');
 		let area_types = _bolt_touch;
 		if (show_illusion_disguise_20_ep) {
@@ -14798,18 +14805,18 @@ on("clicked:illusiondisguise40ep", function() {
 
 on("clicked:illusionholograminfo", function() {
 	getAttrs(["illusion_total", "illusion_tier", "illusion_attribute_modifier", "illusion_attribute_name", "show_illusion_hologram_10_ep", "show_illusion_hologram_20_ep", "show_illusion_hologram_30_ep", "show_illusion_hologram_40_ep", "spell_range", "spell_duration_bonus", "spell_area_size", "area_type_blast"], function(values) {
-		let total = parseInt(values.illusion_total)||0;
-		let tier = parseInt(values.illusion_tier)||0;
-		let attribute_mod = parseInt(values.illusion_attribute_modifier)||0;
+		let total = get_int_or_zero(values.illusion_total);
+		let tier = get_int_or_zero(values.illusion_tier);
+		let attribute_mod = get_int_or_zero(values.illusion_attribute_modifier);
 		let attribute_name = values.illusion_attribute_name;
-		let show_illusion_hologram_10_ep = Boolean(values.show_illusion_hologram_10_ep)||false;
-		let show_illusion_hologram_20_ep = Boolean(values.show_illusion_hologram_20_ep)||false;
-		let show_illusion_hologram_30_ep = Boolean(values.show_illusion_hologram_30_ep)||false;
-		let show_illusion_hologram_40_ep = Boolean(values.show_illusion_hologram_40_ep)||false;
-		let range = parseInt(values.spell_range)||0;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
+		let show_illusion_hologram_10_ep = get_bool(values.show_illusion_hologram_10_ep);
+		let show_illusion_hologram_20_ep = get_bool(values.show_illusion_hologram_20_ep);
+		let show_illusion_hologram_30_ep = get_bool(values.show_illusion_hologram_30_ep);
+		let show_illusion_hologram_40_ep = get_bool(values.show_illusion_hologram_40_ep);
+		let range = get_int_or_zero(values.spell_range);
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
 		let base_duration = dur_concentration;
-		let area_size = parseInt(values.spell_area_size)||0;
+		let area_size = get_int_or_zero(values.spell_area_size);
 		let blast_area = (values.area_type_blast == 'on' ? `Blast (${area_size} sq)${_n}` : '');
 		let area_types = _bolt_touch;
 		if (show_illusion_hologram_20_ep) {
@@ -14881,12 +14888,12 @@ on("clicked:illusionhologram40ep", function() {
 
 on("clicked:illusionmirrorimageinfo", function() {
 	getAttrs(["illusion_total", "illusion_tier", "show_illusion_mirror_image_10_ep", "show_illusion_mirror_image_20_ep", "show_illusion_mirror_image_30_ep", "spell_duration_bonus"], function(values) {
-		let total = parseInt(values.illusion_total)||0;
-		let tier = parseInt(values.illusion_tier)||0;
-		let show_illusion_mirror_image_10_ep = Boolean(values.show_illusion_mirror_image_10_ep)||false;
-		let show_illusion_mirror_image_20_ep = Boolean(values.show_illusion_mirror_image_20_ep)||false;
-		let show_illusion_mirror_image_30_ep = Boolean(values.show_illusion_mirror_image_30_ep)||false;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
+		let total = get_int_or_zero(values.illusion_total);
+		let tier = get_int_or_zero(values.illusion_tier);
+		let show_illusion_mirror_image_10_ep = get_bool(values.show_illusion_mirror_image_10_ep);
+		let show_illusion_mirror_image_20_ep = get_bool(values.show_illusion_mirror_image_20_ep);
+		let show_illusion_mirror_image_30_ep = get_bool(values.show_illusion_mirror_image_30_ep);
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
 		let effect_tier = tier_effect_illusion(tier, 1, '');
 		let effect_tier_d6 = tier_effect_illusion(tier, 1, 'd6');
 		let effect_tier_2_2 = tier_effect_illusion(tier, 2, ' illusory doubles', '', 1);
@@ -14932,14 +14939,14 @@ on("clicked:illusionmirrorimage30ep", function() {
 
 on("clicked:illusionobscureinfo", function() {
 	getAttrs(["illusion_total", "illusion_tier", "show_illusion_obscure_10_ep", "show_illusion_obscure_20_ep", "show_illusion_obscure_30_ep", "spell_range", "spell_duration_bonus", "spell_area_size", "area_type_nova"], function(values) {
-		let total = parseInt(values.illusion_total)||0;
-		let tier = parseInt(values.illusion_tier)||0;
-		let show_illusion_obscure_10_ep = Boolean(values.show_illusion_obscure_10_ep)||false;
-		let show_illusion_obscure_20_ep = Boolean(values.show_illusion_obscure_20_ep)||false;
-		let show_illusion_obscure_30_ep = Boolean(values.show_illusion_obscure_30_ep)||false;
-		let range = parseInt(values.spell_range)||0;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
-		let area_size = parseInt(values.spell_area_size)||0;
+		let total = get_int_or_zero(values.illusion_total);
+		let tier = get_int_or_zero(values.illusion_tier);
+		let show_illusion_obscure_10_ep = get_bool(values.show_illusion_obscure_10_ep);
+		let show_illusion_obscure_20_ep = get_bool(values.show_illusion_obscure_20_ep);
+		let show_illusion_obscure_30_ep = get_bool(values.show_illusion_obscure_30_ep);
+		let range = get_int_or_zero(values.spell_range);
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
+		let area_size = get_int_or_zero(values.spell_area_size);
 		let nova_area = (values.area_type_nova == 'on' ? `${_n}Nova (${area_size} sq)` : '');
 		let tier1_effect =								  "{{10 EP=Obscure one sense, ends with attack}} ";
 		let tier2_effect = (show_illusion_obscure_20_ep ? "{{20 EP=Obscure one sense for duration}} " : "");
@@ -14983,13 +14990,13 @@ on("clicked:illusionobscure30ep", function() {
 
 on("clicked:necromancycontrolundeadinfo", function() {
 	getAttrs(["necromancy_total", "necromancy_tier", "necromancy_pool_total", "show_necromancy_control_undead_20_ep", "show_necromancy_control_undead_40_ep", "spell_range", "spell_area_size", "area_type_blast", "area_type_burst", "area_type_line", "area_type_nova", "area_type_wall"], function(values) {
-		let total = parseInt(values.necromancy_total)||0;
-		let tier = parseInt(values.necromancy_tier)||0;
-		let pool = parseInt(values.necromancy_pool_total)||0;
-		let show_necromancy_control_undead_20_ep = Boolean(values.show_necromancy_control_undead_20_ep)||false;
-		let show_necromancy_control_undead_40_ep = Boolean(values.show_necromancy_control_undead_40_ep)||false;
-		let range = parseInt(values.spell_range)||0;
-		let area_size = parseInt(values.spell_area_size)||0;
+		let total = get_int_or_zero(values.necromancy_total);
+		let tier = get_int_or_zero(values.necromancy_tier);
+		let pool = get_int_or_zero(values.necromancy_pool_total);
+		let show_necromancy_control_undead_20_ep = get_bool(values.show_necromancy_control_undead_20_ep);
+		let show_necromancy_control_undead_40_ep = get_bool(values.show_necromancy_control_undead_40_ep);
+		let range = get_int_or_zero(values.spell_range);
+		let area_size = get_int_or_zero(values.spell_area_size);
 		let area_type_list = get_area_type_list(area_size, values.area_type_blast, values.area_type_burst, values.area_type_line, values.area_type_nova, values.area_type_wall);
 		let effect_cp_base = value_effect('tier in Necromancy &times; your Necromancy total &times; 10', tier * total * 10);
 		let effect_cp_base_max = value_effect('(tier in Necromancy + your Necromancy pool total) &times; your Necromancy total &times; 10', 
@@ -15020,12 +15027,12 @@ on("clicked:necromancycontrolundeadinfo", function() {
 
 on("clicked:metamancydispelmagicinfo", function() {
 	getAttrs(["metamancy_tier", "show_metamancy_dispel_magic_10_ep", "show_metamancy_dispel_magic_20_ep", "show_metamancy_dispel_magic_30_ep", "show_metamancy_dispel_magic_40_ep", "spell_duration_bonus", "spell_range"], function(values) {
-		let tier = parseInt(values.metamancy_tier)||0;
-		let show_metamancy_dispel_magic_10_ep = Boolean(values.show_metamancy_dispel_magic_10_ep)||false;
-		let show_metamancy_dispel_magic_20_ep = Boolean(values.show_metamancy_dispel_magic_20_ep)||false;
-		let show_metamancy_dispel_magic_30_ep = Boolean(values.show_metamancy_dispel_magic_30_ep)||false;
-		let show_metamancy_dispel_magic_40_ep = Boolean(values.show_metamancy_dispel_magic_40_ep)||false;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
+		let tier = get_int_or_zero(values.metamancy_tier);
+		let show_metamancy_dispel_magic_10_ep = get_bool(values.show_metamancy_dispel_magic_10_ep);
+		let show_metamancy_dispel_magic_20_ep = get_bool(values.show_metamancy_dispel_magic_20_ep);
+		let show_metamancy_dispel_magic_30_ep = get_bool(values.show_metamancy_dispel_magic_30_ep);
+		let show_metamancy_dispel_magic_40_ep = get_bool(values.show_metamancy_dispel_magic_40_ep);
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
 		let base_duration = [
 			{ name: 'dispel',   duration: dur_instantaneous         },
 			{ name: 'suppress', duration: dur_short_rest_w_checks_1 }
@@ -15033,7 +15040,7 @@ on("clicked:metamancydispelmagicinfo", function() {
 		if (show_metamancy_dispel_magic_40_ep) {
 			base_duration.push({ name: 'disjoin', duration: dur_instantaneous });
 		}
-		let range = parseInt(values.spell_range)||0;
+		let range = get_int_or_zero(values.spell_range);
 		let tier1_effect = 										`{{10 EP=Dispel tier 1 effect${_or}Suppress magic item}} `;
 		let tier2_effect = (show_metamancy_dispel_magic_20_ep ? `{{20 EP=Dispel tier 2 effect${_or}Suppress eldritch item}} ` : '');
 		let tier3_effect = (show_metamancy_dispel_magic_30_ep ? `{{30 EP=Dispel tier 3 effect${_or}Suppress epic item}} ` : '');
@@ -15104,9 +15111,9 @@ function get_rune_desc(tier, rune_type) {
 
 on("clicked:metamancyinscribechargeruneinfo", function() {
 	getAttrs(["metamancy_tier", "spell_range", "spell_duration_bonus"], function(values) {
-		let tier = parseInt(values.metamancy_tier)||0;
-		let range = parseInt(values.spell_range)||0;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
+		let tier = get_int_or_zero(values.metamancy_tier);
+		let range = get_int_or_zero(values.spell_range);
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
 		let tier1_effect = '{{EP Cost=10 per tier of the bound spell}} ';
 		let desc = get_rune_desc(tier, 'charge') + _rn + "A charge rune can hold up to " + tier_effect_metamancy(tier, 5, ' charges') + ". When binding a " +
 		"spell to a charge rune, you cast it once for each charge. The EP you spend on the charge rune and the spell bound to it cannot be recovered until " +
@@ -15140,9 +15147,9 @@ on("clicked:metamancyinscribechargerune40ep", function() {
 
 on("clicked:metamancyinscribedurationruneinfo", function() {
 	getAttrs(["metamancy_tier", "show_metamancy_inscribe_duration_rune_30_ep", "spell_range"], function(values) {
-		let tier = parseInt(values.metamancy_tier)||0;
-		let show_metamancy_inscribe_duration_rune_30_ep = Boolean(values.show_metamancy_inscribe_duration_rune_30_ep)||false;
-		let range = parseInt(values.spell_range)||0;
+		let tier = get_int_or_zero(values.metamancy_tier);
+		let show_metamancy_inscribe_duration_rune_30_ep = get_bool(values.show_metamancy_inscribe_duration_rune_30_ep);
+		let range = get_int_or_zero(values.spell_range);
 		let base_duration = [{ duration: "Bound spell's base duration + 2", custom: true }];
 		let tier1_effect = '{{EP Cost=10 per tier of the bound spell}} ';
 		let tier3_text = (show_metamancy_inscribe_duration_rune_30_ep ? _rn + "Alternatively, you can inscribe a duration rune that makes the bound spell’s " +
@@ -15180,13 +15187,13 @@ on("clicked:metamancyinscribedurationrune40ep", function() {
 
 on("clicked:metamancyimbueinfo", function() {
 	getAttrs(["metamancy_tier", "show_metamancy_imbue_20_ep", "show_metamancy_imbue_40_ep", "show_metamancy_imbue_60_ep", "show_metamancy_imbue_80_ep", "spell_duration_bonus", "spell_range"], function(values) {
-		let tier = parseInt(values.metamancy_tier)||0;
-		let show_metamancy_imbue_20_ep = Boolean(values.show_metamancy_imbue_20_ep)||false;
-		let show_metamancy_imbue_40_ep = Boolean(values.show_metamancy_imbue_40_ep)||false;
-		let show_metamancy_imbue_60_ep = Boolean(values.show_metamancy_imbue_60_ep)||false;
-		let show_metamancy_imbue_80_ep = Boolean(values.show_metamancy_imbue_80_ep)||false;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
-		let range = parseInt(values.spell_range)||0;
+		let tier = get_int_or_zero(values.metamancy_tier);
+		let show_metamancy_imbue_20_ep = get_bool(values.show_metamancy_imbue_20_ep);
+		let show_metamancy_imbue_40_ep = get_bool(values.show_metamancy_imbue_40_ep);
+		let show_metamancy_imbue_60_ep = get_bool(values.show_metamancy_imbue_60_ep);
+		let show_metamancy_imbue_80_ep = get_bool(values.show_metamancy_imbue_80_ep);
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
+		let range = get_int_or_zero(values.spell_range);
 		let roll_text = get_prowess_imbue_info(tier, show_metamancy_imbue_20_ep, show_metamancy_imbue_40_ep, show_metamancy_imbue_60_ep, 
 		show_metamancy_imbue_80_ep, duration_bonus, range, false);
 		startRoll(roll_text, (results) => {
@@ -15221,13 +15228,13 @@ on("clicked:necromancycontrolundead40ep", function() {
 
 on("clicked:necromancycreateundeadinfo", function() {
 	getAttrs(["necromancy_total", "necromancy_tier", "show_necromancy_create_undead_20_ep", "show_necromancy_create_undead_40_ep", "show_necromancy_create_undead_60_ep", "show_necromancy_create_undead_80_ep", "spell_range"], function(values) {
-		let total = parseInt(values.necromancy_total)||0;
-		let tier = parseInt(values.necromancy_tier)||0;
-		let show_necromancy_create_undead_20_ep = Boolean(values.show_necromancy_create_undead_20_ep)||false;
-		let show_necromancy_create_undead_40_ep = Boolean(values.show_necromancy_create_undead_40_ep)||false;
-		let show_necromancy_create_undead_60_ep = Boolean(values.show_necromancy_create_undead_60_ep)||false;
-		let show_necromancy_create_undead_80_ep = Boolean(values.show_necromancy_create_undead_80_ep)||false;
-		let range = parseInt(values.spell_range)||0;
+		let total = get_int_or_zero(values.necromancy_total);
+		let tier = get_int_or_zero(values.necromancy_tier);
+		let show_necromancy_create_undead_20_ep = get_bool(values.show_necromancy_create_undead_20_ep);
+		let show_necromancy_create_undead_40_ep = get_bool(values.show_necromancy_create_undead_40_ep);
+		let show_necromancy_create_undead_60_ep = get_bool(values.show_necromancy_create_undead_60_ep);
+		let show_necromancy_create_undead_80_ep = get_bool(values.show_necromancy_create_undead_80_ep);
+		let range = get_int_or_zero(values.spell_range);
 		let tier1_effect = 										  '{{20 EP=human sized skeleton or zombie}} ';
 		let tier2_effect = (show_necromancy_create_undead_40_ep ? `{{40 EP=Large Size${_or}human sized + boon${_or}**2** human sized skeletons or zombies}} ` : '');
 		let tier3_effect = (show_necromancy_create_undead_60_ep ? `{{60 EP=Huge Size${_or}Large Size + boon${_or}human sized + 2 boons${_or}**2** 40 EP items}} ` : '');
@@ -15262,13 +15269,13 @@ on("clicked:necromancycreateundead80ep", function() {
 
 on("clicked:necromancydecrepifyinfo", function() {
 	getAttrs(["necromancy_tier", "show_necromancy_decrepify_10_ep", "show_necromancy_decrepify_20_ep", "show_necromancy_decrepify_30_ep", "spell_duration_bonus", "spell_range"], function(values) {
-		let total = parseInt(values.necromancy_total)||0;
-		let tier = parseInt(values.necromancy_tier)||0;
-		let show_necromancy_decrepify_10_ep = Boolean(values.show_necromancy_decrepify_10_ep)||false;
-		let show_necromancy_decrepify_20_ep = Boolean(values.show_necromancy_decrepify_20_ep)||false;
-		let show_necromancy_decrepify_30_ep = Boolean(values.show_necromancy_decrepify_30_ep)||false;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
-		let range = parseInt(values.spell_range)||0;
+		let total = get_int_or_zero(values.necromancy_total);
+		let tier = get_int_or_zero(values.necromancy_tier);
+		let show_necromancy_decrepify_10_ep = get_bool(values.show_necromancy_decrepify_10_ep);
+		let show_necromancy_decrepify_20_ep = get_bool(values.show_necromancy_decrepify_20_ep);
+		let show_necromancy_decrepify_30_ep = get_bool(values.show_necromancy_decrepify_30_ep);
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
+		let range = get_int_or_zero(values.spell_range);
 		let tier1_effect = 									  '{{10 EP=fatigued}} ';
 		let tier2_effect = (show_necromancy_decrepify_20_ep ? '{{20 EP=fatigued and sickened}} ' : '');
 		let tier3_effect = (show_necromancy_decrepify_30_ep ? '{{30 EP=nauseated}} ' : '');
@@ -15297,16 +15304,16 @@ on("clicked:necromancydecrepify30ep", function() {
 
 on("clicked:necromancyshapecorpseinfo", function() {
 	getAttrs(["necromancy_tier", "necromancy_attribute_name", "necromancy_attribute_modifier", "show_necromancy_shape_corpse_10_ep", "show_necromancy_shape_corpse_20_ep", "show_necromancy_shape_corpse_30_ep", "show_necromancy_shape_corpse_40_ep", "spell_duration", "spell_range", "spell_area_size", "area_type_blast", "area_type_burst", "area_type_line", "area_type_nova", "area_type_wall"], function(values) {
-		let tier = parseInt(values.necromancy_tier)||0;
-		let attribute_mod = parseInt(values.necromancy_attribute_modifier)||0;
+		let tier = get_int_or_zero(values.necromancy_tier);
+		let attribute_mod = get_int_or_zero(values.necromancy_attribute_modifier);
 		let attribute_name = values.necromancy_attribute_name;
-		let show_necromancy_shape_corpse_10_ep = Boolean(values.show_necromancy_shape_corpse_10_ep)||false;
-		let show_necromancy_shape_corpse_20_ep = Boolean(values.show_necromancy_shape_corpse_20_ep)||false;
-		let show_necromancy_shape_corpse_30_ep = Boolean(values.show_necromancy_shape_corpse_30_ep)||false;
-		let show_necromancy_shape_corpse_40_ep = Boolean(values.show_necromancy_shape_corpse_40_ep)||false;
-		let duration = parseInt(values.spell_duration)||0;
-		let range = parseInt(values.spell_range)||0;
-		let area_size = parseInt(values.spell_area_size)||0;
+		let show_necromancy_shape_corpse_10_ep = get_bool(values.show_necromancy_shape_corpse_10_ep);
+		let show_necromancy_shape_corpse_20_ep = get_bool(values.show_necromancy_shape_corpse_20_ep);
+		let show_necromancy_shape_corpse_30_ep = get_bool(values.show_necromancy_shape_corpse_30_ep);
+		let show_necromancy_shape_corpse_40_ep = get_bool(values.show_necromancy_shape_corpse_40_ep);
+		let duration = get_int_or_zero(values.spell_duration);
+		let range = get_int_or_zero(values.spell_range);
+		let area_size = get_int_or_zero(values.spell_area_size);
 		let area_type_list = get_area_type_list(area_size, values.area_type_blast, values.area_type_burst, values.area_type_line, values.area_type_nova, values.area_type_wall);
 
 		let damage_text = attribute_mod_effect(attribute_name, attribute_mod) + ' damage'; 
@@ -15356,15 +15363,15 @@ on("clicked:necromancyshapecorpse40ep", function() {
 
 on("clicked:neuromancycharminfo", function() {
 	getAttrs(["neuromancy_tier", "show_neuromancy_charm_10_ep", "show_neuromancy_charm_20_ep", "show_neuromancy_charm_30_ep", "show_neuromancy_charm_40_ep", "spell_duration_bonus", "spell_range", "spell_area_size", "area_type_blast", "area_type_burst", "area_type_line", "area_type_nova", "area_type_wall"], function(values) {
-		let tier = parseInt(values.neuromancy_tier)||0;
-		let show_neuromancy_charm_10_ep = Boolean(values.show_neuromancy_charm_10_ep)||false;
-		let show_neuromancy_charm_20_ep = Boolean(values.show_neuromancy_charm_20_ep)||false;
-		let show_neuromancy_charm_30_ep = Boolean(values.show_neuromancy_charm_30_ep)||false;
-		let show_neuromancy_charm_40_ep = Boolean(values.show_neuromancy_charm_40_ep)||false;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
+		let tier = get_int_or_zero(values.neuromancy_tier);
+		let show_neuromancy_charm_10_ep = get_bool(values.show_neuromancy_charm_10_ep);
+		let show_neuromancy_charm_20_ep = get_bool(values.show_neuromancy_charm_20_ep);
+		let show_neuromancy_charm_30_ep = get_bool(values.show_neuromancy_charm_30_ep);
+		let show_neuromancy_charm_40_ep = get_bool(values.show_neuromancy_charm_40_ep);
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
 		let base_duration = dur_short_rest_w_checks_2;
-		let range = parseInt(values.spell_range)||0;
-		let area_size = parseInt(values.spell_area_size)||0;
+		let range = get_int_or_zero(values.spell_range);
+		let area_size = get_int_or_zero(values.spell_area_size);
 		let area_type_list = get_area_type_list(area_size, values.area_type_blast, values.area_type_burst, values.area_type_line, values.area_type_nova, values.area_type_wall);
 		let area_types = _bolt_touch;
 		let tier1_effect = 								  "{{10 EP=Target sees you as a friend}} ";
@@ -15424,12 +15431,12 @@ on("clicked:neuromancycharm40ep", function() {
 
 on("clicked:neuromancyfearinfo", function() {
 	getAttrs(["neuromancy_tier", "show_neuromancy_fear_10_ep", "show_neuromancy_fear_30_ep", "spell_duration_bonus", "spell_range", "spell_area_size", "area_type_blast", "area_type_burst", "area_type_line", "area_type_nova", "area_type_wall"], function(values) {
-		let tier = parseInt(values.neuromancy_tier)||0;
-		let show_neuromancy_fear_10_ep = Boolean(values.show_neuromancy_fear_10_ep)||false;
-		let show_neuromancy_fear_30_ep = Boolean(values.show_neuromancy_fear_30_ep)||false;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
-		let range = parseInt(values.spell_range)||0;
-		let area_size = parseInt(values.spell_area_size)||0;
+		let tier = get_int_or_zero(values.neuromancy_tier);
+		let show_neuromancy_fear_10_ep = get_bool(values.show_neuromancy_fear_10_ep);
+		let show_neuromancy_fear_30_ep = get_bool(values.show_neuromancy_fear_30_ep);
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
+		let range = get_int_or_zero(values.spell_range);
+		let area_size = get_int_or_zero(values.spell_area_size);
 		let area_type_list = get_area_type_list(area_size, values.area_type_blast, values.area_type_burst, values.area_type_line, values.area_type_nova, values.area_type_wall);
 		let tier1_effect = 								 "{{10 EP=Targets are **scared**}} ";
 		let tier3_effect = (show_neuromancy_fear_30_ep ? "{{30 EP=Targets are **terrified**}} " : "");
@@ -15456,14 +15463,14 @@ on("clicked:neuromancyfear30ep", function() {
 
 on("clicked:neuromancyinfluenceinfo", function() {
 	getAttrs(["neuromancy_tier", "show_neuromancy_influence_10_ep", "show_neuromancy_influence_20_ep", "show_neuromancy_influence_30_ep", "spell_duration_bonus", "spell_range", "spell_area_size", "area_type_blast", "area_type_burst", "area_type_line", "area_type_nova", "area_type_wall"], function(values) {
-		let tier = parseInt(values.neuromancy_tier)||0;
-		let show_neuromancy_influence_10_ep = Boolean(values.show_neuromancy_influence_10_ep)||false;
-		let show_neuromancy_influence_20_ep = Boolean(values.show_neuromancy_influence_20_ep)||false;
-		let show_neuromancy_influence_30_ep = Boolean(values.show_neuromancy_influence_30_ep)||false;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
+		let tier = get_int_or_zero(values.neuromancy_tier);
+		let show_neuromancy_influence_10_ep = get_bool(values.show_neuromancy_influence_10_ep);
+		let show_neuromancy_influence_20_ep = get_bool(values.show_neuromancy_influence_20_ep);
+		let show_neuromancy_influence_30_ep = get_bool(values.show_neuromancy_influence_30_ep);
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
 		let base_duration = [{ duration: '[[1]] round', custom: true }];
-		let range = parseInt(values.spell_range)||0;
-		let area_size = parseInt(values.spell_area_size)||0;
+		let range = get_int_or_zero(values.spell_range);
+		let area_size = get_int_or_zero(values.spell_area_size);
 		let area_type_list = get_area_type_list(area_size, values.area_type_blast, values.area_type_burst, values.area_type_line, values.area_type_nova, values.area_type_wall);
 		let area_types = _bolt_touch;
 		let tier1_effect = 								      '{{10 EP=One-word command}} ';
@@ -15527,12 +15534,12 @@ on("clicked:neuromancyinfluence30ep", function() {
 
 on("clicked:neuromancysleepinfo", function() {
 	getAttrs(["neuromancy_tier", "show_neuromancy_sleep_10_ep", "show_neuromancy_sleep_30_ep", "spell_duration_bonus", "spell_range", "spell_area_size", "area_type_blast", "area_type_burst", "area_type_line", "area_type_nova", "area_type_wall"], function(values) {
-		let tier = parseInt(values.neuromancy_tier)||0;
-		let show_neuromancy_sleep_10_ep= Boolean(values.show_neuromancy_sleep_10_ep)||false;
-		let show_neuromancy_sleep_30_ep= Boolean(values.show_neuromancy_sleep_30_ep)||false;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
-		let range = parseInt(values.spell_range)||0;
-		let area_size = parseInt(values.spell_area_size)||0;
+		let tier = get_int_or_zero(values.neuromancy_tier);
+		let show_neuromancy_sleep_10_ep= get_bool(values.show_neuromancy_sleep_10_ep);
+		let show_neuromancy_sleep_30_ep= get_bool(values.show_neuromancy_sleep_30_ep);
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
+		let range = get_int_or_zero(values.spell_range);
+		let area_size = get_int_or_zero(values.spell_area_size);
 		let area_type_list = get_area_type_list(area_size, values.area_type_blast, values.area_type_burst, values.area_type_line, values.area_type_nova, values.area_type_wall);
 		let tier1_effect = 								  "{{10 EP=Targets are **sleepy**}} ";
 		let tier3_effect = (show_neuromancy_sleep_30_ep ? "{{30 EP=Targets are **asleep**}} " : "");
@@ -15557,11 +15564,11 @@ on("clicked:neuromancysleep30ep", function() {
 
 on("clicked:neuromancytelepathyinfo", function() {
 	getAttrs(["neuromancy_tier", "show_neuromancy_telepathy_10_ep", "show_neuromancy_telepathy_20_ep", "show_neuromancy_telepathy_30_ep", "spell_duration_bonus", "spell_range", "spell_area_size", "area_type_blast", "area_type_burst", "area_type_line", "area_type_nova", "area_type_wall"], function(values) {
-		let tier = parseInt(values.neuromancy_tier)||0;
-		let show_neuromancy_telepathy_10_ep = Boolean(values.show_neuromancy_telepathy_10_ep)||false;
-		let show_neuromancy_telepathy_20_ep = Boolean(values.show_neuromancy_telepathy_20_ep)||false;
-		let show_neuromancy_telepathy_30_ep = Boolean(values.show_neuromancy_telepathy_30_ep)||false;
-		let duration_bonus = parseInt(values.spell_duration_bonus)||0;
+		let tier = get_int_or_zero(values.neuromancy_tier);
+		let show_neuromancy_telepathy_10_ep = get_bool(values.show_neuromancy_telepathy_10_ep);
+		let show_neuromancy_telepathy_20_ep = get_bool(values.show_neuromancy_telepathy_20_ep);
+		let show_neuromancy_telepathy_30_ep = get_bool(values.show_neuromancy_telepathy_30_ep);
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
 		let base_duration = [
 			{ name: 'read surface thoughts', duration: dur_short_rest_w_checks_2 },
 			{ name:	'two-way connection',    duration: dur_concentration_w_pool  },
@@ -15573,8 +15580,8 @@ on("clicked:neuromancytelepathyinfo", function() {
 		if (show_neuromancy_telepathy_30_ep) {
 			base_duration.push({ name: 'unwilling true telepathy', duration: dur_short_rest_w_checks_1 });
 		}
-		let range = parseInt(values.spell_range)||0;
-		let area_size = parseInt(values.spell_area_size)||0;
+		let range = get_int_or_zero(values.spell_range);
+		let area_size = get_int_or_zero(values.spell_area_size);
 		let area_type_list = get_area_type_list(area_size, values.area_type_blast, values.area_type_burst, values.area_type_line, values.area_type_nova, values.area_type_wall);
 		let area_types = [
 			{ name: 'normal',   types: _bolt_touch    },
