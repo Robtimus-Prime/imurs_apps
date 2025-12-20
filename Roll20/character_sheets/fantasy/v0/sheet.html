@@ -14,12 +14,16 @@
 			</label>
 			<input name="attr_gm_rolls_text" value="" type="hidden" />
 		</div>
-		
 		<div>
 			<label class="longlabel"> Character Points </label>
-			<input name="attr_character_points" type="text" class="longnumber" />
-			<label> Unspent CP </label>
-			<input name="attr_unspent_character_points" type="text" />
+			<input name="attr_cp_total" type="text" class="final-number final-number-large" readonly />
+		</div>
+		<div>
+			<span class="skill-attribute default-attribute"> Combat Score </span>
+			<input name="attr_combat_score" type="text" class="final-number" readonly />
+			&nbsp; &nbsp; 
+			<span class="skill-attribute default-attribute"> Non-Combat Score </span>
+			<input name="attr_non_combat_score" type="text" class="final-number" readonly />
 		</div>
 
 	</div>
@@ -7683,12 +7687,13 @@ attribute_array.forEach( function(attribute) {
 	let attr_array = attribute_array.filter(attr => attr.combat_score == is_combat_score).map(attr => `cp_${attr.name}`);
 	on('change:' + attr_array.join(' change:'), function() {
 		getAttrs(attr_array, function(values) {
-			let cp_combat_attributes = 0;
+			let cp_attributes = 0;
 			for (const attr of attr_array) {
-				cp_combat_attributes += get_int_or_zero(values[attr]);
+				cp_attributes += get_int_or_zero(values[attr]);
 			}
-			console.log(`cp_combat_attributes: ${cp_combat_attributes}`);
-			setAttrs({ 'cp_combat_attributes': cp_combat_attributes });
+			let attr_key = `cp_${(is_combat_score ? '' : 'non_')}combat_attributes`;
+			console.log(`${attr_key}: ${cp_attributes}`);
+			setAttrs({ [attr_key]: cp_attributes });
 		});
 	});
 });
@@ -12378,8 +12383,8 @@ on('change:' + cp_calc_attr_array.join(' change:'), function() {
 		
 		setAttrs({
 			'cp_total':         cp_total,
-			'combat_score':     combat_score,
-			'non_combat_score': non_combat_score
+			'combat_score':     Math.round(combat_score),
+			'non_combat_score': Math.round(non_combat_score)
 		});
 	});
 });

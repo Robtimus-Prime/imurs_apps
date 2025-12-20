@@ -287,6 +287,21 @@ h1 {
 	height: 234px;
 }
 
+.ui-dialog .charsheet input.final-number {
+	font-family: Candal;
+	font-size: 12pt;
+	color: white;
+	border: none;
+	width: 35px;
+	background-color: inherit;
+	padding-top: 0px;
+}
+
+.ui-dialog .charsheet input.final-number.final-number-large {
+	font-size: 14pt;
+	width: 60px;
+}
+
 /* For addons */
 .ui-dialog .charsheet div.input-group {
 	display: inline-flex;
