@@ -1734,7 +1734,7 @@
 					<label> Regeneration <button type="action" name="act_regenerationinfo" class="info-button generic-skill" /> </label>
 				</div>
 				<div class="top-space">
-					<button type="roll" value="@{regeneration_roll_text}" />
+					<button type="action" name="act_rollregenerationhealing" />
 					Roll Regeneration Healing
 				</div>
 			</span>
@@ -12287,15 +12287,25 @@ on("change:bb_regeneration", function() {
 			vulnerability = matches[3];
 			vulnerability = vulnerability.replace('and', ' and ').replace('or', ' or ').replace('coldiron', 'cold iron');
 		}
-		
-		let roll_text = "@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Regeneration}} {{Healing=[[" + healing + "]]}}'";
 
 		setAttrs({
 			"regeneration_healing":       healing,
-			"regeneration_vulnerability": vulnerability,
-			"regeneration_roll_text":     roll_text
+			"regeneration_vulnerability": vulnerability
 		});
 	});	
+});
+
+on('clicked:rollregenerationhealing', function() {
+	console.log('clicked:rollregenerationhealing');
+	getAttrs(['hit_points', 'hit_points_max', 'regeneration_healing'], function(values) {
+		let hp      = get_int_or_zero(values.hit_points);
+		let hp_max  = get_int_or_zero(values.hit_points_max);
+		
+		startRoll("@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Regeneration Healing}} {{HP=[[" + values.regeneration_healing + "]]}}'", (results) => {
+			setAttrs({ 'hit_points': Math.min(hp + results.results.HP.result, hp_max) });
+			finishRoll(results.rollId);
+		});
+	});
 });
 
 on("change:bb_swallow_whole", function() {
