@@ -1584,10 +1584,28 @@
 
 		<!-- Gaze Attack -->
 		<div class="monstrous-boon top-line">
-			<input name="attr_bb_gaze_attack" type="hidden" class="show-ability" value="false" />
+			<input name="attr_bb_gaze_attack_1" type="hidden" class="show-ability" value="false" />
 			<span class="ability">
 				<div class="skillname">
-					<label> Gaze Attack <button type="action" name="act_gazeattackinfo" class="info-button generic-skill" /> </label>
+					<label> Gaze Attack <button type="action" name="act_bbgazeattack1info" class="info-button generic-skill" /> </label>
+				</div>
+			</span>
+		</div>
+
+		<div class="monstrous-boon top-line">
+			<input name="attr_bb_gaze_attack_2" type="hidden" class="show-ability" value="false" />
+			<span class="ability">
+				<div class="skillname">
+					<label> Gaze Attack <button type="action" name="act_bbgazeattack2info" class="info-button generic-skill" /> </label>
+				</div>
+			</span>
+		</div>
+
+		<div class="monstrous-boon top-line">
+			<input name="attr_bb_gaze_attack_3" type="hidden" class="show-ability" value="false" />
+			<span class="ability">
+				<div class="skillname">
+					<label> Gaze Attack <button type="action" name="act_bbgazeattack3info" class="info-button generic-skill" /> </label>
 				</div>
 			</span>
 		</div>
@@ -9036,28 +9054,6 @@ on("clicked:engulfinfo", function() {
 	});
 });
 
-on("clicked:gazeattackinfo", function() {
-	getAttrs(["mr_total", "gaze_attack_area_size", "gaze_attack_spell", "gaze_attack_ep"], function(values) {
-		let mr_total = get_int_or_zero(values.mr_total);
-		
-		let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: Gaze Attack}} {{Area=Nova (" + values.gaze_attack_area_size + 
-		" sq)}}" + "{{Spell effect=" + capitalize_first_letter(values.gaze_attack_spell) + " (" + values.gaze_attack_ep + " EP)}} {{Reflex=TN " + 
-		skill_total_effect_mr(mr_total, 12) + "}} {{Duration=" + Math.floor(mr_total / 2) + " units}}" +
-		"{{desc=The monster has a gaze attack, which affects targets that simply look into its eyes. The gaze causes a spell effect. Any creature that comes " +
-		"within a " + values.gaze_attack_area_size + "-square nova of the monster must make a resilience check to resist the spell effect each round. In " +
-		"addition, the monster can spend 1 AP to focus its gaze on a single creature within the nova, forcing them to make another resilience check to resist " +
-		"the spell effect." + _rn + "Creatures can attempt to avert their eyes while within the gaze attack’s range, which gives them a 50% chance (6+ " +
-		"on 1d10) each round to ignore the gaze and not need to make a resilience check. Any attacks or spells made by a creature averting their eyes that " +
-		"target the monster automatically fail if the check is an odd number." + _rn + "Alternatively, creatures can blindfold themselves, in which " +
-		"case they incur the blinded condition. In this case, they do not need to make resilience checks against the gaze attack." +
-		"}}'";
-		
-		startRoll(roll_text, (results) => {
-			finishRoll(results.rollId);
-		});
-	});
-});
-
 on("clicked:legendaryactioninfo", function() {
 	let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: Legendary Monster}} " +
 	"{{desc=The monster is a legendary creature, such as a dragon. Legendary monsters can have a maximum of 60 in each attribute. Legendary monsters gain advantage " +
@@ -11795,7 +11791,7 @@ function set_boons_and_banes(eventInfo) {
 damage_type_list.forEach( function(type) {
 
 	// Aura of Damage
-	let aura_of_damage_name = `bb_aura_of_damage_${type}`;
+	let aura_of_damage_name      = `bb_aura_of_damage_${type}`;
 	let get_aura_of_damage_array = [ aura_of_damage_name, 'size_modifier_aura', 'mr_tier' ];
 	on('change:' + get_aura_of_damage_array.join(' change:'), function() {
 		console.log(`${aura_of_damage_name} changed`);
@@ -11921,7 +11917,7 @@ minor_major_array.forEach( function(type) {
 			let boon_damage_desc_name = `${boon_name}_damage_description`;
 			let boon_area_type_name   = `${boon_name}_area_type`;
 			
-			let get_array     = [ boon_name, boon_raw_name, 'pr_total', 'pr_tier', 'ps_improved_breath_weapon', 'ps_greater_breath_weapon', 'ps_epic_breath_weapon', 'ps_legendary_breath_weapon' ];
+			let get_array = [ boon_name, boon_raw_name, 'pr_total', 'pr_tier', 'ps_improved_breath_weapon', 'ps_greater_breath_weapon', 'ps_epic_breath_weapon', 'ps_legendary_breath_weapon' ];
 			on('change:' + get_array.join(' change:'), function() {
 				console.log('called breath weapon change function');
 				getAttrs(get_array, function(values) {
@@ -12070,8 +12066,9 @@ if (disease_attack_boon) {
 		let duration_name  = `${boon_name}_duration`;
 		let successes_name = `${boon_name}_successes`;
 		let name_name      = `${boon_name}_name`;
-		on(`change:${boon_name}`, function() {
-			getAttrs([boon_name, boon_raw_name], function(values) {
+		let get_array      = [boon_name, boon_raw_name];
+		on('change:' + get_array.join(' change:'), function() {
+			getAttrs(get_array, function(values) {
 				let has_disease_attack = get_bool(values[boon_name]);
 				let boon_raw_text      = values[boon_raw_name];
 				let name               = '';
@@ -12123,32 +12120,65 @@ if (disease_attack_boon) {
 	}
 }
 
-on("change:bb_gaze_attack change:size_modifier_aura", function() {
-	getAttrs(["bb_gaze_attack", "boons_and_banes", "size_modifier_aura"], function(values) {
-		let has_gaze_attack = get_bool(values.bb_gaze_attack);
-		let size_mod        = get_int_or_zero(values.size_modifier_aura);
+let gaze_attack_boon = boons_and_banes_array.find(b => b.name == 'bb_gaze_attack');
+if (gaze_attack_boon) {
+	for (let i = 1; i <= gaze_attack_boon.max_count; i++) {
+		let boon_name      = `bb_gaze_attack_${i}`;
+		let boon_raw_name  = `${boon_name}_raw`;
+		let boon_area_size = `${boon_name}_area_size`;
+		let boon_spell     = `${boon_name}_spell`;
+		let boon_ep        = `${boon_name}_ep`;
+		let get_array      =  [ boon_name, boon_raw_name, 'size_modifier_aura' ];
+		on('change:' + get_array.join(' change:'), function() {
+			getAttrs(get_array, function(values) {
+				let has_gaze_attack = get_bool(values[boon_name]);
+				let size_mod        = get_int_or_zero(values.size_modifier_aura);
 
-		let area_size = '';
-		let spell = '';
-		let ep = '0';
+				let area_size = '';
+				let spell     = '';
+				let ep        = '0';
 
-		if (has_gaze_attack) {
-			let regex = /(^|,)gazeattack([a-z]+),(\d+)ep(,|$)/;
-			let matches = parse_textarea(values.boons_and_banes).match(regex);
-			console.log(matches);
+				if (has_gaze_attack) {
+					let regex   = /gazeattack(\w+),(\d+)ep/;
+					let matches = values[boon_raw_name].match(regex);
+					console.log(matches);
 
-			area_size = 7 + size_mod;
-			spell = matches[2];
-			ep = matches[3];
-		}
-		
-		setAttrs({ 
-			"gaze_attack_area_size": area_size,
-			"gaze_attack_spell":     spell,
-			"gaze_attack_ep":        ep
+					area_size = 7 + size_mod;
+					spell     = matches[1];
+					ep        = matches[2];
+				}
+				
+				setAttrs({ 
+					[boon_area_size]: area_size,
+					[boon_spell]:     spell,
+					[boon_ep]:        ep
+				});
+			});	
 		});
-	});	
-});
+		
+		let info_name = boon_name.replaceAll('_', '') + 'info';
+		on(`clicked:${info_name}`, function() {
+			getAttrs(['mr_total', boon_area_size, boon_spell, boon_ep], function(values) {
+				let mr_total = get_int_or_zero(values.mr_total);
+				let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: Gaze Attack}} {{Area=Nova (" + values[boon_area_size] + 
+				" sq)}}" + "{{Spell effect=" + capitalize_first_letter(values[boon_spell]) + " (" + values[boon_ep] + " EP)}} {{Reflex=TN " + 
+				skill_total_effect_mr(mr_total, 12) + "}} {{Duration=" + Math.floor(mr_total / 2) + " units}}" +
+				"{{desc=The monster has a gaze attack, which affects targets that simply look into its eyes. The gaze causes a spell effect. Any creature that " +
+				"comes within a " + values[boon_area_size] + "-square nova of the monster must make a resilience check to resist the spell effect each round. In " +
+				"addition, the monster can spend 1 AP to focus its gaze on a single creature within the nova, forcing them to make another resilience check to resist " +
+				"the spell effect." + _rn + "Creatures can attempt to avert their eyes while within the gaze attack’s range, which gives them a 50% chance (6+ " +
+				"on 1d10) each round to ignore the gaze and not need to make a resilience check. Any attacks or spells made by a creature averting their eyes that " +
+				"target the monster automatically fail if the check is an odd number." + _rn + "Alternatively, creatures can blindfold themselves, in which " +
+				"case they incur the blinded condition. In this case, they do not need to make resilience checks against the gaze attack." +
+				"}}'";
+				
+				startRoll(roll_text, (results) => {
+					finishRoll(results.rollId);
+				});
+			});
+		});
+	}
+}
 
 on("change:bb_huge_size change:bb_large_size change:bb_small_size change:bb_tiny_size", function() {
 	getAttrs(["bb_huge_size", "bb_large_size", "bb_small_size", "bb_tiny_size"], function(values) {
