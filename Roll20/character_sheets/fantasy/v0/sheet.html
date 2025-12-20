@@ -1688,13 +1688,39 @@
 
 		<!-- Poison Attack -->
 		<div class="monstrous-boon top-line">
-			<input name="attr_bb_poison_attack" type="hidden" class="show-ability" value="false" />
+			<input name="attr_bb_poison_attack_1" type="hidden" class="show-ability" value="false" />
 			<span class="ability">
 				<div class="skillname">
-					<label> Poison Attack <button type="action" name="act_poisonattackinfo" class="info-button generic-skill" /> </label>
+					<label> Poison Attack <button type="action" name="act_bbpoisonattack1info" class="info-button generic-skill" /> </label>
 				</div>
 				<div class="top-space">
-					<button type="roll" value="@{poison_roll_text}" />
+					<button type="roll" value="@{bb_poison_attack_1_roll_text}" />
+					Roll Poison
+				</div>
+			</span>
+		</div>
+
+		<div class="monstrous-boon top-line">
+			<input name="attr_bb_poison_attack_2" type="hidden" class="show-ability" value="false" />
+			<span class="ability">
+				<div class="skillname">
+					<label> Poison Attack <button type="action" name="act_bbpoisonattack2info" class="info-button generic-skill" /> </label>
+				</div>
+				<div class="top-space">
+					<button type="roll" value="@{bb_poison_attack_2_roll_text}" />
+					Roll Poison
+				</div>
+			</span>
+		</div>
+
+		<div class="monstrous-boon top-line">
+			<input name="attr_bb_poison_attack_3" type="hidden" class="show-ability" value="false" />
+			<span class="ability">
+				<div class="skillname">
+					<label> Poison Attack <button type="action" name="act_bbpoisonattack3info" class="info-button generic-skill" /> </label>
+				</div>
+				<div class="top-space">
+					<button type="roll" value="@{bb_poison_attack_3_roll_text}" />
 					Roll Poison
 				</div>
 			</span>
@@ -7588,74 +7614,6 @@ function get_lair_action_stats(has_lair_action, boons_and_banes_text, lair_actio
 	return lair_action_stats;
 }
 
-function get_poison_attack_stats(has_poison, boons_and_banes_text) {
-
-	let natural_weapon = '';
-	let tier = 0;
-	let type = '';
-	let TN = 0;
-	let duration = 0;
-	let damage = '';
-	let condition = null;
-	let roll_text = '';
-
-	let regex = /(^|,)(\w+)*poisonattack(\w+),tier(\d+)(\w+)(,|$)/;
-	let matches = boons_and_banes_text.match(regex);
-	console.log(`boons_and_banes_text: ${boons_and_banes_text}; looking for poison attack`);
-	console.log(matches);
-	
-	if (has_poison && matches) {
-		natural_weapon = matches[3];
-		tier = get_int_or_zero(matches[4]);
-		type = matches[5];
-		TN = 10 + (tier * 6);
-		let plural = (tier == 1 ? '' : 'es');
-		duration = `Short rest${_n}(${tier} success${plural})`;
-		if (tier == 4) {
-			duration = (type == 'sleep' || type == 'kill' ? 'Instantaneous' : 'Short rest');
-		}
-	
-		if (type == 'damage') {
-			damage = (tier + 1) + 'd6';
-		}
-		else if (type == 'sleep') {
-			condition = (tier < 4) ? 'sleepy' : 'asleep';
-		}
-		else if (type == 'slow') {
-			if (tier < 4) {
-				let AP = Math.ceil(tier / 2);
-				condition = 'slowed (-' + AP + ' AP)';
-			}
-			else {
-				condition = 'paralyzed';
-			}
-		}
-		else if (type == 'sick') {
-			condition = (tier < 3) ? 'sickened' : (tier < 4) ? 'fatigued & sickened' : 'nauseated';
-		}
-		else if (type == 'kill') {
-			condition = (tier < 3) ? 'fatigued' : (tier < 4) ? 'fatigued & sickened' : 'dead';
-		}
-		
-		let effect = (type == 'damage') ? '[[' + damage + ']] poison damage' : condition;
-		roll_text = "@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Poison Attack}} {{Physical Resilience (constitution)=TN " + TN + 
-		"}} {{Effect=" + effect + "}} {{Duration=" + duration + "}}'";
-	}
-	
-	var poison_stats = {
-		natural_weapon: natural_weapon,
-		tier:           tier,
-		type:           type,
-		TN:             TN,
-		duration:       duration,
-		damage:         damage,
-		condition:      condition,
-		roll_text:      roll_text
-	};
-	
-	return poison_stats;
-}
-
 // CP Calc Functions
 function cp_calc_skill_points(points) {
 	let cp = 0;
@@ -9075,37 +9033,6 @@ on("clicked:paralysisinfo", function() {
 		"{{Physical Resilience (fortitude)=TN " + values.paralysis_resist + "}} {{Effect=Parlayzed}} {{Duration=" + values.paralysis_duration + 
 		" rounds}}'";
 		
-		startRoll(roll_text, (results) => {
-			finishRoll(results.rollId);
-		});
-	});
-});
-
-on("clicked:poisonattackinfo", function() {
-	getAttrs(["poison_natural_weapon", "poison_tier", "poison_type", "poison_TN", "poison_duration", "poison_damage", "poison_condition"], function(values) {
-		let damage_poison  = (values.poison_type == "damage");
-		let effect         = damage_poison ? values.poison_damage + " poison damage" : values.poison_condition;
-		let poison_tier    = get_int_or_zero(values.poison_tier);
-		let attack_text    = `your ${values.poison_natural_weapon} attack`;
-		let touch_text     = '';
-		let success_text   = (poison_tier == 4 ? '' : ' If they roll the specified number of successes, they have processed the poison and no longer suffer its effects.');
-		
-		if (values.poison_natural_weapon == 'touch') {
-			attack_text = 'any of your natural attacks';
-			touch_text  = _rn + 'Your poison can be delivered by any physical contact with you, so any creature touching you at all would have to make a ' +
-			'Physical Resilience (constitution) check or be poisoned. This also applies to the following made by or against you: unarmed attacks, ' +
-			'Attack (grapple and reposition) checks, and anything else the GM decides.';
-		}
-		
-		let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: Poison Attack}} " +
-		"{{Natural weapon=" + capitalize_first_letter(values.poison_natural_weapon) + "}} {{Type= " + capitalize_first_letter(values.poison_type) + 
-		"}} {{Tier=" + poison_tier + "}} {{Physical Resilience (constitution)=TN " + values.poison_TN + "}}  {{Effect=" + effect + "}} {{Duration=" + 
-		values.poison_duration + "}}" + 
-		"{{desc=When a creature is damaged by " + attack_text + ", they must make a Physical Resilience " +
-		"(constitution) check against the poison's TN or suffer the effects. Until the poison's duration runs out, the creature must make another check " +
-		"each round. " + success_text + _rn +
-		"If you poison the same target multiple times with this attack, the target suffers disadvantage on resilience checks against your poison until " +
-		"its next short rest." + touch_text + "}}'";
 		startRoll(roll_text, (results) => {
 			finishRoll(results.rollId);
 		});
@@ -12230,25 +12157,120 @@ lair_action_array.forEach( function(number) {
 	});
 });
 
-on("change:bb_poison_attack", function() {
-	getAttrs(['bb_poison_attack', 'boons_and_banes'], function (values) {
-		let has_poison_attack = get_bool(values.bb_poison_attack);
+let poison_attack_boon = boons_and_banes_array.find(b => b.name == 'bb_poison_attack');
+if (poison_attack_boon) {
+	for (let i = 1; i <= poison_attack_boon.max_count; i++) {
+		let boon_name           = `bb_poison_attack_${i}`;
+		let boon_raw_name       = `${boon_name}_raw`;
+		let boon_natural_weapon = `${boon_name}_natural_weapon`;
+		let boon_tier           = `${boon_name}_tier`;
+		let boon_type           = `${boon_name}_type`;
+		let boon_TN             = `${boon_name}_TN`;
+		let boon_duration       = `${boon_name}_duration`;
+		let boon_damage         = `${boon_name}_damage`;
+		let boon_condition      = `${boon_name}_condition`;
+		let boon_roll_text      = `${boon_name}_roll_text`;
+		on(`change:${boon_raw_name}`, function() {
+			getAttrs([ boon_name, boon_raw_name ], function (values) {
+				let has_poison_attack = get_bool(values[boon_name]);
 
-		// set poison attack stats
-		var poison_stats = get_poison_attack_stats(has_poison_attack, parse_textarea(values.boons_and_banes));
-		console.log(poison_stats);
-		setAttrs({
-			"poison_natural_weapon": poison_stats.natural_weapon,
-			"poison_tier":           poison_stats.tier,
-			"poison_type":           poison_stats.type,
-			"poison_TN":             poison_stats.TN,
-			"poison_duration":       poison_stats.duration,
-			"poison_damage":         poison_stats.damage,
-			"poison_condition":      poison_stats.condition,
-			"poison_roll_text":      poison_stats.roll_text
+				let natural_weapon = '';
+				let tier           = 0;
+				let type           = '';
+				let TN             = 0;
+				let duration       = 0;
+				let damage         = '';
+				let condition      = null;
+				let roll_text      = '';
+
+				if (has_poison_attack) {
+					let regex   = /poisonattack(\w+),tier(\d+)(\w+)/;
+					let matches = values[boon_raw_name].match(regex);
+					console.log(matches);
+					
+					natural_weapon = matches[1];
+					tier           = get_int_or_zero(matches[2]);
+					type           = matches[3];
+					TN             = 10 + (tier * 6);
+					let plural     = (tier == 1 ? '' : 'es');
+					duration       = `Short rest${_n}(${tier} success${plural})`;
+					if (tier == 4) {
+						duration = (type == 'sleep' || type == 'kill' ? 'Instantaneous' : 'Short rest');
+					}
+				
+					if (type == 'damage') {
+						damage = (tier + 1) + 'd6';
+					}
+					else if (type == 'sleep') {
+						condition = (tier < 4) ? 'sleepy' : 'asleep';
+					}
+					else if (type == 'slow') {
+						if (tier < 4) {
+							let AP = Math.ceil(tier / 2);
+							condition = 'slowed (-' + AP + ' AP)';
+						}
+						else {
+							condition = 'paralyzed';
+						}
+					}
+					else if (type == 'sick') {
+						condition = (tier < 3) ? 'sickened' : (tier < 4) ? 'fatigued & sickened' : 'nauseated';
+					}
+					else if (type == 'kill') {
+						condition = (tier < 3) ? 'fatigued' : (tier < 4) ? 'fatigued & sickened' : 'dead';
+					}
+					
+					let effect = (type == 'damage') ? '[[' + damage + ']] poison damage' : condition;
+					roll_text = "@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Poison Attack}} {{Physical Resilience (constitution)=TN " + TN + 
+					"}} {{Effect=" + effect + "}} {{Duration=" + duration + "}}'";
+				}
+				
+				setAttrs({
+					[boon_natural_weapon]: natural_weapon,
+					[boon_tier]:           tier,
+					[boon_type]:           type,
+					[boon_TN]:             TN,
+					[boon_duration]:       duration,
+					[boon_damage]:         damage,
+					[boon_condition]:      condition,
+					[boon_roll_text]:      roll_text
+				});
+			});
 		});
-	});
-});
+
+		let info_name = boon_name.replaceAll('_', '') + 'info';
+		on(`clicked:${info_name}`, function() {
+			getAttrs([boon_natural_weapon, boon_tier, boon_type, boon_TN, boon_duration, boon_damage, boon_condition], function(values) {
+				let damage_poison  = (values[boon_type] == "damage");
+				let effect         = damage_poison ? values[boon_damage] + " poison damage" : values[boon_condition];
+				let poison_tier    = get_int_or_zero(values[boon_tier]);
+				let attack_text    = `your ${values[boon_natural_weapon]} attack`;
+				let touch_text     = '';
+				let success_text   = (poison_tier == 4 ? '' : ' If they roll the specified number of successes, they have processed the poison and no longer suffer its effects.');
+				
+				if (values[boon_natural_weapon] == 'touch') {
+					attack_text = 'any of your natural attacks';
+					touch_text  = _rn + 'Your poison can be delivered by any physical contact with you, so any creature touching you at all would have to make a ' +
+					'Physical Resilience (constitution) check or be poisoned. This also applies to the following made by or against you: unarmed attacks, ' +
+					'Attack (grapple and reposition) checks, and anything else the GM decides.';
+				}
+				
+				let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: Poison Attack}} " +
+				"{{Natural weapon=" + capitalize_first_letter(values[boon_natural_weapon]) + "}} {{Type= " + capitalize_first_letter(values[boon_type]) + 
+				"}} {{Tier=" + poison_tier + "}} {{Physical Resilience (constitution)=TN " + values[boon_TN] + "}}  {{Effect=" + effect + "}} {{Duration=" + 
+				values[boon_duration] + "}}" + 
+				"{{desc=When a creature is damaged by " + attack_text + ", they must make a Physical Resilience " +
+				"(constitution) check against the poison's TN or suffer the effects. Until the poison's duration runs out, the creature must make another check " +
+				"each round. " + success_text + _rn +
+				"If you poison the same target multiple times with this attack, the target suffers disadvantage on resilience checks against your poison until " +
+				"its next short rest." + touch_text + "}}'";
+				startRoll(roll_text, (results) => {
+					finishRoll(results.rollId);
+				});
+			});
+		});
+	}
+}
 
 on("change:bb_regeneration", function() {
 	getAttrs(["bb_regeneration", "boons_and_banes"], function(values) {
