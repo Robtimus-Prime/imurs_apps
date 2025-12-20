@@ -8833,31 +8833,36 @@ function cast_imbue(ep_cost) {
 }
 
 on('sheet:opened', function() {
-	getAttrs(['cp_total', 'passive_skills', 'boons_and_banes', 'mob_skill_bonus'], function(values) {
-		let cp_total        = get_int_or_zero(values.cp_total       );
+	getAttrs(['sheet_is_initialized', 'passive_skills', 'boons_and_banes', 'mob_skill_bonus'], function(values) {
+		let initialized     = get_bool(values.sheet_is_initialized  );
 		let mob_skill_bonus = get_int_or_zero(values.mob_skill_bonus);
 		if (mob_skill_bonus == 0) {
 			//console.log(`sheet:opened - mob_skill_bonus: ${mob_skill_bonus}`);
 			setAttrs({ "mob_skill_bonus": mob_skill_bonus });
 		}
-		if (cp_total == 0) {
-			console.log('CP total is zero');
-			let set_array = {};
+		if (!initialized) {
+			console.log('Initializing new character sheet');
+			let set_object = { 'sheet_is_initialized': true };
 			if (values.passive_skills.trim().length == 0) {
 				console.log('No passive skills; setting all to false');
 				passive_skill_array.forEach(function(ps) {
-					set_array[ps.name] = false;
+					set_object[ps.name] = false;
 				});
 			}
 			if (values.boons_and_banes.trim().length == 0) {
 				console.log('No boons or banes; setting all to false');
-				passive_skill_array.forEach(function(bb) {
-					set_array[bb.name] = false;
+				boons_and_banes_array.forEach(function(bb) {
+					if (bb.max_count > 1) {
+						for (let i = 1; i <= bb.max_count; i++) {
+							set_object[`${bb.name}_${i}`] = false;
+						}
+					}
+					else {
+						set_object[bb.name] = false;
+					}
 				});
 			}
-			if (Object.keys(set_array).length > 0) {
-				setAttrs(set_array);
-			}
+			setAttrs(set_object);
 		}
 	});
 });
@@ -9211,6 +9216,7 @@ on("change:perception_total change:agility_modifier change:bb_quick_reflexes cha
 	getAttrs(["perception_total", "agility_modifier", "bb_quick_reflexes", "bb_slow_reflexes"], function(values) {
 		let total         = get_int_or_zero(values.perception_total);
 		let mod           = get_int_or_zero(values.agility_modifier);
+		let quick         = get_bool(values.bb_quick_reflexes);
 		let slow          = get_bool(values.bb_slow_reflexes);
 		let boon_bane_mod = (quick ? 2 : (slow ? -2 : 0));
 		let reflex        = total + mod + boon_bane_mod;
@@ -9433,7 +9439,7 @@ vital_stats_array.forEach( function(stat) {
 			let dice                 = primary_skill_tier * (has_passive_skill ? 2 : 1) + secondary_skill_tier;
 			let roll                 = '{1d1, ' + dice + 'd6 + ' + attribute_mod + '}k1';
 			
-			console.log(`short_rest_${stat.abbreviation}_roll = '${roll}'`);
+			//console.log(`short_rest_${stat.abbreviation}_roll = '${roll}'`);
 			setAttrs({ [`short_rest_${stat.abbreviation}_roll`]: roll });
 		});
 	});
@@ -10743,7 +10749,7 @@ on("clicked:togglecombatstyles", function() {
 		for (let i = 0; i < show_array.length; i++) {
 			set_array[show_array[i]] = (any_hidden ? true : (values[training_array[i]] == 'on'));
 		}
-		console.log(`set_array = ${JSON.stringify(set_array)}`);
+		//console.log(`set_array = ${JSON.stringify(set_array)}`);
 		
 		setAttrs(set_array);
 	});
@@ -11721,15 +11727,12 @@ damage_type_list.forEach( function(type) {
 	let aura_of_damage_name      = `bb_aura_of_damage_${type}`;
 	let get_aura_of_damage_array = [ aura_of_damage_name, 'size_modifier_aura', 'mr_tier' ];
 	on('change:' + get_aura_of_damage_array.join(' change:'), function() {
-		console.log(`${aura_of_damage_name} changed`);
 		getAttrs(get_aura_of_damage_array, function(values) {
 			console.log(values);
 			let has_aura_of_damage = get_bool(values[aura_of_damage_name]);
 			let tier               = get_int_or_zero(values.mr_tier);
 			let size_mod           = get_int_or_zero(values.size_modifier_aura);
 			
-			console.log(`${aura_of_damage_name}: ${values[aura_of_damage_name]}`);
-
 			let description = '';
 			let damage_type = '';
 			let damage      = '0';
@@ -11739,8 +11742,6 @@ damage_type_list.forEach( function(type) {
 				damage_type = capitalize_first_letter(type);
 				damage      = (tier + 1) + "d6";
 			}
-			
-			console.log(`description: ${description}; damage_type: ${damage_type}; damage: ${damage}`);
 			
 			setAttrs({ 
 				[`${aura_of_damage_name}_description`]: description,
@@ -11767,7 +11768,6 @@ damage_type_list.forEach( function(type) {
 		let explosive_death_name = `bb_${mm}_explosive_death_${type}`;
 		let get_explosive_death_array = [ explosive_death_name, 'size_modifier_aura', 'mr_tier', 'ps_improved_explosive_death', 'ps_greater_explosive_death', 'ps_epic_explosive_death', 'ps_legendary_explosive_death' ];
 		on('change:' + get_explosive_death_array.join(' change:'), function() {
-			console.log('called explosive death change function');
 			getAttrs(get_explosive_death_array, function(values) {
 				let has_explosive_death           = get_bool(values[explosive_death_name]);
 				let size_mod                      = get_int_or_zero(values.size_modifier_aura);
@@ -11777,8 +11777,6 @@ damage_type_list.forEach( function(type) {
 				let has_epic_explosive_death      = get_bool(values.ps_epic_explosive_death);
 				let has_legendary_explosive_death = get_bool(values.ps_legendary_explosive_death);
 				
-				console.log(`${explosive_death_name}: ${values[explosive_death_name]}`);
-
 				let damage_multiplier    = 0;
 				let ps_tier_bonus        = 0;
 				let damage_total         = 0;
@@ -11846,7 +11844,6 @@ minor_major_array.forEach( function(type) {
 			
 			let get_array = [ boon_name, boon_raw_name, 'pr_total', 'pr_tier', 'ps_improved_breath_weapon', 'ps_greater_breath_weapon', 'ps_epic_breath_weapon', 'ps_legendary_breath_weapon' ];
 			on('change:' + get_array.join(' change:'), function() {
-				console.log('called breath weapon change function');
 				getAttrs(get_array, function(values) {
 					let has_breath_weapon           = get_bool(values[boon_name]);
 					let breath_weapon_raw_text      = values[boon_raw_name];
@@ -11870,7 +11867,7 @@ minor_major_array.forEach( function(type) {
 					if (has_breath_weapon) {
 						let regex   = /m(in|aj)orbreathweapon(blast|line),(\w+)/;
 						let matches = breath_weapon_raw_text.match(regex);
-						console.log(matches);
+						//console.log(matches);
 						if (matches) {
 							damage_type = matches[3];
 						}
@@ -12008,7 +12005,7 @@ if (disease_attack_boon) {
 				if (has_disease_attack) {
 					let regex   = /diseaseattack(\w+),tier(\d+),(\w+)/;
 					let matches = parse_textarea(boon_raw_text).match(regex);
-					console.log(matches);
+					//console.log(matches);
 					name           = matches[3];
 					tier           = get_int_or_zero(matches[2]);
 					successes      = (tier < 3 ? tier : tier - 1);
@@ -12068,7 +12065,7 @@ if (gaze_attack_boon) {
 				if (has_gaze_attack) {
 					let regex   = /gazeattack(\w+),(\d+)ep/;
 					let matches = values[boon_raw_name].match(regex);
-					console.log(matches);
+					//console.log(matches);
 
 					area_size = 7 + size_mod;
 					spell     = matches[1];
@@ -12186,7 +12183,7 @@ if (poison_attack_boon) {
 				if (has_poison_attack) {
 					let regex   = /poisonattack(\w+),tier(\d+)(\w+)/;
 					let matches = values[boon_raw_name].match(regex);
-					console.log(matches);
+					//console.log(matches);
 					
 					natural_weapon = matches[1];
 					tier           = get_int_or_zero(matches[2]);
@@ -12275,14 +12272,14 @@ if (poison_attack_boon) {
 on("change:bb_regeneration", function() {
 	getAttrs(["bb_regeneration", "boons_and_banes"], function(values) {
 		let has_regeneration = get_bool(values.bb_regeneration);
-		console.log(`bb_regeneration: ${values.bb_regeneration}; has_regeneration: ${has_regeneration}`);
+		//console.log(`bb_regeneration: ${values.bb_regeneration}; has_regeneration: ${has_regeneration}`);
 		let healing = '0';
 		let vulnerability = '';
 
 		if (has_regeneration) {
 			let regex = /(^|,)regeneration(\d+?d6),(.+?)(,|$)/;
 			let matches = parse_textarea(values.boons_and_banes).match(regex);
-			console.log(matches);
+			//console.log(matches);
 			healing = matches[2];
 			vulnerability = matches[3];
 			vulnerability = vulnerability.replace('and', ' and ').replace('or', ' or ').replace('coldiron', 'cold iron');
@@ -12296,7 +12293,6 @@ on("change:bb_regeneration", function() {
 });
 
 on('clicked:rollregenerationhealing', function() {
-	console.log('clicked:rollregenerationhealing');
 	getAttrs(['hit_points', 'hit_points_max', 'regeneration_healing'], function(values) {
 		let hp      = get_int_or_zero(values.hit_points);
 		let hp_max  = get_int_or_zero(values.hit_points_max);
