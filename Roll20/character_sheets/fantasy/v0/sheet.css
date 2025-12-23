@@ -288,8 +288,9 @@ h1 {
 }
 
 .ui-dialog .charsheet input.final-number {
-	font-family: Candal;
+	font-family: Tahoma;
 	font-size: 12pt;
+	font-weight: bold;
 	color: white;
 	border: none;
 	width: 35px;

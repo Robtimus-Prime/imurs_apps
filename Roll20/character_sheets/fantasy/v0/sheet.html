@@ -149,10 +149,53 @@
 
 		<div>
 			<input name="attr_speed_total" type="text" readonly />
-			<input name="attr_speed_base" type="text" value="4" />
 			<label class="nowidth"> Squares </label>
-			<input name="attr_speed_feet" type="text" readonly />
-			<label class="nowidth"> Feet </label>
+			<span class="skill-attribute default-attribute"> Temporary Modifier </span>
+			<input name="attr_speed_temporary_modifier" type="text" />
+		</div>
+
+		<div>
+			<input name="attr_bb_burrow" type="hidden" class="show-ability" value="false" />
+			<span class="ability bottom-space">
+				<div>
+					<label class="col2"> Burrow </label>
+					<input name="attr_bb_burrow_speed" type="text" readonly />
+					<label class="nowidth"> Squares </label>
+				</div>
+			</span>
+		</div>
+
+		<div>
+			<input name="attr_bb_climb" type="hidden" class="show-ability" value="false" />
+			<span class="ability bottom-space">
+				<div>
+					<label class="col2"> Climb </label>
+					<input name="attr_bb_climb_speed" type="text" readonly />
+					<label class="nowidth"> Squares </label>
+				</div>
+			</span>
+		</div>
+
+		<div>
+			<input name="attr_bb_fly" type="hidden" class="show-ability" value="false" />
+			<span class="ability bottom-space">
+				<div>
+					<label class="col2"> Fly </label>
+					<input name="attr_bb_fly_speed" type="text" readonly />
+					<label class="nowidth"> Squares </label>
+				</div>
+			</span>
+		</div>
+
+		<div>
+			<input name="attr_bb_swim" type="hidden" class="show-ability" value="false" />
+			<span class="ability bottom-space">
+				<div>
+					<label class="col2"> Swim </label>
+					<input name="attr_bb_swim_speed" type="text" readonly />
+					<label class="nowidth"> Squares </label>
+				</div>
+			</span>
 		</div>
 
 	</div>
@@ -7668,17 +7711,20 @@ attribute_array.forEach( function(attribute) {
 			let cp_name       = `cp_${attribute.name}`;
 			let cp_value      = attribute_cp_costs[attribute_value];
 			console.log(`${cp_name}: ${cp_value}`);
-			setAttrs({
+			let set_object    = {
 				[attribute.name + '_modifier']: attribute_mod,
 				[cp_name]:                      cp_value
-			});
+			};
 			
 			if (attribute.name == 'physique') {
-				setAttrs({
-					"carry":     attribute_value,
-					"carry_max": attribute_value * 2
-				});
+				set_object['carry'    ] = attribute_value;
+				set_object['carry_max'] = attribute_value * 2;
 			}
+			if (attribute.name == 'agility') {
+				set_object['agility_speed_modifier'] = Math.floor((attribute_mod / 2) + (attribute_mod < 0 ? 0.5 : 0));
+			}
+
+			setAttrs(set_object);
 		});
 	});
 });
@@ -9461,21 +9507,17 @@ on('change:hit_points_extra change:essence_points_extra', function() {
 	});
 });
 
-on("change:speed_base change:agility_modifier change:size_modifier_speed", function() {
-	getAttrs(["speed_base", "agility_modifier", "size_modifier_speed"], function(values) {
-		let base        = get_int_or_zero(values.speed_base);
-		let agi_mod     = get_int_or_zero(values.agility_modifier);
-		let size_mod    = get_int_or_zero(values.size_modifier_speed);
-		let extra_speed = (agi_mod / 2);
-		if (agi_mod < 0) { extra_speed -= 0.5; }
-		let total = base + Math.floor(extra_speed) + size_mod;
-		let feet = total * 5;
-		let cp_speed = (base - 4) * 4;
-		setAttrs({
-			"speed_total": total,
-			"speed_feet":  feet,
-			"cp_speed":    cp_speed
-		});
+let speed_get_array = [ 'agility_speed_modifier', 'size_modifier_speed', 'bb_fast_movement_speed', 'bb_slow_movement_speed', 'speed_temporary_modifier' ];
+on('change:' + speed_get_array.join(' change:'), function() {
+	getAttrs(speed_get_array, function(values) {
+		let agi_mod  = get_int_or_zero(values.agility_speed_modifier);
+		let size_mod = get_int_or_zero(values.size_modifier_speed);
+		let bonus    = get_int_or_zero(values.bb_fast_movement_speed);
+		let penalty  = get_int_or_zero(values.bb_slow_movement_speed);
+		let temp     = get_int_or_zero(values.speed_temporary_modifier);
+		
+		let total = 4 + agi_mod + size_mod + bonus - penalty + temp;
+		setAttrs({ 'speed_total': total });
 	});
 });
 
@@ -11267,16 +11309,17 @@ function set_passive_skills(eventInfo) {
 	});
 }
 
+const movement_boon_array = [
+	{ search_text: 'burrow',       base_cost: 12 },
+	{ search_text: 'climb',        base_cost:  0 },
+	{ search_text: 'fastmovement', base_cost:  0 },
+	{ search_text: 'fly',          base_cost:  6 },
+	{ search_text: 'slowmovement', base_cost:  0, bane: true },
+	{ search_text: 'swim',         base_cost:  0 }
+];
+
 function parse_movement_boon(bb_raw) {
-	let movement_boons = [
-		{ search_text: 'burrow',       base_cost: 12 },
-		{ search_text: 'climb',        base_cost:  0 },
-		{ search_text: 'fastmovement', base_cost:  0 },
-		{ search_text: 'fly',          base_cost:  6 },
-		{ search_text: 'slowmovement', base_cost:  0, bane: true },
-		{ search_text: 'swim',         base_cost:  0 }
-	];
-	let boon     = movement_boons.find(b => bb_raw.startsWith(b.search_text));
+	let boon     = movement_boon_array.find(b => bb_raw.startsWith(b.search_text));
 	let movement = get_int_or_zero(bb_raw.split(boon.search_text)[1].split('sq')[0]);
 	let cp_cost  = boon.base_cost + (movement * 4) * (boon.bane ? -1 : 1);
 	let cp_costs = { cs_cp_cost: 0, ncs_cp_cost: cp_cost };
@@ -12049,6 +12092,26 @@ if (disease_attack_boon) {
 	}
 }
 
+movement_boon_array.forEach( function(bb) {
+	let boon = boons_and_banes_array.find(b => b.search_text == bb.search_text);
+	if (!boon) {
+		return;
+	}
+	let boon_raw_name = `${boon.name}_raw`;
+	on(`change:${boon_raw_name} change:agility_speed_modifier change:speed_temporary_modifier`, function() {
+		getAttrs([boon.name, boon_raw_name, 'agility_speed_modifier', 'speed_temporary_modifier'], function(values) {
+			let speed = 0;
+			if (get_bool(values[boon.name])) {
+				speed  = get_int_or_zero(values[boon_raw_name].split(boon.search_text)[1].split('sq')[0]);
+				if (!boon.name.includes('movement')) {
+					speed += get_int_or_zero(values.agility_speed_modifier) + get_int_or_zero(values.speed_temporary_modifier);
+				}
+			}
+			setAttrs({ [`${boon.name}_speed`]: speed });
+		});
+	});
+});
+
 let gaze_attack_boon = boons_and_banes_array.find(b => b.name == 'bb_gaze_attack');
 if (gaze_attack_boon) {
 	for (let i = 1; i <= gaze_attack_boon.max_count; i++) {
@@ -12355,7 +12418,7 @@ on("change:bb_swarm", function() {
 });
 
 // Overall character CP calc
-const cp_calc_attr_array = ['cp_combat_attributes', 'cp_non_combat_attributes', 'cp_combat_skills', 'cp_non_combat_skills', 'cp_vital_stats', 'cp_damage_types', 'cp_area_types', 'cp_spell_statistics', 'cp_combat_passives', 'cp_non_combat_passives', 'cp_combat_boons_banes', 'cp_non_combat_boons_banes', 'cp_speed', 'cp_proficiencies'];
+const cp_calc_attr_array = ['cp_combat_attributes', 'cp_non_combat_attributes', 'cp_combat_skills', 'cp_non_combat_skills', 'cp_vital_stats', 'cp_damage_types', 'cp_area_types', 'cp_spell_statistics', 'cp_combat_passives', 'cp_non_combat_passives', 'cp_combat_boons_banes', 'cp_non_combat_boons_banes', 'cp_proficiencies'];
 on('change:' + cp_calc_attr_array.join(' change:'), function() {
 	getAttrs(cp_calc_attr_array, function(values) {
 		let cp_cs_atts     = get_int_or_zero(values.cp_combat_attributes      );
@@ -12367,17 +12430,16 @@ on('change:' + cp_calc_attr_array.join(' change:'), function() {
 		let cp_ncs_pass    = get_int_or_zero(values.cp_non_combat_passives    );
 		let cp_cs_bb       = get_int_or_zero(values.cp_combat_boons_banes     );
 		let cp_ncs_bb      = get_int_or_zero(values.cp_non_combat_boons_banes );
-		let cp_speed       = get_int_or_zero(values.cp_speed                  );
 		let cp_damage      = get_int_or_zero(values.cp_damage_types           );
 		let cp_area_types  = get_int_or_zero(values.cp_area_types             );
 		let cp_spell_stats = get_int_or_zero(values.cp_spell_statistics       );
 		let cp_profs       = get_int_or_zero(values.cp_proficiencies          );
 
 		let combat_score     = (cp_cs_atts + cp_cs_skills + cp_vital_stats + cp_cs_pass + cp_cs_bb + cp_damage) / 10;
-		let non_combat_score = (cp_ncs_atts + cp_ncs_skills + cp_ncs_pass + cp_ncs_bb + cp_speed + cp_area_types + cp_profs + cp_spell_stats) / 10;
+		let non_combat_score = (cp_ncs_atts + cp_ncs_skills + cp_ncs_pass + cp_ncs_bb + cp_area_types + cp_profs + cp_spell_stats) / 10;
 		
 		let cp_total = cp_cs_atts + cp_ncs_atts + cp_cs_skills + cp_ncs_skills + cp_vital_stats + cp_cs_pass + cp_ncs_pass + cp_cs_bb + cp_ncs_bb +
-					   cp_damage + cp_speed + cp_area_types + cp_spell_stats + cp_profs;
+					   cp_damage + cp_area_types + cp_spell_stats + cp_profs;
 		
 		console.log(`CP: ${cp_total}; CS: ${combat_score}; NCS: ${non_combat_score}`);
 		
