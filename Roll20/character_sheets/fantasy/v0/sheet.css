@@ -165,7 +165,7 @@ h1 {
 
 .dialog div.damage-resistance > label {
 	font-weight: normal;
-	width: 70px;
+	width: 65px;
 	padding-left: 10px;
 	padding-right: 0px;
 }
@@ -215,6 +215,11 @@ h1 {
 	float: left;
 }
 
+.dr-header {
+	font-size: 6pt;
+	font-family: Tahoma;
+	margin-left: 75px;
+}
 
 /* ##############################################
 	Inputs 
@@ -301,6 +306,18 @@ h1 {
 .ui-dialog .charsheet input.final-number.final-number-large {
 	font-size: 14pt;
 	width: 60px;
+}
+
+.ui-dialog .charsheet input.final-number.final-number-small {
+	font-size: 10pt;
+	width: 25px;
+}
+
+.ui-dialog .charsheet input.final-number.partial-number-small {
+	font-size: 8pt;
+	font-weight: normal;
+	width: 20px;
+	color: Gainsboro;
 }
 
 /* For addons */
