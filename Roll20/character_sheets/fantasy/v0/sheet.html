@@ -115,15 +115,16 @@
 		</div>
 
 		<div>
-			<label class="col2"> HP Total </label>
-			<input name="attr_hit_points_max" type="text" readonly />
-			<label class="col2-right"> Extra HP </label>
-			<input name="attr_hit_points_extra" type="text" />
+			<span class="tiny-text"> Total </span>
+			<span class="tiny-text vital-stats"> Extra </span>
+			<span class="tiny-text vital-stats"> Current </span>
 		</div>
-
 		<div>
-			<label class="col2"> Current </label>
-			<input name="attr_hit_points" type="text" />
+			<input name="attr_hit_points_max" type="text" class="longnumber" readonly />
+			&nbsp; &nbsp;
+			<input name="attr_hit_points_extra" type="text" class="longnumber" />
+			&nbsp; &nbsp;
+			<input name="attr_hit_points" type="text" class="longnumber" />
 		</div>
 
 		<div class="section-header top-space">
@@ -205,6 +206,9 @@
 			<label> Perception </label>
 		</div>
 
+		<div>
+			<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+		</div>
 		<div class="skillname">
 			<label> 
 				Perception 
@@ -271,8 +275,11 @@
 			<input name="attr_perception_pool_total" type="text" readonly />
 			<input name="attr_perception_pool_extra" type="text" />
 		</div>
+		<div>
+			<span class="tiny-text pool-footer">Total &nbsp; &nbsp; Extra</span>
+		</div>
 
-		<div class="skillname top-line-bold">
+		<div class="skillname top-space top-line-bold">
 			<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Reflex}} {{Reflex @{perception_advantage_text}=[[@{perception_notice_roll} + @{reflex_total} + ( @{agility} / 100 ) + ( ( d10 - 1 ) / 1000 ) &{tracker}]]}} {{desc=Reflex = [ Reflex check ] **.** [ Agility | d10 - 1 roll ]}}'" />
 			<button type="action" name="act_reflexinfo" class="info-button" />
 			<label class="reflex"> 
@@ -324,8 +331,11 @@
 			&nbsp;
 		</div>
 	
-		<div class="skillname top-space">
-			<label class="skillnamecombat">
+		<div>
+			<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+		</div>
+		<div class="skillname">
+			<label>
 				Attack
 				<button type="action" name="act_togglecombatstyles" class="toggle" />
 				<br />
@@ -797,6 +807,9 @@
 			<label class="tierpool"> Pool </label>
 			<input name="attr_attack_pool_total" type="text" readonly />
 			<input name="attr_attack_pool_extra" type="text" />
+		</div>
+		<div>
+			<span class="tiny-text pool-footer">Total &nbsp; &nbsp; Extra</span>
 		</div>
 		
 		<!-- Aura of Damage -->
@@ -1874,7 +1887,10 @@
 			</label>
 		</div>
 	
-		<div class="skillname top-space">
+		<div>
+			<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+		</div>
+		<div class="skillname">
 			<label>
 				Defend
 				<br />
@@ -1943,14 +1959,17 @@
 			<input name="attr_defend_pool_total" type="text" readonly />
 			<input name="attr_defend_pool_extra" type="text" />
 		</div>
+		<div>
+			<span class="tiny-text pool-footer">Total &nbsp; &nbsp; Extra</span>
+		</div>
 
-		<div class="skillname top-line-bold">
+		<div class="skillname top-space top-line-bold">
 			<label> Damage Resistance </label>
 		</div>
 
 		<div class="damage-resistance top-space">
-			<span class="dr-header">Total &nbsp; &nbsp; Natural &nbsp; &nbsp; Item &nbsp; &nbsp; Spell</span>
-			<span class="dr-header">Total &nbsp; &nbsp; Natural &nbsp; &nbsp; Item &nbsp; &nbsp; Spell</span>
+			<span class="tiny-text dr-header">Total &nbsp; &nbsp; Natural &nbsp; &nbsp; Item &nbsp; &nbsp; Spell</span>
+			<span class="tiny-text dr-header">Total &nbsp; &nbsp; Natural &nbsp; &nbsp; Item &nbsp; &nbsp; Spell</span>
 			<label> Physical </label>
 			<input name="attr_dr_physical_total" type="text" class="final-number final-number-small" readonly />
 			<input name="attr_dr_physical_natural" type="text" class="final-number partial-number-small" readonly />
@@ -2022,6 +2041,9 @@
 			<label> Resilience </label>
 		</div>
 		
+		<div>
+			<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+		</div>
 		<div class="skillname">
 			<label>
 				Physical Resilience
@@ -2088,8 +2110,14 @@
 			<input name="attr_pr_pool_total" type="text" readonly />
 			<input name="attr_pr_pool_extra" type="text" />
 		</div>
+		<div>
+			<span class="tiny-text pool-footer">Total &nbsp; &nbsp; Extra</span>
+		</div>
 
-		<div class="skillname top-line-bold">
+		<div class="top-line-bold">
+			<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+		</div>
+		<div class="skillname">
 			<label>
 				Mental Resilience
 				<br />
@@ -2155,6 +2183,9 @@
 			<input name="attr_mr_pool_total" type="text" readonly />
 			<input name="attr_mr_pool_extra" type="text" />
 		</div>
+		<div>
+			<span class="tiny-text pool-footer">Total &nbsp; &nbsp; Extra</span>
+		</div>
 	</div>
 
 </div>
@@ -2185,6 +2216,9 @@
 		<div>
 			<input name="attr_show_athletics" type="hidden" class="show-ability" value="true" />
 			<span class="ability">
+				<div>
+					<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+				</div>
 				<div class="skillname">
 					<label>
 						Athletics
@@ -2298,13 +2332,19 @@
 					<input name="attr_athletics_pool_total" type="text" readonly />
 					<input name="attr_athletics_pool_extra" type="text" />
 				</div>
+				<div>
+					<span class="tiny-text pool-footer">Total &nbsp; &nbsp; Extra</span>
+				</div>
 			</span>
 		</div>
 
 		<div>
 			<input name="attr_show_medicine" type="hidden" class="show-ability" value="true" />
 			<span class="ability">
-				<div class="skillname top-line-bold">
+				<div class="top-line-bold">
+					<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+				</div>
+				<div class="skillname">
 					<label>
 						Medicine
 						<br />
@@ -2381,13 +2421,19 @@
 					<input name="attr_medicine_pool_total" type="text" readonly />
 					<input name="attr_medicine_pool_extra" type="text" />
 				</div>
+				<div>
+					<span class="tiny-text pool-footer">Total &nbsp; &nbsp; Extra</span>
+				</div>
 			</span>
 		</div>
 
 		<div>
 			<input name="attr_show_nature" type="hidden" class="show-ability" value="true" />
 			<span class="ability">
-				<div class="skillname top-line-bold">
+				<div class="top-line-bold">
+					<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+				</div>
+				<div class="skillname">
 					<label>
 						Nature
 						<br />
@@ -2464,6 +2510,9 @@
 					<input name="attr_nature_pool_total" type="text" readonly />
 					<input name="attr_nature_pool_extra" type="text" />
 				</div>
+				<div>
+					<span class="tiny-text pool-footer">Total &nbsp; &nbsp; Extra</span>
+				</div>
 			</span>
 		</div>
 
@@ -2474,6 +2523,9 @@
 		<div>
 			<input name="attr_show_persuade" type="hidden" class="show-ability" value="true" />
 			<span class="ability">
+				<div>
+					<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+				</div>
 				<div class="skillname">
 					<label>
 						Persuade
@@ -2562,13 +2614,19 @@
 					<input name="attr_persuade_pool_total" type="text" readonly />
 					<input name="attr_persuade_pool_extra" type="text" />
 				</div>
+				<div>
+					<span class="tiny-text pool-footer">Total &nbsp; &nbsp; Extra</span>
+				</div>
 			</span>
 		</div>
 
 		<div>
 			<input name="attr_show_security" type="hidden" class="show-ability" value="true" />
 			<span class="ability">
-				<div class="skillname top-line-bold">
+				<div class="top-line-bold">
+					<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+				</div>
+				<div class="skillname">
 					<label>
 						Security
 						<br />
@@ -2634,13 +2692,19 @@
 					<input name="attr_security_pool_total" type="text" readonly />
 					<input name="attr_security_pool_extra" type="text" />
 				</div>
+				<div>
+					<span class="tiny-text pool-footer">Total &nbsp; &nbsp; Extra</span>
+				</div>
 			</span>
 		</div>
 
 		<div>
 			<input name="attr_show_sneak" type="hidden" class="show-ability" value="true" />
 			<span class="ability">
-				<div class="skillname top-line-bold">
+				<div class="top-line-bold">
+					<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+				</div>
+				<div class="skillname">
 					<label>
 						Sneak
 						<br />
@@ -2716,6 +2780,9 @@
 					<label class="tierpool"> Pool </label>
 					<input name="attr_sneak_pool_total" type="text" readonly />
 					<input name="attr_sneak_pool_extra" type="text" />
+				</div>
+				<div>
+					<span class="tiny-text pool-footer">Total &nbsp; &nbsp; Extra</span>
 				</div>
 			</span>
 		</div>
@@ -2824,6 +2891,9 @@
 		<div>
 			<input name="attr_show_craft1" type="hidden" class="show-ability" value="true" />
 			<span class="ability">
+				<div>
+					<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+				</div>
 				<div class="skillname">
 					<label>
 						Craft 1
@@ -2878,7 +2948,10 @@
 		<div>
 			<input name="attr_show_craft2" type="hidden" class="show-ability" value="true" />
 			<span class="ability">
-				<div class="skillname top-line-bold">
+				<div class="top-line-bold">
+					<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+				</div>
+				<div class="skillname">
 					<label>
 						Craft 2
 						<button type="action" name="act_craftinfo" class="info-button generic-skill" />
@@ -2932,7 +3005,10 @@
 		<div>
 			<input name="attr_show_craft3" type="hidden" class="show-ability" value="true" />
 			<span class="ability">
-				<div class="skillname top-line-bold">
+				<div class="top-line-bold">
+					<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+				</div>
+				<div class="skillname">
 					<label>
 						Craft 3
 						<button type="action" name="act_craftinfo" class="info-button generic-skill" />
@@ -2986,7 +3062,10 @@
 		<div>
 			<input name="attr_show_craft4" type="hidden" class="show-ability" value="true" />
 			<span class="ability">
-				<div class="skillname top-line-bold">
+				<div class="top-line-bold">
+					<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+				</div>
+				<div class="skillname">
 					<label>
 						Craft 4
 						<button type="action" name="act_craftinfo" class="info-button generic-skill" />
@@ -3040,7 +3119,10 @@
 		<div>
 			<input name="attr_show_craft5" type="hidden" class="show-ability" value="true" />
 			<span class="ability">
-				<div class="skillname top-line-bold">
+				<div class="top-line-bold">
+					<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+				</div>
+				<div class="skillname">
 					<label>
 						Craft 5
 						<button type="action" name="act_craftinfo" class="info-button generic-skill" />
@@ -3101,13 +3183,19 @@
 					<input name="attr_craft_pool_total" type="text" readonly />
 					<input name="attr_craft_pool_extra" type="text" />
 				</div>
+				<div>
+					<span class="tiny-text pool-footer">Total &nbsp; &nbsp; Extra</span>
+				</div>
 			</span>
 		</div>
 
 		<div>
 			<input name="attr_show_knowledge1" type="hidden" class="show-ability" value="true" />
 			<span class="ability">
-				<div class="skillname top-line-bold">
+				<div class="top-line-bold">
+					<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+				</div>
+				<div class="skillname">
 					<label>
 						Knowledge 1
 						<button type="action" name="act_knowledgeinfo" class="info-button generic-skill" />
@@ -3161,7 +3249,10 @@
 		<div>
 			<input name="attr_show_knowledge2" type="hidden" class="show-ability" value="true" />
 			<span class="ability">
-				<div class="skillname top-line-bold">
+				<div class="top-line-bold">
+					<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+				</div>
+				<div class="skillname">
 					<label>
 						Knowledge 2
 						<button type="action" name="act_knowledgeinfo" class="info-button generic-skill" />
@@ -3215,7 +3306,10 @@
 		<div>
 			<input name="attr_show_knowledge3" type="hidden" class="show-ability" value="true" />
 			<span class="ability">
-				<div class="skillname top-line-bold">
+				<div class="top-line-bold">
+					<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+				</div>
+				<div class="skillname">
 					<label>
 						Knowledge 3
 						<button type="action" name="act_knowledgeinfo" class="info-button generic-skill" />
@@ -3273,6 +3367,9 @@
 		<div>
 			<input name="attr_show_knowledge4" type="hidden" class="show-ability" value="true" />
 			<span class="ability">
+				<div>
+					<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+				</div>
 				<div class="skillname">
 					<label>
 						Knowledge 4
@@ -3327,7 +3424,10 @@
 		<div>
 			<input name="attr_show_knowledge5" type="hidden" class="show-ability" value="true" />
 			<span class="ability">
-				<div class="skillname top-line-bold">
+				<div class="top-line-bold">
+					<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+				</div>
+				<div class="skillname">
 					<label>
 						Knowledge 5
 						<button type="action" name="act_knowledgeinfo" class="info-button generic-skill" />
@@ -3388,13 +3488,19 @@
 					<input name="attr_knowledge_pool_total" type="text" readonly />
 					<input name="attr_knowledge_pool_extra" type="text" />
 				</div>
+				<div>
+					<span class="tiny-text pool-footer">Total &nbsp; &nbsp; Extra</span>
+				</div>
 			</span>
 		</div>
 
 		<div>
 			<input name="attr_show_perform1" type="hidden" class="show-ability" value="true" />
 			<span class="ability">
-				<div class="skillname top-line-bold">
+				<div class="top-line-bold">
+					<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+				</div>
+				<div class="skillname">
 					<label>
 						Perform 1
 						<button type="action" name="act_performinfo" class="info-button generic-skill" />
@@ -3448,7 +3554,10 @@
 		<div>
 			<input name="attr_show_perform2" type="hidden" class="show-ability" value="true" />
 			<span class="ability">
-				<div class="skillname top-line-bold">
+				<div class="top-line-bold">
+					<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+				</div>
+				<div class="skillname">
 					<label>
 						Perform 2
 						<button type="action" name="act_performinfo" class="info-button generic-skill" />
@@ -3502,7 +3611,10 @@
 		<div>
 			<input name="attr_show_perform3" type="hidden" class="show-ability" value="true" />
 			<span class="ability">
-				<div class="skillname top-line-bold">
+				<div class="top-line-bold">
+					<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+				</div>
+				<div class="skillname">
 					<label>
 						Perform 3
 						<button type="action" name="act_performinfo" class="info-button generic-skill" />
@@ -3556,7 +3668,10 @@
 		<div>
 			<input name="attr_show_perform4" type="hidden" class="show-ability" value="true" />
 			<span class="ability">
-				<div class="skillname top-line-bold">
+				<div class="top-line-bold">
+					<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+				</div>
+				<div class="skillname">
 					<label>
 						Perform 4
 						<button type="action" name="act_performinfo" class="info-button generic-skill" />
@@ -3610,7 +3725,10 @@
 		<div>
 			<input name="attr_show_perform5" type="hidden" class="show-ability" value="true" />
 			<span class="ability">
-				<div class="skillname top-line-bold">
+				<div class="top-line-bold">
+					<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+				</div>
+				<div class="skillname">
 					<label>
 						Perform 5
 						<button type="action" name="act_performinfo" class="info-button generic-skill" />
@@ -3671,13 +3789,19 @@
 					<input name="attr_perform_pool_total" type="text" readonly />
 					<input name="attr_perform_pool_extra" type="text" />
 				</div>
+				<div>
+					<span class="tiny-text pool-footer">Total &nbsp; &nbsp; Extra</span>
+				</div>
 			</span>
 		</div>
 
 		<div>
 			<input name="attr_show_profession1" type="hidden" class="show-ability" value="true" />
 			<span class="ability">
-				<div class="skillname top-line-bold">
+				<div class="top-line-bold">
+					<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+				</div>
+				<div class="skillname">
 					<label>
 						Profession 1
 						<button type="action" name="act_professioninfo" class="info-button generic-skill" />
@@ -3753,6 +3877,9 @@
 		<div>
 			<input name="attr_show_profession2" type="hidden" class="show-ability" value="true" />
 			<span class="ability">
+				<div>
+					<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+				</div>
 				<div class="skillname">
 					<label>
 						Profession 2
@@ -3807,7 +3934,10 @@
 		<div>
 			<input name="attr_show_profession3" type="hidden" class="show-ability" value="true" />
 			<span class="ability">
-				<div class="skillname top-line-bold">
+				<div class="top-line-bold">
+					<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+				</div>
+				<div class="skillname">
 					<label>
 						Profession 3
 						<button type="action" name="act_professioninfo" class="info-button generic-skill" />
@@ -3861,7 +3991,10 @@
 		<div>
 			<input name="attr_show_profession4" type="hidden" class="show-ability" value="true" />
 			<span class="ability">
-				<div class="skillname top-line-bold">
+				<div class="top-line-bold">
+					<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+				</div>
+				<div class="skillname">
 					<label>
 						Profession 4
 						<button type="action" name="act_professioninfo" class="info-button generic-skill" />
@@ -3915,7 +4048,10 @@
 		<div>
 			<input name="attr_show_profession5" type="hidden" class="show-ability" value="true" />
 			<span class="ability">
-				<div class="skillname top-line-bold">
+				<div class="top-line-bold">
+					<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+				</div>
+				<div class="skillname">
 					<label>
 						Profession 5
 						<button type="action" name="act_professioninfo" class="info-button generic-skill" />
@@ -3976,6 +4112,9 @@
 					<input name="attr_profession_pool_total" type="text" readonly />
 					<input name="attr_profession_pool_extra" type="text" />
 				</div>
+				<div>
+					<span class="tiny-text pool-footer">Total &nbsp; &nbsp; Extra</span>
+				</div>
 			</span>
 		</div>
 
@@ -3991,23 +4130,28 @@
 		</div>
 
 		<div>
-			<label class="col2"> EP Total </label>
-			<input name="attr_essence_points_max" type="text" readonly />
-			<label class="col2-right"> Extra EP </label>
-			<input name="attr_essence_points_extra" type="text" />
+			<span class="tiny-text"> Total </span>
+			<span class="tiny-text vital-stats"> Extra </span>
+			<span class="tiny-text vital-stats"> Current </span>
+			<span class="tiny-text vital-stats"> In Use </span>
 		</div>
-
 		<div>
-			<label class="col2"> Current </label>
-			<input name="attr_essence_points" type="text" />
-			<label class="col2-right"> EP in use </label>
-			<input name="attr_essence_points_in_use" type="text" />
+			<input name="attr_essence_points_max" type="text" class="longnumber" readonly />
+			&nbsp; &nbsp;
+			<input name="attr_essence_points_extra" type="text" class="longnumber" />
+			&nbsp; &nbsp;
+			<input name="attr_essence_points" type="text" class="longnumber" />
+			&nbsp; &nbsp;
+			<input name="attr_essence_points_in_use" type="text" class="longnumber" />
 		</div>
 
 		<div class="section-header top-space">
 			<label> Arcana </label>
 		</div>
 
+		<div>
+			<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+		</div>
 		<div class="skillname">
 			<label>
 				Arcana
@@ -4065,6 +4209,9 @@
 			<label class="tierpool"> Pool </label>
 			<input name="attr_arcana_pool_total" type="text" readonly />
 			<input name="attr_arcana_pool_extra" type="text" />
+		</div>
+		<div>
+			<span class="tiny-text pool-footer">Total &nbsp; &nbsp; Extra</span>
 		</div>
 
 	</div>
@@ -4426,6 +4573,9 @@
 		<div>
 			<input name="attr_show_alteration" type="hidden" class="show-ability" value="true" />
 			<span class="ability">
+				<div>
+					<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+				</div>
 				<div class="skillname">
 					<label>
 						<input name="attr_bb_natural_magic_alteration" type="hidden" class="show-ability" value="false" />
@@ -4692,13 +4842,19 @@
 					<input name="attr_alteration_pool_total" type="text" readonly />
 					<input name="attr_alteration_pool_extra" type="text" />
 				</div>
+				<div>
+					<span class="tiny-text pool-footer">Total &nbsp; &nbsp; Extra</span>
+				</div>
 			</span>
 		</div>
 
 		<div>
 			<input name="attr_show_biomancy" type="hidden" class="show-ability" value="true" />
 			<span class="ability">
-				<div class="skillname top-line-bold">
+				<div class="top-line-bold">
+					<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+				</div>
+				<div class="skillname">
 					<label>
 						Biomancy
 						<button type="action" name="act_togglebiomancyspells" class="toggle" />
@@ -4957,13 +5113,19 @@
 					<input name="attr_biomancy_pool_total" type="text" readonly />
 					<input name="attr_biomancy_pool_extra" type="text" />
 				</div>
+				<div>
+					<span class="tiny-text pool-footer">Total &nbsp; &nbsp; Extra</span>
+				</div>
 			</span>
 		</div>
 
 		<div>
 			<input name="attr_show_conjuration" type="hidden" class="show-ability" value="true" />
 			<span class="ability">
-				<div class="skillname top-line-bold">
+				<div class="top-line-bold">
+					<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+				</div>
+				<div class="skillname">
 					<label>
 						<input name="attr_bb_natural_magic_conjuration" type="hidden" class="show-ability" value="false" />
 						<span class="ability"> Natural Conjuration </span> 
@@ -5362,6 +5524,9 @@
 					<input name="attr_conjuration_pool_total" type="text" readonly />
 					<input name="attr_conjuration_pool_extra" type="text" />
 				</div>
+				<div>
+					<span class="tiny-text pool-footer">Total &nbsp; &nbsp; Extra</span>
+				</div>
 
 				<div>
 					<input type="hidden" name="attr_show_summoned_ally" class="show-ability" value="false" />
@@ -5434,6 +5599,9 @@
 		<div>
 			<input name="attr_show_displacement" type="hidden" class="show-ability" value="true" />
 			<span class="ability">
+				<div>
+					<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+				</div>
 				<div class="skillname">
 					<label>
 						<input name="attr_bb_natural_magic_displacement" type="hidden" class="show-ability" value="false" />
@@ -5703,13 +5871,19 @@
 					<input name="attr_displacement_pool_total" type="text" readonly />
 					<input name="attr_displacement_pool_extra" type="text" />
 				</div>
+				<div>
+					<span class="tiny-text pool-footer">Total &nbsp; &nbsp; Extra</span>
+				</div>
 			</span>
 		</div>
 
 		<div>
 			<input name="attr_show_divination" type="hidden" class="show-ability" value="true" />
 			<span class="ability">
-				<div class="skillname top-line-bold">
+				<div class="top-line-bold">
+					<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+				</div>
+				<div class="skillname">
 					<label>
 						<input name="attr_bb_natural_magic_divination" type="hidden" class="show-ability" value="false" />
 						<span class="ability"> Natural Divination </span> 
@@ -5954,13 +6128,19 @@
 					<input name="attr_divination_pool_total" type="text" readonly />
 					<input name="attr_divination_pool_extra" type="text" />
 				</div>
+				<div>
+					<span class="tiny-text pool-footer">Total &nbsp; &nbsp; Extra</span>
+				</div>
 			</span>
 		</div>
 
 		<div>
 			<input name="attr_show_dynamancy" type="hidden" class="show-ability" value="true" />
 			<span class="ability">
-				<div class="skillname top-line-bold">
+				<div class="top-line-bold">
+					<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+				</div>
+				<div class="skillname">
 					<label>
 						<input name="attr_bb_natural_magic_dynamancy" type="hidden" class="show-ability" value="false" />
 						<span class="ability"> Natural Dynamancy </span> 
@@ -6178,6 +6358,9 @@
 					<input name="attr_dynamancy_pool_total" type="text" readonly />
 					<input name="attr_dynamancy_pool_extra" type="text" />
 				</div>
+				<div>
+					<span class="tiny-text pool-footer">Total &nbsp; &nbsp; Extra</span>
+				</div>
 
 			</span>
 		</div>
@@ -6189,6 +6372,9 @@
 		<div>
 			<input name="attr_show_illusion" type="hidden" class="show-ability" value="true" />
 			<span class="ability">
+				<div>
+					<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+				</div>
 				<div class="skillname">
 					<label>
 						<input name="attr_bb_natural_magic_illusion" type="hidden" class="show-ability" value="false" />
@@ -6408,13 +6594,19 @@
 					<input name="attr_illusion_pool_total" type="text" readonly />
 					<input name="attr_illusion_pool_extra" type="text" />
 				</div>
+				<div>
+					<span class="tiny-text pool-footer">Total &nbsp; &nbsp; Extra</span>
+				</div>
 			</span>
 		</div>
 
 		<div>
 			<input name="attr_show_metamancy" type="hidden" class="show-ability" value="true" />
 			<span class="ability">
-				<div class="skillname top-line-bold">
+				<div class="top-line-bold">
+					<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+				</div>
+				<div class="skillname">
 					<label>
 						Metamancy
 						<button type="action" name="act_togglemetamancyspells" class="toggle" />
@@ -6622,13 +6814,19 @@
 					<input name="attr_metamancy_pool_total" type="text" readonly />
 					<input name="attr_metamancy_pool_extra" type="text" />
 				</div>
+				<div>
+					<span class="tiny-text pool-footer">Total &nbsp; &nbsp; Extra</span>
+				</div>
 			</span>
 		</div>
 
 		<div>
 			<input name="attr_show_necromancy" type="hidden" class="show-ability" value="true" />
 			<span class="ability">
-				<div class="skillname top-line-bold">
+				<div class="top-line-bold">
+					<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+				</div>
+				<div class="skillname">
 					<label>
 						Necromancy
 						<button type="action" name="act_togglenecromancyspells" class="toggle" />
@@ -6811,13 +7009,19 @@
 					<input name="attr_necromancy_pool_total" type="text" readonly />
 					<input name="attr_necromancy_pool_extra" type="text" />
 				</div>
+				<div>
+					<span class="tiny-text pool-footer">Total &nbsp; &nbsp; Extra</span>
+				</div>
 			</span>
 		</div>
 
 		<div>
 			<input name="attr_show_neuromancy" type="hidden" class="show-ability" value="true" />
 			<span class="ability">
-				<div class="skillname top-line-bold">
+				<div class="top-line-bold">
+					<span class="tiny-text skill-points-header">Total &nbsp; &nbsp; Points</span>
+				</div>
+				<div class="skillname">
 					<label>
 						<input name="attr_bb_natural_magic_neuromancy" type="hidden" class="show-ability" value="false" />
 						<span class="ability"> Natural Neuromancy </span> 
@@ -7035,6 +7239,9 @@
 					<label class="tierpool"> Pool </label>
 					<input name="attr_neuromancy_pool_total" type="text" readonly />
 					<input name="attr_neuromancy_pool_extra" type="text" />
+				</div>
+				<div>
+					<span class="tiny-text pool-footer">Total &nbsp; &nbsp; Extra</span>
 				</div>
 			</span>
 		</div>
@@ -7840,7 +8047,7 @@ function set_carry_count() {
 				let armor_object = parse_armor(item);
 				count += mult * armor_object.carry;
 			}
-			else {
+			else if (item != '') {
 				count += mult;
 			}
 			
@@ -10792,7 +10999,7 @@ combat_style_array.forEach( function(style) {
 				set_array[`${style.name}_weapon${i}_magic_damage`]    = magic_damage;
 				set_array[`${style.name}_weapon${i}_damage`]          = (physical_damage + magic_damage > 0 ? physical_damage + magic_damage : '');
 				set_array[`${style.name}_weapon${i}_roll_text`]       = roll_text;
-				console.log(`roll_text = ${roll_text}`);
+				//console.log(`roll_text = ${roll_text}`);
 			}
 			
 			//console.log(`set_array = ${JSON.stringify(set_array)}`);
@@ -11233,8 +11440,11 @@ damage_type_array.forEach( function(damage_type) {
 
 on('change:armor_name change:defend_tier', function() {
 	getAttrs(['armor_name', 'defend_tier'], function(values) {
-		if (!is_armor(values.armor_name	)) {
-			console.error(`"${values.armor_name}" is not recognized as armor`);
+		if (!is_armor(values.armor_name)) {
+			if (values.armor_name != '') {
+				console.error(`"${values.armor_name}" is not recognized as armor`);
+			}
+			setAttrs({ 'dr_physical_item': 0 });
 			return;
 		}
 		let armor_object = parse_armor(values.armor_name);

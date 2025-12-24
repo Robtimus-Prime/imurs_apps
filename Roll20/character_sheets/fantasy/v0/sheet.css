@@ -67,7 +67,7 @@ h1 {
 }
 
 .dialog label.col2 {
-	width: 75px;
+	width: 72px;
 }
 
 .dialog label.inline {
@@ -95,6 +95,10 @@ h1 {
 }
 
 .dialog div.skillname {
+	margin-top: -5px;
+}
+
+.dialog div.skillname.top-space {
 	margin-top: 8px;
 }
 
@@ -112,12 +116,6 @@ h1 {
 
 .dialog div.skillname > label.legendary {
 	width: 300px;
-}
-
-.dialog div.skillname > label.skillnamecombat {
-	width: 150px;
-	font-size: 14pt;
-	margin-bottom: 0px;
 }
 
 .dialog div.skillname > label > span.ability {
@@ -215,10 +213,25 @@ h1 {
 	float: left;
 }
 
-.dr-header {
+.tiny-text {
 	font-size: 6pt;
 	font-family: Tahoma;
+}
+
+.tiny-text.vital-stats {
+	margin-left: 47px;
+}
+
+.tiny-text.dr-header {
 	margin-left: 75px;
+}
+
+.tiny-text.pool-footer {
+	margin-left: 117px;
+}
+
+.tiny-text.skill-points-header {
+	margin-left: 194px;
 }
 
 /* ##############################################
@@ -296,6 +309,7 @@ h1 {
 	font-family: Tahoma;
 	font-size: 12pt;
 	font-weight: bold;
+	text-align: left;
 	color: white;
 	border: none;
 	width: 35px;
