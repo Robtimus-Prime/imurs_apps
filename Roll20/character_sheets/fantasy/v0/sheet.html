@@ -7291,6 +7291,13 @@ function get_int_or_zero(value) {
 	return parseInt(value.toString())||0;
 }
 
+function get_float_or_zero(value) {
+	if (!value) {
+		return 0;
+	}
+	return parseFloat(value.toString())||0;
+}
+
 function get_bool(value) {
 	if (!value) {
 		return false;
@@ -11183,7 +11190,7 @@ proficiency_names.forEach( function(skill) {
 		getAttrs(array, function(values) {
 			let cp_total = 0;
 			array.forEach( function(cp_item) {
-				let item_value = get_int_or_zero(values[cp_item]);
+				let item_value = get_float_or_zero(values[cp_item]);
 				if (cp_item.includes('pool')) {
 					item_value = cp_calc_skill_pool(item_value);
 				}
@@ -11200,10 +11207,15 @@ let proficiency_skill_cp_names = proficiency_names.map(skill => `cp_${skill}`);
 
 on('change:' + proficiency_skill_cp_names.join(' change:'), function() {
 	getAttrs(proficiency_skill_cp_names, function(values) {
-		let cp_total = 0;
-		proficiency_skill_cp_names.forEach( function(cp_skill) {
-			cp_total += get_int_or_zero(values[cp_skill]);
-		});
+		let cp_total = 0.0;
+		let cp = 0.0;
+		for (let cp_skill of proficiency_skill_cp_names) {
+//		proficiency_skill_cp_names.forEach( function(cp_skill) {
+			cp = get_float_or_zero(values[cp_skill]);
+			console.log(`${cp_skill}: ${cp}`);
+			cp_total += cp;
+			console.log(`running total: ${cp_total}`);
+		} //);
 		console.log(`cp_proficiencies: ${cp_total}`);
 		setAttrs({ 'cp_proficiencies': cp_total });
 	});
