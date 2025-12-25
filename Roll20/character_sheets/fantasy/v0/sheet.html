@@ -11115,17 +11115,14 @@ const proficiency_skill_array = get_proficiency_skill_array(proficiency_count);
 
 proficiency_skill_array.forEach( function(skill) {
 
-	// Event: change skill points, extra pool points, attribute; also passive skill and modifier (if applicable)
-	// Sets the skill total, attribute modifier, tier, and pool total
+	// Event: change skill points or attribute; also passive skill and modifier (if applicable)
+	// Sets the skill total and attribute modifier
 	let skill_points_name     = `${skill.name}_points`;
-	let skill_extra_pool_name = `${skill.type}_pool_extra`;
 	let attribute_mod_name    = `${skill.attribute}_modifier`;
-	let skill_tier_name       = `${skill.type}_tier`;
 	let cp_points             = `cp_${skill.name}_points`;
 	
-	let getAttrs_array = [skill_points_name, skill_extra_pool_name, attribute_mod_name];
+	let getAttrs_array = [skill_points_name, attribute_mod_name];
 	let change = 'change:' + getAttrs_array.join(' change:');
-	getAttrs_array.push(skill_tier_name);
 	
 	on(change, function() {
 		getAttrs(getAttrs_array, function(values) {
@@ -11133,18 +11130,13 @@ proficiency_skill_array.forEach( function(skill) {
 			let training       = (skill_points >= 1 ? 'on' : '0');
 			let attribute_name = skill.attribute;
 			let attribute_mod  = get_int_or_zero(values[attribute_mod_name]);
-			let pool_extra     = get_int_or_zero(values[skill_extra_pool_name]);
 			let total          = skill_points + attribute_mod;
-			let tier           = Math.max(get_int_or_zero(values[skill_tier_name]), get_tier(skill_points));
-			let pool           = tier + pool_extra;
 			
-			console.log(`${cp_points}: ${(skill_points / 2)}`);
+			//console.log(`${cp_points}: ${(skill_points / 2)}`);
 			setAttrs({
 				[`${skill.name}_attribute_name`]:     capitalize_first_letter(attribute_name),
 				[`${skill.name}_attribute_modifier`]: attribute_mod,
 				[`${skill.name}_total`]:              total,
-				[`${skill.type}_tier`]:               tier,
-				[`${skill.type}_pool_total`]:         pool,
 				[`${skill.name}_type_training`]:      training,
 				[cp_points]:                          (skill_points / 2)
 			});
@@ -11180,18 +11172,35 @@ proficiency_skill_array.forEach( function(skill) {
 
 const proficiency_names = proficiency_array.map(skill => skill.name);
 
-// Update CP total per profession type
+// Update tier, pool, and CP total per profession type
 proficiency_names.forEach( function(skill) {
-	let array = [];
-	for (let i = 1; i <= proficiency_count; i++) {
-		array.push(`cp_${skill}${i}_points`);
-	}
-	array.push(`${skill}_pool_extra`);
+	let points_array = proficiency_skill_array.filter(p => p.type == skill).map(s => `${s.name}_points`);
+	let skill_extra_pool_name = `${skill}_pool_extra`;
+	points_array.push(skill_extra_pool_name);
 	
-	on('change:' + array.join(' change:'), function() {
-		getAttrs(array, function(values) {
-			let cp_total = 0;
-			array.forEach( function(cp_item) {
+	on('change:' + points_array.join(' change:'), function() {
+		getAttrs(points_array, function(values) {
+			let max_points = 0;
+			points_array.forEach( function(points_item) {
+				if (points_item.includes('pool')) {
+					return;
+				}
+				let item_value = get_int_or_zero(values[points_item]);
+				max_points = Math.max(max_points, item_value);
+			});
+			let tier = get_tier(max_points);
+			let pool = tier + get_int_or_zero(values[skill_extra_pool_name]);
+			console.log(`${skill}_tier: ${tier}; ${skill}_pool_total: ${pool}`);
+			setAttrs({ [`${skill}_tier`]: tier, [`${skill}_pool_total`]: pool });
+		});
+	});
+	
+	let cp_array = proficiency_skill_array.filter(p => p.type == skill).map(s => `cp_${s.name}_points`);
+	cp_array.push(skill_extra_pool_name);
+	on('change:' + cp_array.join(' change:'), function() {
+		getAttrs(cp_array, function(values) {
+			let cp_total   = 0;
+			cp_array.forEach( function(cp_item) {
 				let item_value = get_float_or_zero(values[cp_item]);
 				if (cp_item.includes('pool')) {
 					item_value = cp_calc_skill_pool(item_value);
@@ -11212,12 +11221,10 @@ on('change:' + proficiency_skill_cp_names.join(' change:'), function() {
 		let cp_total = 0.0;
 		let cp = 0.0;
 		for (let cp_skill of proficiency_skill_cp_names) {
-//		proficiency_skill_cp_names.forEach( function(cp_skill) {
 			cp = get_float_or_zero(values[cp_skill]);
 			console.log(`${cp_skill}: ${cp}`);
 			cp_total += cp;
-			console.log(`running total: ${cp_total}`);
-		} //);
+		}
 		console.log(`cp_proficiencies: ${cp_total}`);
 		setAttrs({ 'cp_proficiencies': cp_total });
 	});
@@ -11696,6 +11703,8 @@ const boons_and_banes_array = [
 	{ name: 'bb_amphibious',                          search_text: 'amphibious',                cs_cp_cost:   0, ncs_cp_cost:   8, increment: 0, max_count:  1 },
 	{ name: 'bb_aquatic',                             search_text: 'aquatic',                   cs_cp_cost:   0, ncs_cp_cost:   8, increment: 0, max_count:  1 },
 	{ name: 'bb_aura_of_fear',                        search_text: 'auraoffear',                cs_cp_cost:  30, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_minor_aura_of_protection',            search_text: 'minorauraofprotection',     cs_cp_cost:  20, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_major_aura_of_protection',            search_text: 'majorauraofprotection',     cs_cp_cost:  40, ncs_cp_cost:   0, increment: 0, max_count:  1 },
 	{ name: 'bb_aura_of_slowness',                    search_text: 'auraofslowness',            cs_cp_cost:  30, ncs_cp_cost:   0, increment: 0, max_count:  1 },
 	{ name: 'bb_aura_of_stench',                      search_text: 'auraofstench',              cs_cp_cost:  15, ncs_cp_cost:   0, increment: 0, max_count:  1 },
 	{ name: 'bb_blindsense',                          search_text: 'blindsense',                cs_cp_cost:   0, ncs_cp_cost:  30, increment: 0, max_count:  1 },
@@ -11830,7 +11839,17 @@ const boons_and_banes_array = [
 	},
 	{ name: 'bb_slow_reflexes',                       search_text: 'slowreflexes',              cs_cp_cost:  -6, ncs_cp_cost:   0, increment: 0, max_count:  1 },
 	{ name: 'bb_small_size',                          search_text: 'smallsize',                 cs_cp_cost:   0, ncs_cp_cost:   0, increment: 0, max_count:  1 },
-	{ name: 'bb_spell_immunity',                      search_text: 'spellimmunity',             cs_cp_cost:   0, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_spell_immunity',                      search_text: 'spellimmunity',             cs_cp_cost:   0, ncs_cp_cost:   0, increment: 0, max_count: 10,
+		cp_function: function(bb_raw) {
+			let spell_name  = bb_raw.split('spellimmunity')[1];
+			let magic_skill = active_skill_array.find(s => s.applications.find(a => a.name == spell_name));
+			let cp_costs    = {
+				cs_cp_cost:  (magic_skill.combat_score ? 6 : 0),
+				ncs_cp_cost: (magic_skill.combat_score ? 0 : 6)
+			};
+			return cp_costs;
+		}
+	},
 	{ name: 'bb_spell_vulnerability',                 search_text: 'spellvulnerability',        cs_cp_cost:   0, ncs_cp_cost:   0, increment: 0, max_count:  1 },
 	{ name: 'bb_stability',                           search_text: 'stability',                 cs_cp_cost:   4, ncs_cp_cost:   0, increment: 0, max_count:  1 },
 	{ name: 'bb_steal_voice',                         search_text: 'stealvoice',                cs_cp_cost:   0, ncs_cp_cost:   6, increment: 0, max_count:  1 },
