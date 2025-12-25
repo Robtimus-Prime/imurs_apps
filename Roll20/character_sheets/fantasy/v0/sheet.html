@@ -11130,6 +11130,7 @@ proficiency_skill_array.forEach( function(skill) {
 	on(change, function() {
 		getAttrs(getAttrs_array, function(values) {
 			let skill_points   = get_int_or_zero(values[skill_points_name]);
+			let training       = (skill_points >= 1 ? 'on' : '0');
 			let attribute_name = skill.attribute;
 			let attribute_mod  = get_int_or_zero(values[attribute_mod_name]);
 			let pool_extra     = get_int_or_zero(values[skill_extra_pool_name]);
@@ -11144,6 +11145,7 @@ proficiency_skill_array.forEach( function(skill) {
 				[`${skill.name}_total`]:              total,
 				[`${skill.type}_tier`]:               tier,
 				[`${skill.type}_pool_total`]:         pool,
+				[`${skill.name}_type_training`]:      training,
 				[cp_points]:                          (skill_points / 2)
 			});
 		});
@@ -13667,17 +13669,18 @@ on("change:equipment_carry change:money_gold_coins change:money_silver_coins cha
 });
 
 on('change:arcana_points', function() {
-	getAttrs(['arcana_points', 'area_type_bolt', 'area_type_touch', 'area_type_self'], function(values) {
+	getAttrs(['arcana_points'], function(values) {
 		let skill_points = get_int_or_zero(values.arcana_points);
 		let defaults = '0';
 		if (skill_points >= 1) {
 			defaults = 'on';
 		}
 		setAttrs({
-			"area_type_bolt":       defaults,
-			"area_type_touch":      defaults,
-			"area_type_self":       defaults,
-			"damage_type_physical": defaults
+			'arcana_arcana_training': defaults,
+			'area_type_bolt':         defaults,
+			'area_type_touch':        defaults,
+			'area_type_self':         defaults,
+			'damage_type_physical':   defaults
 		});
 	});
 });
