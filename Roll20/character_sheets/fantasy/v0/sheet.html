@@ -1678,12 +1678,20 @@
 		<div class="monstrous-boon top-line">
 			<input name="attr_bb_lair_action_1" type="hidden" class="show-ability" value="false" />
 			<span class="ability">
-				<div class="skillname">
-					<label> Lair Action 1 </label>
-				</div>
+				<input name="attr_bb_lair_action_2" type="hidden" class="show-ability" value="false" />
+				<span class="ability">
+					<div class="skillname">
+						<label> Lair Actions </label>
+					</div>
+				</span>
+				<span class="no-ability">
+					<div class="skillname">
+						<label> Lair Action </label>
+					</div>
+				</span>
 				<div class="top-space">
-					<button type="roll" value="@{lair_action_1_roll_text}" />
-					<input class="custom-long" name="attr_lair_action_1_text" type="text" readonly />
+					<button type="roll" value="@{bb_lair_action_1_roll_text}" />
+					<input class="custom-long" name="attr_bb_lair_action_1_text" type="text" readonly />
 				</div>
 			</span>
 		</div>
@@ -1692,12 +1700,9 @@
 		<div class="monstrous-boon top-line">
 			<input name="attr_bb_lair_action_2" type="hidden" class="show-ability" value="false" />
 			<span class="ability">
-				<div class="skillname">
-					<label> Lair Action 2 </label>
-				</div>
 				<div class="top-space">
-					<button type="roll" value="@{lair_action_2_roll_text}" />
-					<input class="custom-long" name="attr_lair_action_2_text" type="text" readonly />
+					<button type="roll" value="@{bb_lair_action_2_roll_text}" />
+					<input class="custom-long" name="attr_bb_lair_action_2_text" type="text" readonly />
 				</div>
 			</span>
 		</div>
@@ -1706,12 +1711,9 @@
 		<div class="monstrous-boon top-line">
 			<input name="attr_bb_lair_action_3" type="hidden" class="show-ability" value="false" />
 			<span class="ability">
-				<div class="skillname">
-					<label> Lair Action 3 </label>
-				</div>
 				<div class="top-space">
-					<button type="roll" value="@{lair_action_3_roll_text}" />
-					<input class="custom-long" name="attr_lair_action_3_text" type="text" readonly />
+					<button type="roll" value="@{bb_lair_action_3_roll_text}" />
+					<input class="custom-long" name="attr_bb_lair_action_3_text" type="text" readonly />
 				</div>
 			</span>
 		</div>
@@ -7314,6 +7316,9 @@ function capitalize_first_letter(word) {
 }
 
 function get_modifier(attribute) {
+	if (attribute == 0) {
+		return 0;
+	}
 	let modifier = Math.floor(attribute / 2 - 7);
 	if (attribute < 14) {
 		modifier++;
@@ -7806,116 +7811,6 @@ function get_aura_area_size(has_large_size, has_huge_size) {
 	}
 	
 	return size;
-}
-
-function get_lair_action_effect_stats(lair_action_effect_raw) {
-	let lair_action_effect = lair_action_effect_raw;
-	let is_damage = false;
-	let damage_types = ["arcane", "chemical", "cold", "disease", "electricity", "heat", "mental", "physical", "poison", "sonic", "spectral", "vibrant"];
-	if (damage_types.includes(lair_action_effect_raw)) {
-		lair_action_effect = lair_action_effect_raw + " damage";
-		is_damage = true;
-	}
-	else if (lair_action_effect_raw.includes("slowed")) {
-		lair_action_effect = "slowed (-" + lair_action_effect_raw.substring(6, 7) + " AP)";
-	}
-	
-	var lair_action_effect_stats = {
-		"effect": lair_action_effect,
-		"is_damage": is_damage
-	};
-	
-	return lair_action_effect_stats;
-}
-
-function get_lair_action_stats(has_lair_action, boons_and_banes_text, lair_action_number, pr_tier, pr_total) {
-	let description = '';
-	let range       = 0;
-	let area        = '';
-	let condition   = null;
-	let damage_type = null;
-	let damage      = null;
-	let duration    = '';
-	let resist      = 0;
-	let text        = '';
-	let roll_text   = '';
-
-	if (has_lair_action) {
-		
-		let regex = new RegExp("(^|,)lairaction" + lair_action_number + "([a-z]+),([a-z]+),([\\w]+)(,|$)");
-		let matches = boons_and_banes_text.match(regex);
-		console.log(matches);
-
-		description = matches[2];
-		range = pr_total;
-		area = get_area(matches[3], Math.floor(pr_total / 4));
-		duration = Math.floor(pr_total / 2);
-		resist = 12 + pr_total;
-		text = matches[2] + ", " + area + ", ";
-
-		let effect = matches[4];
-		if (effect.includes("and")) {
-			const effects = effect.split('and');
-			var effect1_stats = get_lair_action_effect_stats(effects[0]);
-			var effect2_stats = get_lair_action_effect_stats(effects[1]);
-			if (effect1_stats.is_damage) {
-				damage_type = effect1_stats.effect;
-				condition = effect2_stats.effect;
-			}
-			else {
-				damage_type = effect2_stats.effect;
-				condition = effect1_stats.effect;
-			}
-		}
-		else {
-			var effect_stats = get_lair_action_effect_stats(effect);
-			if (effect_stats.is_damage) {
-				damage_type = effect_stats.effect;
-			}
-			else {
-				condition = effect_stats.effect;
-			}
-		}
-		
-		if (damage_type) {
-			damage = ((pr_tier + 1) * 2) + "d6";
-			text += damage + " " + damage_type;
-			if (condition) {
-				text += " and ";
-			}
-		}
-		if (condition) {
-			text += condition;
-		}
-		
-		let roll_damage = (damage_type ? "{{" + capitalize_first_letter(damage_type) + "=[[" + damage + "]]}} " : "");
-		let roll_condition = (condition ? "{{Condition=" + capitalize_first_letter(condition) + "}} {{Duration=[[" + duration + "]] rounds}} " : "");
-
-		roll_text = "@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Lair Action (" + description + ")}} " +
-		"{{Range=[[" + range + "]] squares}} {{Area=" + capitalize_first_letter(area) + "}} {{Physical Resilience (fortitude)=**TN** [[" + 
-		resist + "]]}} " + roll_damage + roll_condition + "{{desc=A lair action is a special action that happens once per round at 30 in " +
-		"Reflex order. This does not cost the monster any AP. }}'";
-	}
-
-	damage_type = (damage_type ? damage_type : '');
-	damage = (damage ? damage : '');
-	condition = (condition ? condition : '');
-
-	var lair_action_stats = {
-		"description" : description,
-		"range"       : range      ,
-		"area"        : area       ,
-		"condition"   : condition  ,
-		"damage_type" : damage_type,
-		"damage"      : damage     ,
-		"duration"    : duration   ,
-		"resist"      : resist     ,
-		"text"        : text       ,
-		"roll_text"   : roll_text
-	};
-	console.log(lair_action_stats);
-	
-	return lair_action_stats;
 }
 
 // CP Calc Functions
@@ -9360,16 +9255,18 @@ on("clicked:engulfinfo", function() {
 	});
 });
 
-on("clicked:legendaryactioninfo", function() {
-	let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: Legendary Monster}} " +
-	"{{desc=The monster is a legendary creature, such as a dragon. Legendary monsters can have a maximum of 60 in each attribute. Legendary monsters gain advantage " +
-	"on all Physical and Mental resilience checks." + _rn + "In addition, they can take legendary actions outside of their normal turn, which don’t cost AP to " +
-	"use. They can take up to three legendary actions per round. which happen after any other creature’s turn. Only one legendary action may be taken at a time." +
-	_rn + "All legendary monsters can choose to make a Perception check to detect a creature or a single Attack check as a legendary action. Most " +
-	"legendary monsters also have unique legendary actions they can choose as well, which will be listed in the monster’s description.}}'";
-	
-	startRoll(roll_text, (results) => {
-		finishRoll(results.rollId);
+on('clicked:legendaryactioninfo', function() {
+	getAttrs(['legendary_action'], function(values) {
+		let custom_action = (values.legendary_action ? _bull + values.legendary_action : '');
+		let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: Legendary Monster}} " +
+		"{{desc=The monster is a legendary creature, such as a dragon. Legendary monsters can have a maximum of 60 in each attribute. Legendary monsters gain advantage " +
+		"on all Physical and Mental resilience checks." + _rn + "In addition, they can take legendary actions outside of their normal turn, which don’t cost AP to " +
+		"use. They can take up to three legendary actions per round, which happen after any other creature’s turn. Only one legendary action may be taken at a time." +
+		header_text('Legendary Actions', false) + _bull + 'Perception check to detect a creature' + _bull + 'Attack check' + custom_action + "}}'";
+		
+		startRoll(roll_text, (results) => {
+			finishRoll(results.rollId);
+		});
 	});
 });
 
@@ -9753,12 +9650,6 @@ vital_stats_array.forEach( function(stat) {
 				(Math.floor(secondary_attribute * secondary_skill_tier) + secondary_skill_total) +
 				extra_stat + modifier;
 			
-/*			console.log(
-				`( floor( ${primary_attribute} * ${primary_skill_tier} + ${primary_skill_total} ) + ` + 
-				`( floor( ${secondary_attribute} * ${secondary_skill_tier} + ${secondary_skill_total} ) + ` + 
-				`${extra_stat} + ${modifier}`
-			);*/
-
 			setAttrs({
 				[stat_max_name]:                         stat_value,
 				[stat.name]:                             stat_current + (stat_value - stat_max),
@@ -10924,9 +10815,9 @@ let combat_score_skill_array = active_skill_array
 on('change:' + combat_score_skill_array.join(' change:'), function() {
 	getAttrs(combat_score_skill_array, function(values) {
 		let cp_total = 0;
-		combat_score_skill_array.forEach( function(cp_skill) {
+		for (let cp_skill of combat_score_skill_array) {
 			cp_total += get_int_or_zero(values[cp_skill]);
-		});
+		}
 		console.log(`cp_combat_skills: ${cp_total}`);
 		setAttrs({ 'cp_combat_skills': cp_total });
 	});
@@ -10940,9 +10831,9 @@ let non_combat_score_skill_array = active_skill_array
 on('change:' + non_combat_score_skill_array.join(' change:'), function() {
 	getAttrs(non_combat_score_skill_array, function(values) {
 		let cp_total = 0;
-		non_combat_score_skill_array.forEach( function(cp_skill) {
+		for (let cp_skill of non_combat_score_skill_array) {
 			cp_total += get_int_or_zero(values[cp_skill]);
-		});
+		}
 		console.log(`cp_non_combat_skills: ${cp_total}`);
 		setAttrs({ 'cp_non_combat_skills': cp_total });
 	});
@@ -11647,10 +11538,10 @@ function set_passive_skills(eventInfo) {
 }
 
 const movement_boon_array = [
-	{ search_text: 'burrow',       base_cost: 12 },
+	{ search_text: 'burrow',       base_cost:  6 },
 	{ search_text: 'climb',        base_cost:  0 },
 	{ search_text: 'fastmovement', base_cost:  0 },
-	{ search_text: 'fly',          base_cost:  6 },
+	{ search_text: 'fly',          base_cost: 12 },
 	{ search_text: 'slowmovement', base_cost:  0, bane: true },
 	{ search_text: 'swim',         base_cost:  0 }
 ];
@@ -11703,7 +11594,7 @@ function parse_natural_attack_boon(bb_raw) {
 }
 
 const boons_and_banes_array = [
-	{ name: 'bb_amorphous',                           search_text: 'amorphous',                 cs_cp_cost: 120, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_amorphous',                           search_text: 'amorphous',                 cs_cp_cost:  30, ncs_cp_cost:   0, increment: 0, max_count:  1 },
 	{ name: 'bb_amphibious',                          search_text: 'amphibious',                cs_cp_cost:   0, ncs_cp_cost:   8, increment: 0, max_count:  1 },
 	{ name: 'bb_aquatic',                             search_text: 'aquatic',                   cs_cp_cost:   0, ncs_cp_cost:   8, increment: 0, max_count:  1 },
 	{ name: 'bb_aura_of_fear',                        search_text: 'auraoffear',                cs_cp_cost:  30, ncs_cp_cost:   0, increment: 0, max_count:  1 },
@@ -11715,22 +11606,22 @@ const boons_and_banes_array = [
 	{ name: 'bb_blindsight',                          search_text: 'blindsight',                cs_cp_cost:   0, ncs_cp_cost:  40, increment: 0, max_count:  1 },
 	{ name: 'bb_blood_drain',                         search_text: 'blooddrain',                cs_cp_cost:  20, ncs_cp_cost:   0, increment: 0, max_count:  1 },
 	{ name: 'bb_blur',                                search_text: 'blur',                      cs_cp_cost:  12, ncs_cp_cost:   0, increment: 0, max_count:  1 },
-	{ name: 'bb_minor_breath_weapon_blast',           search_text: 'minorbreathweapon',         cs_cp_cost:   0, ncs_cp_cost:   0, increment: 1, max_count:  3, 
+	{ name: 'bb_minor_breath_weapon_blast',           search_text: 'minorbreathweaponblast',    cs_cp_cost:   0, ncs_cp_cost:   0, increment: 1, max_count:  3, 
 		cp_function: function(bb_raw) {
 			return parse_breath_weapon_boon(bb_raw);
 		}
 	},
-	{ name: 'bb_minor_breath_weapon_line',            search_text: 'minorbreathweapon',         cs_cp_cost:   0, ncs_cp_cost:   0, increment: 1, max_count:  3, 
+	{ name: 'bb_minor_breath_weapon_line',            search_text: 'minorbreathweaponline',     cs_cp_cost:   0, ncs_cp_cost:   0, increment: 1, max_count:  3, 
 		cp_function: function(bb_raw) {
 			return parse_breath_weapon_boon(bb_raw);
 		}
 	},
-	{ name: 'bb_major_breath_weapon_blast',           search_text: 'majorbreathweapon',         cs_cp_cost:   0, ncs_cp_cost:   0, increment: 1, max_count:  3, 
+	{ name: 'bb_major_breath_weapon_blast',           search_text: 'majorbreathweaponblast',    cs_cp_cost:   0, ncs_cp_cost:   0, increment: 1, max_count:  3, 
 		cp_function: function(bb_raw) {
 			return parse_breath_weapon_boon(bb_raw);
 		}
 	},
-	{ name: 'bb_major_breath_weapon_line',            search_text: 'majorbreathweapon',         cs_cp_cost:   0, ncs_cp_cost:   0, increment: 1, max_count:  3, 
+	{ name: 'bb_major_breath_weapon_line',            search_text: 'majorbreathweaponline',     cs_cp_cost:   0, ncs_cp_cost:   0, increment: 1, max_count:  3, 
 		cp_function: function(bb_raw) {
 			return parse_breath_weapon_boon(bb_raw);
 		}
@@ -11753,7 +11644,7 @@ const boons_and_banes_array = [
 			return parse_movement_boon(bb_raw);
 		}
 	},
-	{ name: 'bb_construct',                           search_text: 'construct',                 cs_cp_cost:  56, ncs_cp_cost:  19, increment: 0, max_count:  1 },
+	{ name: 'bb_construct',                           search_text: 'construct',                 cs_cp_cost:   0, ncs_cp_cost:   0, increment: 0, max_count:  1 },
 	{ name: 'bb_corrosive_blood',                     search_text: 'corrosiveblood',            cs_cp_cost:  30, ncs_cp_cost:   0, increment: 0, max_count:  1 },
 	{ name: 'bb_create_spawn',                        search_text: 'createspawn',               cs_cp_cost:  12, ncs_cp_cost:   0, increment: 0, max_count:  1 },
 	{ name: 'bb_crush',                               search_text: 'crush',                     cs_cp_cost:   8, ncs_cp_cost:   0, increment: 0, max_count:  1 },
@@ -11797,20 +11688,18 @@ const boons_and_banes_array = [
 	{ name: 'bb_huge_size',                           search_text: 'hugesize',                  cs_cp_cost:   6, ncs_cp_cost:   0, increment: 0, max_count:  1 },
 	{ name: 'bb_infravision',                         search_text: 'infravision',               cs_cp_cost:   0, ncs_cp_cost:   6, increment: 0, max_count:  1 },
 	{ name: 'bb_inner_magic',                         search_text: 'innermagic',                cs_cp_cost:   0, ncs_cp_cost:   0, increment: 0, max_count:  1 },
-	{ name: 'bb_lair_action_1',                       search_text: 'lairaction1',               cs_cp_cost:  30, ncs_cp_cost:   0, increment: 0, max_count:  1 },
-	{ name: 'bb_lair_action_2',                       search_text: 'lairaction2',               cs_cp_cost:  30, ncs_cp_cost:   0, increment: 0, max_count:  1 },
-	{ name: 'bb_lair_action_3',                       search_text: 'lairaction3',               cs_cp_cost:  30, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_lair_action',                         search_text: 'lairaction',                cs_cp_cost:  30, ncs_cp_cost:   0, increment: 2, max_count:  3 },
 	{ name: 'bb_large_size',                          search_text: 'largesize',                 cs_cp_cost:   0, ncs_cp_cost:   0, increment: 0, max_count:  1 },
 	{ name: 'bb_legendary_monster',                   search_text: 'legendarymonster',          cs_cp_cost: 120, ncs_cp_cost:   0, increment: 0, max_count:  1 },
 	{ name: 'bb_magic_resistance',                    search_text: 'magicresistance',           cs_cp_cost:  10, ncs_cp_cost:  10, increment: 0, max_count:  1 },
 	{ name: 'bb_material_vulnerability',              search_text: 'materialvulnerability',     cs_cp_cost:  -6, ncs_cp_cost:   0, increment: 0, max_count: 10 },
-	{ name: 'bb_mindless',                            search_text: 'mindless',                  cs_cp_cost:  55, ncs_cp_cost: -95, increment: 0, max_count:  1 },
+	{ name: 'bb_mindless',                            search_text: 'mindless',                  cs_cp_cost:   0, ncs_cp_cost:  10, increment: 0, max_count:  1 },
 	{ name: 'bb_total_magic_immunity',                search_text: 'totalmagicimmunity',        cs_cp_cost: 200, ncs_cp_cost: 200, increment: 0, max_count:  1 },
 	{ name: 'bb_no_metabolism',                       search_text: 'nometabolism',              cs_cp_cost: -20, ncs_cp_cost:   0, increment: 0, max_count:  1 },
 	{ name: 'bb_no_natural_healing',                  search_text: 'nonaturalhealing',          cs_cp_cost: -20, ncs_cp_cost:   0, increment: 0, max_count:  1 },
-	{ name: 'bb_non-breathing',                       search_text: 'non-breathing',             cs_cp_cost:   0, ncs_cp_cost:   6, increment: 0, max_count:  1 },
-	{ name: 'bb_non-eating',                          search_text: 'non-eating',                cs_cp_cost:   0, ncs_cp_cost:   3, increment: 0, max_count:  1 },
-	{ name: 'bb_non-sleeping',                        search_text: 'non-sleeping',              cs_cp_cost:   0, ncs_cp_cost:  10, increment: 0, max_count:  1 },
+	{ name: 'bb_non_breathing',                       search_text: 'nonbreathing',              cs_cp_cost:   0, ncs_cp_cost:   6, increment: 0, max_count:  1 },
+	{ name: 'bb_non_eating',                          search_text: 'noneating',                 cs_cp_cost:   0, ncs_cp_cost:   3, increment: 0, max_count:  1 },
+	{ name: 'bb_non_sleeping',                        search_text: 'nonsleeping',               cs_cp_cost:   0, ncs_cp_cost:  10, increment: 0, max_count:  1 },
 	{ name: 'bb_poison_attack',                       search_text: 'poisonattack',              cs_cp_cost:   0, ncs_cp_cost:   0, increment: 1, max_count:  3, 
 		cp_function: function(bb_raw) {
 			let bb_array   = bb_raw.split(',');
@@ -11875,8 +11764,8 @@ const boons_and_banes_array = [
 	{ name: 'bb_tremorsense',                         search_text: 'tremorsense',               cs_cp_cost:   0, ncs_cp_cost:  20, increment: 0, max_count:  1 },
 	{ name: 'bb_ultravision',                         search_text: 'ultravision',               cs_cp_cost:   0, ncs_cp_cost:   4, increment: 0, max_count:  1 },
 	{ name: 'bb_undead_ghostly',                      search_text: 'undeadghostly',             cs_cp_cost: 156, ncs_cp_cost:  19, increment: 0, max_count:  1 },
-	{ name: 'bb_undead_skeletal',                     search_text: 'undeadskeletal',            cs_cp_cost:  56, ncs_cp_cost:  19, increment: 0, max_count:  1 },
-	{ name: 'bb_undead_zombified',                    search_text: 'undeadzombified',           cs_cp_cost:  56, ncs_cp_cost:  19, increment: 0, max_count:  1 },
+	{ name: 'bb_undead_skeletal',                     search_text: 'undeadskeletal',            cs_cp_cost:   0, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_undead_zombified',                    search_text: 'undeadzombified',           cs_cp_cost:   0, ncs_cp_cost:   0, increment: 0, max_count:  1 },
 	{ name: 'bb_web',                                 search_text: 'web',                       cs_cp_cost:  20, ncs_cp_cost:   0, increment: 0, max_count:  1 }
 ];
 
@@ -12546,32 +12435,119 @@ on("change:bb_huge_size change:bb_large_size change:bb_small_size change:bb_tiny
 	});
 });
 
-const lair_action_array = [1, 2, 3];
-lair_action_array.forEach( function(number) {
-	on('change:bb_lair_action_' + number, function() {
-		let lair_action_boon_name = 'bb_lair_action_' + number;
+function get_lair_action_effect_stats(lair_action_effect_raw) {
+	let lair_action_effect = lair_action_effect_raw;
+	let is_damage = false;
+	if (damage_type_list.includes(lair_action_effect_raw)) {
+		lair_action_effect = lair_action_effect_raw + ' damage';
+		is_damage = true;
+	}
+	else if (lair_action_effect_raw.includes('slowed')) {
+		lair_action_effect = `slowed (-${lair_action_effect_raw.substring(6, 7)} AP)`;
+	}
+	
+	var lair_action_effect_stats = {
+		'effect':    lair_action_effect,
+		'is_damage': is_damage
+	};
+	
+	return lair_action_effect_stats;
+}
 
-		getAttrs([lair_action_boon_name, 'boons_and_banes', 'pr_total', 'pr_tier'], function(values) {
-			let has_lair_action = get_bool(values[lair_action_boon_name]);
-			let pr_total = get_int_or_zero(values.pr_total);
-			let pr_tier  = get_int_or_zero(values.pr_tier);
+let lair_action_boon = boons_and_banes_array.find(b => b.name == 'bb_lair_action');
+if (lair_action_boon) {
+	for (let i = 1; i <= lair_action_boon.max_count; i++) {
+		let boon_name      = `${lair_action_boon.name}_${i}`;
+		let boon_raw_name  = `${boon_name}_raw`;
+		let get_array      = [boon_name, boon_raw_name, 'pr_total', 'pr_tier'];
+		on('change:' + boon_raw_name, function() {
+			getAttrs(get_array, function(values) {
+				let pr_total = get_int_or_zero(values.pr_total);
+				let pr_tier  = get_int_or_zero(values.pr_tier);
+			
+				let description = '';
+				let range       = 0;
+				let area        = '';
+				let condition   = '';
+				let damage_type = '';
+				let damage      = '';
+				let duration    = '';
+				let resist      = 0;
+				let text        = '';
+				let roll_text   = '';
+				
+				if (get_bool(values[boon_name])) {
+					let regex = /lairaction([a-z]+),([a-z]+),([\w]+)/;
+					let matches = values[boon_raw_name].match(regex);
+					console.log(matches);
 
-			lair_action_stats = get_lair_action_stats(has_lair_action, parse_textarea(values.boons_and_banes), number, pr_tier, pr_total);
-			setAttrs({ 
-				[`lair_action_${number}_range`]:       lair_action_stats.range,
-				[`lair_action_${number}_description`]: lair_action_stats.description,
-				[`lair_action_${number}_duration`]:    lair_action_stats.duration,
-				[`lair_action_${number}_area`]:        lair_action_stats.area,
-				[`lair_action_${number}_resist`]:      lair_action_stats.resist,
-				[`lair_action_${number}_text`]:        lair_action_stats.text,
-				[`lair_action_${number}_damage_type`]: lair_action_stats.damage_type,
-				[`lair_action_${number}_damage`]:      lair_action_stats.damage,
-				[`lair_action_${number}_condition`]:   lair_action_stats.condition,
-				[`lair_action_${number}_roll_text`]:   lair_action_stats.roll_text
+					description = matches[1];
+					range       = pr_total;
+					area        = get_area(matches[2], Math.floor(pr_total / 4));
+					duration    = Math.floor(pr_total / 2);
+					resist      = 12 + pr_total;
+					text        = `${matches[1]}, ${area}, `;
+
+					let effect = matches[3];
+					if (effect.includes('and')) {
+						const effects = effect.split('and');
+						var effect1_stats = get_lair_action_effect_stats(effects[0]);
+						var effect2_stats = get_lair_action_effect_stats(effects[1]);
+						if (effect1_stats.is_damage) {
+							damage_type = effect1_stats.effect;
+							condition = effect2_stats.effect;
+						}
+						else {
+							damage_type = effect2_stats.effect;
+							condition = effect1_stats.effect;
+						}
+					}
+					else {
+						var effect_stats = get_lair_action_effect_stats(effect);
+						if (effect_stats.is_damage) {
+							damage_type = effect_stats.effect;
+						}
+						else {
+							condition = effect_stats.effect;
+						}
+					}
+					
+					if (damage_type) {
+						damage = `${((pr_tier + 1) * 2)}d6`;
+						text  += `${damage} ${damage_type}`;
+						if (condition) {
+							text += ' and ';
+						}
+					}
+					if (condition) {
+						text += condition;
+					}
+					
+					let roll_damage    = (damage_type ? `{{${capitalize_first_letter(damage_type)}=[[${damage}]]}} ` : '');
+					let roll_condition = (condition   ? `{{Condition=${capitalize_first_letter(condition)}}} {{Duration=[[${duration}]] rounds}} ` : '');
+
+					roll_text = "@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Lair Action (" + description + ")}} " +
+					"{{Range=[[" + range + "]] squares}} {{Area=" + capitalize_first_letter(area) + "}} {{Physical Resilience (fortitude)=**TN** [[" + 
+					resist + "]]}} " + roll_damage + roll_condition + "{{desc=A lair action is a special action that happens once per round at 30 in " +
+					"Reflex order. This does not cost the monster any AP. }}'";
+				}
+
+				setAttrs({ 
+					[`${boon_name}_range`]:       range,
+					[`${boon_name}_description`]: description,
+					[`${boon_name}_duration`]:    duration,
+					[`${boon_name}_area`]:        area,
+					[`${boon_name}_resist`]:      resist,
+					[`${boon_name}_text`]:        text,
+					[`${boon_name}_damage_type`]: damage_type,
+					[`${boon_name}_damage`]:      damage,
+					[`${boon_name}_condition`]:   condition,
+					[`${boon_name}_roll_text`]:   roll_text
+				});
 			});
-		});	
-	});
-});
+		});
+	}
+}
 
 let poison_attack_boon = boons_and_banes_array.find(b => b.name == 'bb_poison_attack');
 if (poison_attack_boon) {
