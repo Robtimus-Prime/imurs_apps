@@ -981,7 +981,7 @@
 					<label> Aura of Fear </label>
 				</div>
 				<div class="top-space">
-					<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Aura of Fear}} {{Mental Resilience (willpower)=**TN** [[12 + @{mr_total} + @{mob_skill_bonus}]]}} {{Failure=Scared}} {{Critical failure=Terrified}} {{Duration=[[@{mr_tier} + 2]] rounds}} {{desc=**Scared:** Disadvantage on all actions%NEWLINE%%NEWLINE%**Terrified:** Great disadvantage on all actions, must use any means necessary to flee the source of terror}}'" />
+					<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Aura of Fear}} {{Mental Resilience (willpower)=**TN** [[12 + @{mr_total} + @{mob_skill_bonus}]]}} {{Failure=Scared}} {{Critical failure=Terrified}} {{Duration=Short rest ([[{0d0+3, 0d0+@{mr_tier}}kl1]] successes)}} {{desc=**Scared:** Disadvantage on all actions%NEWLINE%%NEWLINE%**Terrified:** Great disadvantage on all actions, must use any means necessary to flee the source of terror}}'" />
 					<input class="custom" name="attr_aura_of_fear_description" type="text" readonly />
 				</div>
 			</span>
@@ -995,7 +995,7 @@
 					<label> Aura of Slowness </label>
 				</div>
 				<div class="top-space">
-					<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Aura of Slowness}} {{Mental Resilience (willpower)=**TN** [[12 + @{mr_total} + @{mob_skill_bonus}]]}} {{Failure=Slowed (-1 AP)}} {{Critical failure=Slowed (-2 AP)}} {{Duration=[[@{mr_tier} + 2]] rounds}}'" />
+					<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Aura of Slowness}} {{Mental Resilience (willpower)=**TN** [[12 + @{mr_total} + @{mob_skill_bonus}]]}} {{Failure=Slowed (-1 AP)}} {{Critical failure=Slowed (-2 AP)}} {{Duration=Short rest ([[{0d0+3, 0d0+@{mr_tier}}kl1]] successes)}}'" />
 					<input class="custom" name="attr_aura_of_slowness_description" type="text" readonly />
 				</div>
 			</span>
@@ -1009,7 +1009,7 @@
 					<label> Aura of Stench </label>
 				</div>
 				<div class="top-space">
-					<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Aura of Stench}} {{Physical Resilience (fortitude)=**TN** [[12 + @{pr_total} + @{mob_skill_bonus}]]}} {{Failure=Sickened}} {{Duration=[[@{pr_tier} + 2]] rounds}} {{desc=**Sickened:** Disadvantage on all actions; if exposed to anything stomach-upsetting, 10% chance each round to become nauseated for 1d6 rounds}}'" />
+					<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Aura of Stench}} {{Physical Resilience (fortitude)=**TN** [[12 + @{pr_total} + @{mob_skill_bonus}]]}} {{Failure=Sickened}} {{Duration=Short rest ([[{0d0+3, 0d0+@{mr_tier}}kl1]] successes)}} {{desc=**Sickened:** Disadvantage on all actions; if exposed to anything stomach-upsetting, 10% chance each round to become nauseated until your next short rest.}}'" />
 					<input class="custom" name="attr_aura_of_stench_description" type="text" readonly />
 				</div>
 			</span>
@@ -7488,12 +7488,17 @@ function header_text(header, newline_after = true) {
 	return `${_rn}**${header}**${newline}`;
 }
 
-function tier_effect(tier, effect_per_tier, effect_description, skill_name, prefix = '', base_count = 0) {
-	let tier_text = 'tier';
-	let effect_per_tier_display = effect_per_tier;
+function tier_effect(tier, effect_per_tier, effect_description, skill_name, prefix = '', base_count = 0, maximum = 0) {
+	let tier_text                   = 'tier';
+	let effect_per_tier_display     = effect_per_tier;
 	let effect_description_per_tier = effect_description;
-	let base_count_text = '';
+	let base_count_text             = '';
+	let maximum_text                = ''
 
+	if (maximum > 0) {
+		tier         = Math.min(tier, maximum);
+		maximum_text = `, maximum ${maximum}`; 
+	}
 	if (prefix != '') {
 		prefix = `**${prefix}**`;
 	}
@@ -7501,7 +7506,7 @@ function tier_effect(tier, effect_per_tier, effect_description, skill_name, pref
 		if (base_count > 0) {
 			base_count_text = ' + ' + base_count;
 		}
-		return `${prefix}[[${tier + base_count} : This is your tier in ${skill_name}${base_count_text}]]`;
+		return `${prefix}[[${tier + base_count} : This is your tier in ${skill_name}${base_count_text}${maximum_text}]]`;
 	}
 	if (effect_per_tier < 1) {
 		tier_text = (1 / effect_per_tier) + ' tiers';
@@ -7525,7 +7530,7 @@ function tier_effect(tier, effect_per_tier, effect_description, skill_name, pref
 		}
 	}
 	
-	return `${prefix}[[${Math.floor((base_count + tier) * effect_per_tier)} : This is ${base_count_text}${effect_per_tier_display}${effect_description_per_tier} per ${tier_text} you have in ${skill_name}]]**${effect_description}**`;
+	return `${prefix}[[${Math.floor((base_count + tier) * effect_per_tier)} : This is ${base_count_text}${effect_per_tier_display}${effect_description_per_tier} per ${tier_text} you have in ${skill_name}${maximum_text}]]**${effect_description}**`;
 }
 
 function tier_effect_attack(tier, effect_per_tier, effect_description, prefix = '', base_count = 0) {
@@ -8255,9 +8260,9 @@ function cast_resurrect(ep_cost) {
 	let effect = '[[@{biomancy_tier} * 3]] rounds';
 	let tn = 20;
 	let regain_short = 'HP and EP as if it had taken a short rest';
-	let regain_long = 'HP and EP as if it had taken a long rest';
+	let regain_long = regain_short.replace('short', 'long');
 	let regain_text = '1 HP and 1 EP';
-	let nauseated = ', is nauseated for a number of rounds equal to (6 – their tier in Physical Resilience)';
+	let nauseated = ', is nauseated until they take a short rest';
 	let sickened = ', and is sickened until they take a long rest';
 	let condition_text = nauseated + sickened;
 	let crit_success = regain_short;
@@ -9270,20 +9275,6 @@ on('clicked:legendaryactioninfo', function() {
 	});
 });
 
-on("clicked:paralysisinfo", function() {
-	getAttrs(["paralysis_duration", "paralysis_resist", "paralysis_type"], function(values) {
-		let type = (values.paralysis_type == 'conatact' ? "{{Type=Contact}} " : "{{Natural attack=" + values.paralysis_type + "}} ");
-		
-		let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: Paralysis}} " + type +
-		"{{Physical Resilience (fortitude)=TN " + values.paralysis_resist + "}} {{Effect=Parlayzed}} {{Duration=" + values.paralysis_duration + 
-		" rounds}}'";
-		
-		startRoll(roll_text, (results) => {
-			finishRoll(results.rollId);
-		});
-	});
-});
-
 on("clicked:regenerationinfo", function() {
 	getAttrs(["regeneration_healing", "regeneration_vulnerability"], function(values) {
 		
@@ -9350,7 +9341,8 @@ on("clicked:swarminfo", function() {
 		"Each round, the swarm makes a single attack against all creatures with whom it shares a space, which is an Attack (two-handed melee) check that is " +
 		"automatically successful (usually a bite or sting natural attack), and gains a +2d6 damage bonus." + _rn + "The first time each creature takes damage from " +
 		"a swarm, they must make a Physical Resilience (constitution) check. If they fail, they are sickened until they no longer share a space with the swarm." +
-		_rn + "**Sickened:** Disadvantage on all actions; if exposed to anything stomach-upsetting, 10% chance each round to become nauseated for 1d6 rounds.}}'";
+		_rn + "**Sickened:** Disadvantage on all actions; if exposed to anything stomach-upsetting, 10% chance each round to become nauseated until your next " + 
+		"short rest.}}'";
 		
 		startRoll(roll_text, (results) => {
 			finishRoll(results.rollId);
@@ -12484,7 +12476,7 @@ if (lair_action_boon) {
 					description = matches[1];
 					range       = pr_total;
 					area        = get_area(matches[2], Math.floor(pr_total / 4));
-					duration    = Math.floor(pr_total / 2);
+					duration    = Math.min(pr_tier, 3);
 					resist      = 12 + pr_total;
 					text        = `${matches[1]}, ${area}, `;
 
@@ -12524,7 +12516,7 @@ if (lair_action_boon) {
 					}
 					
 					let roll_damage    = (damage_type ? `{{${capitalize_first_letter(damage_type)}=[[${damage}]]}} ` : '');
-					let roll_condition = (condition   ? `{{Condition=${capitalize_first_letter(condition)}}} {{Duration=[[${duration}]] rounds}} ` : '');
+					let roll_condition = (condition   ? `{{Condition=${capitalize_first_letter(condition)}}} {{Duration=Short rest ([[${duration}]] successes)}} ` : '');
 
 					roll_text = "@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Lair Action (" + description + ")}} " +
 					"{{Range=[[" + range + "]] squares}} {{Area=" + capitalize_first_letter(area) + "}} {{Physical Resilience (fortitude)=**TN** [[" + 
@@ -13420,7 +13412,7 @@ on("clicked:persuadeintimidateinfo", function() {
 	getAttrs(["persuade_total", "persuade_tier"], function(values) {
 		let total       = get_int_or_zero(values.persuade_total);
 		let tier        = get_int_or_zero(values.persuade_tier);
-		let effect_tier = tier_effect(tier, 1, ' rounds', 'Persuade');
+		let effect_tier = tier_effect(tier, 1, ' rounds', 'Persuade', '', 0, 3);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Persuade (intimidate) info}} " +
 		"{{Coerce=Mental Resilience (willpower) check}} {{Demoralize=Mental Resilience (willpower) check}} {{Taunt=Mental Resilience (willpower) check}} " +
 		"{{desc=Intimidate has three uses: coerce, demoralize, and taunt." +
@@ -14013,7 +14005,7 @@ on("clicked:alterationchangesizeinfo", function() {
 		let tier2_effect = (show_alteration_change_size_20_ep ? `{{20 EP=${boon_20ep}}} ` : '');
 		let tier3_effect = (show_alteration_change_size_30_ep ? `{{30 EP=${boon_10ep}${_or}${boon_20ep}}} ` : '');
 		let tier2_text = (show_alteration_change_size_20_ep ? _pow + 'Once per short or long rest, can spend 2 AP to grant yourself either the Large Size or ' +
-		'Small Size boon for ' + tier_effect_alteration(tier, 1, ' rounds') + '.' : '');
+		'Small Size boon for ' + tier_effect(tier, 1, ' rounds', 'Alteration', '', 0, 3) + '.' : '');
 		let desc = "*Change size* increases or decreases the size of the target creature, granting it a size-related monstrous boon for the duration. " +
 		"Equipment carried by the target resizes appropriately. If you try to increase the size of a creature so that it would be too big to fit " +
 		"in the space it’s in, the spell fails." + tier2_text;
@@ -14255,13 +14247,13 @@ on("clicked:biomancyresurrectinfo", function() {
 		let tier3_effect = (show_biomancy_resurrect_90_ep  ? '{{90 EP=Dead '  + tier3_value + _n + 'TN **40**}} ' : '');
 		let tier4_effect = (show_biomancy_resurrect_120_ep ? '{{120 EP=Dead ' + tier4_value + _n + 'TN **50**}} ' : '');
 		let tier1_text = _rn + "For 30 EP, you can resurrect a creature that has been dead for up to " + tier1_value + ". Upon being resurrected, " +
-		"the creature is placed on 1 HP and 1 EP, is nauseated for a number of rounds equal to (6 – their tier in Physical Resilience), and " +
+		"the creature is placed on 1 HP and 1 EP, is nauseated until they take a short rest, and " +
 		"sickened until they take a long rest. " + get_crit_text('the target gains HP and EP as if it had taken a short rest.',
 		'the target can no longer be resurrected; any future attempt automatically fails.');
 		let tier2_text = (show_biomancy_resurrect_60_ep ? _rn + "For 60 EP, you can resurrect a creature that has been dead for up to " + tier2_value + 
-		". Upon being resurrected, the creature is placed on HP and EP as if it had taken a short rest, is nauseated for a number of rounds " +
-		"equal to (4 – their tier in Physical Resilience), and sickened until they take a long rest. " + get_crit_text('the target gains ' +
-		'HP and EP as if it had taken a long rest.', 'the target can no longer be resurrected; any future attempt automatically fails.') : '');
+		". Upon being resurrected, the creature is placed on HP and EP as if it had taken a short rest, is nauseated until they take a short rest, " +
+		"and sickened until they take a long rest. " + get_crit_text('the target gains HP and EP as if it had taken a long rest.', 
+		'the target can no longer be resurrected; any future attempt automatically fails.') : '');
 		let tier3_text = (show_biomancy_resurrect_90_ep ? _rn + "For 90 EP, you can resurrect a creature that has been dead for up to " + tier3_value + 
 		". You don’t need the body for this version of the spell; anything that was once part of their body will do (even a single hair). " +
 		"Upon being resurrected, the creature is placed on HP and EP as if it had taken a short rest, and is sickened until they take a long rest. " +
@@ -14637,7 +14629,7 @@ on("clicked:conjurationfabricateinfo", function() {
 
 		let desc = "This power can create items, repair items, and heal constructs. Creating items is limited by weight or cost, whichever is " +
 		"more restrictive. " + _pow + "For 1 AP, you can create a single item of up to 2 pounds or 2 GC per tier you have in Conjuration (whichever is " +
-		"more restrictive). This item lasts for " + tier_effect_conjuration(tier, 1, ' rounds') + "." + _rn + "The number of items you can create and their " +
+		"more restrictive). This item lasts for " + tier_effect(tier, 1, ' rounds', 'Conjuration', '', 0, 3) + "." + _rn + "The number of items you can create and their " +
 		"total maximum weight or cost, or the amount of damage you heal, is based on your tier and how much EP you spend. " + _rn + "Items created by this " +
 		"spell must be created in an environment that can support them, and instantly disappear when the duration runs out. *Fabricate* cannot be used to " +
 		"create magic items. " + spend_pool_conjuration('increase the healing further, at a cost of 2 points per additional 1d6.');
@@ -14856,8 +14848,7 @@ on("clicked:conjurationsummonallyinfo", function() {
 		let range = get_int_or_zero(values.spell_range);
 		let effect_tier_plus_4 = tier_effect_conjuration(tier, 1, '', '', 4);
 		let effect_tier_plus_6 = tier_effect_conjuration(tier, 1, '', '', 6);
-		let tier1_text = header_text('Combatant') + "For 10 EP, you summon an ally to fight for you. The duration unit of this version of " +
-		"the spell is rounds. Your ally is trained in the following skill applications: ";
+		let tier1_text = header_text('Combatant') + "For 10 EP, you summon an ally to fight for you. Your ally is trained in the following skill applications: ";
 		let tier1_text_combatant = tier1_text + "Attack (any one melee combat style), Defend (dodge), Mental Resilience (willpower), " +
 		"Physical Resilience (fortitude), and has a speed of 4 squares. Their attacks cause " + tier_effect_conjuration(tier, 1, 'd6') + 
 		attribute_mod_text + " physical damage, and they have NDR (physical) " + tier_effect_conjuration(tier, 2, '') + ". ";
@@ -15091,7 +15082,7 @@ on("clicked:displacementflyinfo", function() {
 		"short rest. " : "");
 		let desc = "This spell grants the target creatures the ability to levitate or fly. " + power + tier1_text + tier2_text + tier3_text +
 		_rn + "When the duration of *fly* expires, any affected creatures who are still airborne float slowly to the ground as if " +
-		"levitating downward for " + effect_tier + " rounds before falling. " +
+		"levitating downward for " + tier_effect(tier, 1, ' rounds', 'Displacement', '', 0, 3) + " before falling. " +
 		spend_pool_displacement('increase the target creatures’ fly speed, at a cost of 1 point per extra square of movement.');
 		let roll_text = get_spell_info('Displacement (fly)', '2 AP', range + ' squares', base_duration, duration_bonus, 
 		`Bolt${nova_area}${_n}Touch`, 'Creature', 'Auto (willing)', tier1_effect + tier2_effect + tier3_effect, desc);
@@ -15198,7 +15189,7 @@ on("clicked:displacementtelekinesisinfo", function() {
 		"levers, hit switches, etc. Anything that would be complicated to do with one hand may require a Displacement (telekinesis) check (GM’s " +
 		"discretion). " +
 		_rn + "When the duration of *telekinesis* expires, any affected creatures who are airborne float slowly to the ground as if " +
-		"levitating downward (see the *fly* spell) for " + tier_effect_displacement(tier, 1, ' rounds') + " before falling. }}'";
+		"levitating downward (see the *fly* spell) for " + tier_effect(tier, 1, ' rounds', 'Displacement', '', 0, 3) + " before falling. }}'";
 		let roll_text = get_spell_info('Displacement (telekinesis)', '2 AP', range + ' squares', dur_concentration, duration_bonus, 'Self',
 		'Creature or item', 'Mental Resilience', tier1_effect + tier2_effect + tier3_effect + tier4_effect, desc);
 		startRoll(roll_text, (results) => {
