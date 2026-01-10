@@ -10680,8 +10680,6 @@ active_skill_array.forEach( function(skill) {
 		});
 	}
 	
-	let count = `${skill.name}_application_count`;
-
 	skill.applications.forEach( function(application) {
 		// Events: advantage level, explode value, or training of skill applications
 		// Sets the roll for each skill application
@@ -10689,15 +10687,8 @@ active_skill_array.forEach( function(skill) {
 		let roll     = `${skill.name}_${application.name}_roll`;
 		
 		on(`change:${advantage_name} change:${explode_name} change:${training}`, function() {
-			getAttrs([advantage_name, explode_name, training, count], function(values) {
-				let app_count    = get_int_or_zero(values[count]);
-				let count_change = (values[training] == 'on' ? 1 : -1);
-				let new_count    = Math.max(0, (app_count + count_change));
-				console.log(`${skill.name}_application_count = ${new_count}`);
-				setAttrs({
-					[roll]:  get_roll(values[training], values[advantage_name], values[explode_name]),
-					[count]: new_count
-				});
+			getAttrs([advantage_name, explode_name, training], function(values) {
+				setAttrs({ [roll]:  get_roll(values[training], values[advantage_name], values[explode_name]) });
 				if (application.name == 'summon_ally') {
 					setAttrs({ 'summon_ally_untrained_dice': get_roll('0', values[advantage_name], values[explode_name]) });
 				}
@@ -10778,11 +10769,16 @@ active_skill_array.forEach( function(skill) {
 		}
 	});
 	
-	// Update CP cost of skill applications
-	on(`change:${count}`, function() {
-		getAttrs([count], function(values) {
-			let app_count = get_int_or_zero(values[count]);
-			setAttrs({ [cp_apps]: cp_calc_skill_applications(app_count) });
+	// Update skill application count & CP cost
+	let training_array = skill.applications.map(app => `${skill.name}_${app.name}_training`);
+	on('change:' + training_array.join(' change:'), function() {
+		getAttrs(training_array, function(values) {
+			let app_count = training_array.filter(app => values[app] == 'on').length;
+			console.log(`${skill.name}_application_count = ${app_count}`);
+			setAttrs({
+				[`${skill.name}_application_count`]: app_count,
+				[cp_apps]:                           cp_calc_skill_applications(app_count)
+			});
 		});
 	});
 
