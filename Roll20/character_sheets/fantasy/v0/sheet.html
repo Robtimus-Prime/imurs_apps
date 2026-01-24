@@ -2053,6 +2053,10 @@
 		<div class="damage-resistance top-space">
 			<label> Armor </label>
 			<input name="attr_armor_name" type="text" class="weapon" />
+			<label class="skill-tem-container">
+				<input name="attr_use_shield" type="checkbox" />
+				<span class="skill-tem skill-training"> &nbsp; Shield </span>
+			</label>
 		</div>
 
 		<div class="section-header top-space">
@@ -10920,18 +10924,8 @@ combat_style_array.forEach( function(style) {
 // Set events for using pool points to add damage
 const use_pool_points_for_damage_array = [ 'attack', 'conjuration', 'dynamancy' ];
 use_pool_points_for_damage_array.forEach( function(skill) {
-	on(`change:${skill}_pool_points_to_use`, function() {
-		getAttrs([`${skill}_pool_points_to_use`, `${skill}_pool_total`], function(values) {
-			let pool_total = get_int_or_zero(values[`${skill}_pool_total`]);
-			let use_pool   = get_int_or_zero(values[`${skill}_pool_points_to_use`]);
-			
-			if (use_pool > pool_total) {
-				setAttrs({ [`${skill}_pool_points_to_use`]: Math.min(pool_total, use_pool) });
-			}
-		});
-	});
 
-	on(`change:use_${skill}_pool_points`, function() {
+	on(`change:use_${skill}_pool_points change:${skill}_pool_points_to_use`, function() {
 		getAttrs([`use_${skill}_pool_points`, `${skill}_pool_points_to_use`, `${skill}_pool_total`], function(values) {
 			let damage_dice_mod   = '';
 			let damage_static_mod = '';
@@ -11361,13 +11355,14 @@ damage_type_array.forEach( function(damage_type) {
 	});
 });
 
-on('change:armor_name change:defend_tier', function() {
-	getAttrs(['armor_name', 'defend_tier'], function(values) {
+on('change:armor_name change:defend_tier change:shield_dr', function() {
+	getAttrs(['armor_name', 'defend_tier', 'shield_dr'], function(values) {
+		let shield_dr = get_int_or_zero(values.shield_dr);
 		if (!is_armor(values.armor_name)) {
 			if (values.armor_name != '') {
 				console.error(`"${values.armor_name}" is not recognized as armor`);
 			}
-			setAttrs({ 'dr_physical_item': 0 });
+			setAttrs({ 'dr_physical_item': shield_dr });
 			return;
 		}
 		let armor_object = parse_armor(values.armor_name);
@@ -11375,7 +11370,18 @@ on('change:armor_name change:defend_tier', function() {
 		if (armor_object.magic_bonus_by_tier) {
 			dr_value += armor_object.magic_bonus_by_tier[get_int_or_zero(values.defend_tier)];
 		}
+		dr_value += shield_dr;
 		setAttrs({ 'dr_physical_item': dr_value });
+	});
+});
+
+on('change:use_shield change:attack_tier change:attack_melee_with_shield_training change:attack_missile_with_shield_training', function() {
+	getAttrs(['use_shield', 'attack_tier', 'attack_melee_with_shield_training', 'attack_missile_with_shield_training'], function(values) {
+		let has_shield_dr = 
+			values.use_shield == 'on' && 
+			get_int_or_zero(values.attack_tier) > 3 &&
+			(values.attack_melee_with_shield_training == 'on' || values.attack_missile_with_shield_training == 'on');
+		setAttrs({ 'shield_dr': (has_shield_dr ? 4 : 0) });
 	});
 });
 
@@ -12841,10 +12847,13 @@ function get_attack_combat_style_info(combat_style, combat_style_info) {
 	let info = "/w @{character_name} '&{template:custom} {{title=Attack (" + combat_style + ") info}} " +
 	"{{desc=You can spend one Action Point to make an attack using the " + combat_style + " combat style. You make an Attack (" + combat_style + ") " +
 	"check against your opponent’s Defend check. If successful, you cause damage as per your weapon and combat style. " + combat_style_info +
-	get_crit_text('you cause double damage.', '[fumble] (you cannot use the same weapon again until you do).') + missile_info +
+	get_crit_text('you cause extra damage, based on how much higher your Attack check is than your opponent’s Defend check.' + _bull + '10 points higher: ' +
+	'double your rolled damage' + _bull + '20 points higher: your maximum damage + your rolled damage' + _bull + '30+ points higher: double your maximum damage', 
+	'[fumble] (you cannot use the same weapon again until you do).') + missile_info +
 	spend_pool_attack('do the following:' + _bull + 'Increase the damage of your attack by +1 damage per 1 pool point spent' + _bull + 
 	'Increase the damage of your attack by +1d6 damage per 2 pool points spent' + _bull + 'Draw or stow one weapon without using an Action Point ' +
-	'per 2 pool points spent' + _bull + 'Reduce the time to reload a triggered weapon by 1 AP per 2 pool points spent') + "}}";
+	'per 2 pool points spent' + _bull + 'Reduce the time to reload a triggered weapon by 1 AP per 2 pool points spent' + _bull + 'Make a free attack on ' +
+	'an enemy leaving your threatened area; this costs 1 pool point for the first attack, and increases by +1 pool point per successive free attack') + "}}";
 	return info;
 }
 
