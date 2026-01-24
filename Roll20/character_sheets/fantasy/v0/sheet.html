@@ -2052,7 +2052,8 @@
 		
 		<div class="damage-resistance top-space">
 			<label> Armor </label>
-			<input name="attr_armor_name" type="text" class="weapon" />
+			<input name="attr_armor_name" type="text" class="weapon armor" />
+			&nbsp; 
 			<label class="skill-tem-container">
 				<input name="attr_use_shield" type="checkbox" />
 				<span class="skill-tem skill-training"> &nbsp; Shield </span>
@@ -11376,12 +11377,15 @@ on('change:armor_name change:defend_tier change:shield_dr', function() {
 });
 
 on('change:use_shield change:attack_tier change:attack_melee_with_shield_training change:attack_missile_with_shield_training', function() {
-	getAttrs(['use_shield', 'attack_tier', 'attack_melee_with_shield_training', 'attack_missile_with_shield_training'], function(values) {
+	getAttrs(['use_shield', 'attack_tier', 'attack_melee_with_shield_training', 'attack_missile_with_shield_training', 'defend_advantage'], function(values) {
 		let has_shield_dr = 
 			values.use_shield == 'on' && 
-			get_int_or_zero(values.attack_tier) > 3 &&
+			get_int_or_zero(values.attack_tier) >= 3 &&
 			(values.attack_melee_with_shield_training == 'on' || values.attack_missile_with_shield_training == 'on');
-		setAttrs({ 'shield_dr': (has_shield_dr ? 4 : 0) });
+		setAttrs({ 
+			'shield_dr': (has_shield_dr ? 4 : 0), 
+			'defend_advantage': apply_advantage(values.defend_advantage, (values.use_shield != 'on')) 
+		});
 	});
 });
 

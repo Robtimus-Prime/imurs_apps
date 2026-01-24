@@ -260,6 +260,10 @@ h1 {
 	width: 185px;
 }
 
+.ui-dialog .charsheet input.weapon.armor {
+	text-align: left;
+}
+
 .ui-dialog .charsheet input.custom {
 	width: 150px;
 	text-align: left;
