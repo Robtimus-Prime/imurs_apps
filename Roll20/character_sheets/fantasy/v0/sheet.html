@@ -8167,13 +8167,13 @@ function cast_alter_armor_or_weapon(ep_cost, armor = true) {
 		{ name: 'remove magic', duration: dur_short_rest_w_checks_1 }
 	];
 	if (ep_cost == 20) {
-		effect = `Add/remove eldritch${_or}Energy ` + (armor ? 'armor' : 'weapon');
+		effect = `Add/remove eldritch${_or} ` + (armor ? 'Greater energy armor' : 'Energy weapon');
 	}
 	else if (ep_cost == 30) {
-		effect = `Add/remove epic${_or}Greater energy ` + (armor ? 'armor' : 'weapon');
+		effect = `Add/remove epic` + (armor ? '' : _or + 'Greater energy weapon');
 	}
 	else if (ep_cost == 40) {
-		effect = 'Add legendary';
+		effect = 'Add/remove legendary';
 	}
 	
 	cast_spell('alteration', 'alter_' + (armor ? 'armor' : 'weapon'), ep_cost, base_duration, true, effect);
@@ -8341,8 +8341,16 @@ function cast_turn_undead(ep_cost) {
 function cast_armor(ep_cost) {
 	getAttrs(["conjuration_armor_toggle", "conjuration_tier"], function(values) {
 		let toggle = get_bool(values.conjuration_armor_toggle);
-		let tier = get_int_or_zero(values.conjuration_tier);
-		let dr_bonus = (tier + 1) * 4 * (ep_cost < 10 ? 1 : (ep_cost / 10) + 1);
+		let tier   = get_int_or_zero(values.conjuration_tier);
+		let armor_dr_array = [
+			{ ep_cost:  5, base_dr:  4, dr_per_tier: 3 },
+			{ ep_cost: 10, base_dr:  6, dr_per_tier: 4 },
+			{ ep_cost: 20, base_dr:  8, dr_per_tier: 5 },
+			{ ep_cost: 30, base_dr: 10, dr_per_tier: 6 },
+			{ ep_cost: 40, base_dr: 12, dr_per_tier: 7 }
+		];
+		let dr_object   = armor_dr_array.find(a => a.ep_cost == ep_cost);
+		let dr_bonus    = dr_object.base_dr + (dr_object.dr_per_tier * tier);
 		let effect_text = `{{DR bonus=[[${dr_bonus}]]}} {{Damage Types=Up to [[${tier}]]}} `;
 		setAttrs({ 
 			'conjuration_armor_toggle':        !toggle,
@@ -13907,16 +13915,19 @@ on("clicked:alterationalterarmorinfo", function() {
 		let area_size = get_int_or_zero(values.spell_area_size);
 		let area_type_list = get_area_type_list(area_size, values.area_type_blast, values.area_type_burst, '0', '0', '0');
 		let tier1_effect = 										'{{10 EP=Add/remove magic}} ';
-		let tier2_effect = (show_alteration_alter_armor_20_ep ? `{{20 EP=Add/remove eldritch${_or}Energy armor}} ` : '');
-		let tier3_effect = (show_alteration_alter_armor_30_ep ? `{{30 EP=Add/remove epic${_or}Greater energy armor}} ` : '');
-		let tier4_effect = (show_alteration_alter_armor_40_ep ? '{{40 EP=Add legendary}} ' : '');
+		let tier2_effect = (show_alteration_alter_armor_20_ep ? `{{20 EP=Add/remove eldritch${_or}Greater energy armor}} ` : '');
+		let tier3_effect = (show_alteration_alter_armor_30_ep ? '{{30 EP=Add/remove epic}} ' : '');
+		let tier4_effect = (show_alteration_alter_armor_40_ep ? '{{40 EP=Add/remove legendary}} ' : '');
 		let tier2_text = (show_alteration_alter_armor_20_ep ? _pow + 'Any armor you wear becomes magic armor for as long as you’re wearing it.' : '');
 		let desc = "*Alter armor* can add or remove magic, eldritch, epic, or legendary bonuses from armor, based on your tier in Alteration " +
-		"and how much EP you spend. The additional DR can be of any type you know. " + tier2_text +
-		_rn + "The DR bonuses granted by this spell can be of any damage type you know, and do not stack with those from magic, eldritch, epic, or " +
-		"legendary armor." + spend_pool_alteration('increase the DR further, at a cost of 1 point per additional 1 DR. If you know the secondary effect ' +
+		"and how much EP you spend. " + tier2_text + _rn +
+		"Armor that you make magic with this spell is also energy armor of " + tier_effect_alteration(tier, 1, ' damage types') + " you know. If you target " +
+		"magic armor of a given tier (magic, eldritch, etc.) with a spell of that same tier, you can add one extra damage type to the energy armor." +
+		_rn + "If you target an area with this spell, it can only affect one suit of armor per affected square. The DR bonuses granted by this spell do not " +
+		"stack with those from magic, eldritch, epic, or legendary armor, nor do they stack with DR bonuses from the Conjuration (armor) spell." + 
+		spend_pool_alteration('increase the DR further, at a cost of 1 point per additional 1 DR. If you know the secondary effect ' +
 		'for a damage type this spell protects against, you can spend 3 pool points to make the spell negate the secondary effect of that damage type ' +
-		'against ' + tier_effect_alteration(tier, 1, ' successful attacks') + '.');
+		'against ' + tier_effect_alteration(tier, 1, ' successful attacks') + ' each round.');
 		let roll_text = get_spell_info('Alteration (alter armor)', '2 AP', range + ' squares', base_duration, duration_bonus, area_type_list,
 		'Item', 'Physical Resilience', tier1_effect + tier2_effect + tier3_effect + tier4_effect, desc, true);
 		startRoll(roll_text, (results) => {
@@ -13962,11 +13973,12 @@ on("clicked:alterationalterweaponinfo", function() {
 		let tier4_effect = (show_alteration_alter_weapon_40_ep ? '{{40 EP=Add legendary}} ' : '');
 		let tier2_text = (show_alteration_alter_weapon_20_ep ? _pow + 'Any weapon you wield becomes a magic weapon for as long as you’re wielding it.' : '');
 		let desc = "*Alter weapon* can add or remove magic, eldritch, epic, or legendary bonuses from weapons, based on your tier in Alteration and how " +
-		"much EP you spend. The additional magic damage these weapons cause can be of any type you know." + tier2_text +
-		_rn + "The damage bonuses granted by this spell can be of any damage type you know, and do not stack with those from magic, eldritch, epic, or " +
-		"legendary weapons." + spend_pool_alteration('increase the damage further, at a cost of 4 points per additional die. If you know the secondary ' +
-		'effect for a damage type this spell adds to the weapon, you can spend 3 pool points to make targets suffer the secondary effect of that damage ' +
-		'type on up to ' + tier_effect_alteration(tier, 1, ' successful attacks') + '.');
+		"much EP you spend. The additional magic damage these weapons cause can be of any type you know." + tier2_text + _rn + 
+		"If you target an area with this spell, it can only affect one weapon per affected square. The damage bonuses granted by this spell can be of any " +
+		"damage type you know, and do not stack with those from magic, eldritch, epic, or legendary weapons." + spend_pool_alteration('increase the damage ' +
+		'further, at a cost of 4 points per additional die. If you know the secondary effect for a damage type this spell adds to the weapon, you can spend ' +
+		'3 pool points to make targets suffer the secondary effect of that damage type on up to ' + 
+		tier_effect_alteration(tier, 1, ' successful attacks') + ' each round.');
 		let roll_text = get_spell_info('Alteration (alter weapon)', '2 AP', range + ' squares', base_duration, duration_bonus, area_type_list,
 		'Item', 'Physical Resilience', tier1_effect + tier2_effect + tier3_effect + tier4_effect, desc, true);
 		startRoll(roll_text, (results) => {
@@ -14433,18 +14445,19 @@ on("clicked:conjurationarmorinfo", function() {
 		let range = get_int_or_zero(values.spell_range);
 		let area_size = get_int_or_zero(values.spell_area_size);
 		let area_type_list = get_area_type_list(area_size, values.area_type_blast, values.area_type_burst, values.area_type_line, values.area_type_nova, values.area_type_wall);
-		let tier1_effect = 								   '{{5 EP='  + tier_effect_conjuration(tier,  4, '', 'DR ', 1) + '}} ' +
-														   '{{10 EP=' + tier_effect_conjuration(tier,  8, '', 'DR ', 1) + '}} ';
-		let tier2_effect = (show_conjuration_armor_20_ep ? '{{20 EP=' + tier_effect_conjuration(tier, 12, '', 'DR ', 1) + '}} ' : '');
-		let tier3_effect = (show_conjuration_armor_30_ep ? '{{30 EP=' + tier_effect_conjuration(tier, 16, '', 'DR ', 1) + '}} ' : '');
-		let tier4_effect = (show_conjuration_armor_40_ep ? '{{40 EP=' + tier_effect_conjuration(tier, 20, '', 'DR ', 1) + '}} ' : '');
+		let tier1_effect = 								   '{{5 EP='  + tier_effect_conjuration(tier, 3, '', 'DR ',  4/3) + '}} ' +
+														   '{{10 EP=' + tier_effect_conjuration(tier, 4, '', 'DR ',  6/4) + '}} ';
+		let tier2_effect = (show_conjuration_armor_20_ep ? '{{20 EP=' + tier_effect_conjuration(tier, 5, '', 'DR ',  8/5) + '}} ' : '');
+		let tier3_effect = (show_conjuration_armor_30_ep ? '{{30 EP=' + tier_effect_conjuration(tier, 6, '', 'DR ', 10/6) + '}} ' : '');
+		let tier4_effect = (show_conjuration_armor_40_ep ? '{{40 EP=' + tier_effect_conjuration(tier, 7, '', 'DR ', 12/7) + '}} ' : '');
 		let desc = "With this spell, you envelop a target in magical armor, protecting them from harm. " + _pow + 
-		"You gain " + tier_effect_conjuration(tier, 2, '', 'DR ', 1) + ", which applies to every damage type you know." +
+		"You gain " + tier_effect_conjuration(tier, 2, '', 'DR ', 1/2) + ", which applies to every damage type you know." +
 		_rn + "You can give a target of this spell DR for up to " + tier_effect_conjuration(tier, 1, '') + " damages type you know, based on the " +
 		"amount of EP you spend. You can grant DR against " +
-		"more than one set of damage types with a single casting of *armor*, but you must pay the EP cost for each separately." +
-		spend_pool_conjuration('increase the DR further, at a cost of 1 point per additional 2 DR. If you know the secondary effect for a ' +
-		'damage type this spell protects against, you can spend 3 pool points to make the spell negate the secondary effect of that damage type.');
+		"more than one set of damage types with a single casting of *armor*, but you must pay the EP cost for each separately." + _rn + "The DR granted by " +
+		"this spell does not stack with DR from any armor worn." +
+		spend_pool_conjuration('increase the DR further, at a cost of 1 point per additional 2 DR. If you know the secondary effect for a damage type this ' +
+		'spell protects against, you can make the spell negate the secondary effect of that damage type up to once per round per 3 pool points spent.');
 		let roll_text = get_spell_info('Conjuration (armor)', '2 AP', range + ' squares', dur_concentration_w_pool, duration_bonus, area_type_list,
 		'Creature', 'Auto (willing)', tier1_effect + tier2_effect + tier3_effect + tier4_effect + '{{Damage Types=Any ' + 
 		tier_effect_conjuration(tier, 1, '') + ' you know}} ', desc);
