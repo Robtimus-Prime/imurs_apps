@@ -11248,7 +11248,7 @@ const damage_type_array = [
 	{
 		name: 'chemical',
 		description: 'Strong acids and bases',
-		secondary_effect: 'Targets suffer an amount of damage on the following round equal to the base damage of the effect, without the tier bonus'
+		secondary_effect: 'Targets suffer additional damage on the following round, based on the spell being cast'
 	},
 	{
 		name: 'cold',
@@ -11268,7 +11268,7 @@ const damage_type_array = [
 	{
 		name: 'heat',
 		description: 'Dangerously high temperatures',
-		secondary_effect: 'Targets suffer an amount of damage on the following round equal to the base damage of the effect, without the tier bonus'
+		secondary_effect: 'Targets suffer additional damage on the following round, based on the spell being cast'
 	},
 	{
 		name: 'mental',
@@ -13991,7 +13991,8 @@ on("clicked:alterationalterweaponinfo", function() {
 		"damage type you know, and do not stack with those from magic, eldritch, epic, or legendary weapons." + spend_pool_alteration('increase the damage ' +
 		'further, at a cost of 4 points per additional die. If you know the secondary effect for a damage type this spell adds to the weapon, you can spend ' +
 		'3 pool points to make targets suffer the secondary effect of that damage type on up to ' + 
-		tier_effect_alteration(tier, 1, ' successful attacks') + ' each round.');
+		tier_effect_alteration(tier, 1, ' successful attacks') + ' each round. If the secondary effect is additional damage, targets suffer the same damage ' +
+		'added to the weapon by this spell.');
 		let roll_text = get_spell_info('Alteration (alter weapon)', '2 AP', range + ' squares', base_duration, duration_bonus, area_type_list,
 		'Item', 'Physical Resilience', tier1_effect + tier2_effect + tier3_effect + tier4_effect, desc, true);
 		startRoll(roll_text, (results) => {
@@ -15645,8 +15646,10 @@ on("clicked:dynamancyattackinfo", function() {
 		"If you make more than one such attack in a round, all attacks after the first suffer disadvantage. Disadvantage from secondary basic attacks does " +
 		"not make you lose Dynamancy powers." +
 		get_crit_text('you cause double damage', 'magic resonance causes you to lose your next Action Point', true) + recharge_info +
-		spend_pool_dynamancy('increase the damage further, at a cost of 2 points per additional die. If you know the secondary effect for a ' +
-		'damage type this spell causes, you can spend 3 pool points to make targets suffer the secondary effect of that damage type.');
+		spend_pool_dynamancy('increase the damage further, at a cost of 1 point per additional point of damage, or 2 points per additional die of damage. ' +
+		'If you know the secondary effect for a damage type this spell causes, you can spend 3 pool points to make targets suffer the secondary effect of ' +
+		'that damage type. If the secondary effect is additional damage, targets suffer the base damage of the spell plus your Intelligence modifier, ' +
+		'without the tier bonus.');
 		let roll_text = get_spell_info('Dynamancy (attack)', '2 AP', range + ' squares', dur_instantaneous, 0, area_type_list, 
 		'Creature', 'Physical Resilience', effect_text, desc);
 		startRoll(roll_text, (results) => {
@@ -15740,7 +15743,10 @@ on("clicked:dynamancydurationattackinfo", function() {
 		"each affected creature can make a Physical Resilience (fortitude) check to resist it. " +
 		_rn + "Each time you cast this spell, you choose to either target the area itself, or the creatures in the area at the time " +
 		"of casting." + recharge_info +
-		spend_pool_dynamancy('increase the damage further, at a cost of 3 points per additional die.');
+		spend_pool_dynamancy('increase the damage further, at a cost of 3 points per additional die. If you know the secondary effect for a damage ' +
+		'type this spell causes, you can spend 3 pool points to make targets suffer the secondary effect of that damage type. They suffer these effects ' +
+		'for ' + tier_effect_dynamancy(tier, 1, ' rounds') + ', starting on the second round of the spell. If the secondary effect is additional ' +
+		'damage, calculate the damage as if your tier in Dynamancy is one higher than it actually is.');
 		let roll_text = get_spell_info('Dynamancy (duration attack)', '2 AP', range + ' squares', dur_short_rest_w_checks_1, duration_bonus, 
 		area_type_list, 'Area or creature', 'Physical Resilience', effect_text, desc);
 		startRoll(roll_text, (results) => {
