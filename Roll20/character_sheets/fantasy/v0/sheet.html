@@ -11380,9 +11380,8 @@ on('change:use_shield change:attack_tier change:attack_melee_with_shield_trainin
 	getAttrs(['use_shield', 'attack_tier', 'attack_melee_with_shield_training', 'attack_missile_with_shield_training', 'defend_advantage'], function(values) {
 		let has_shield_dr = 
 			values.use_shield == 'on' && 
-			get_int_or_zero(values.attack_tier) >= 3 &&
 			(values.attack_melee_with_shield_training == 'on' || values.attack_missile_with_shield_training == 'on');
-		let set_object = { 'shield_dr': (has_shield_dr ? 4 : 0) };
+		let set_object = { 'shield_dr': (has_shield_dr ? get_int_or_zero(values.attack_tier) : 0) };
 		if (eventInfo.sourceAttribute == 'use_shield' && eventInfo.previousValue != eventInfo.newValue) {
 			set_object['defend_advantage'] = apply_advantage(values.defend_advantage, (values.use_shield != 'on')) ;
 		}
@@ -12896,10 +12895,8 @@ function get_attack_free_hand_info(type, tier, mod = 0, trained = false, attribu
 
 function get_attack_with_shield_info(type, tier, mod = 0, trained = false, attribute_name = "Physique") {
 	let type_lower = type.toLowerCase();
-	let info = header_text(type + ' with Shield') + "You wield a one-handed " + type_lower + " weapon in one hand, and a shield in the other.";
-	if (tier >= 3) {
-		info += " You also gain a +4 bonus to your DR (physical).";
-	}
+	let info = header_text(type + ' with Shield') + "You wield a one-handed " + type_lower + " weapon in one hand, and a shield in the other. " +
+	`You gain a **+**${tier_effect_attack(tier, 1, '')} bonus to your DR (physical).`;
 	if (type_lower == "missile") {
 		info += get_1h_missile_range_descripiton(tier, mod, trained, attribute_name);
 		info = info.replaceAll("[combat style]", type_lower + " with shield");
@@ -13611,10 +13608,11 @@ on("clicked:cinemapointsinfo", function() {
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Cinema Points}} " +
 		"{{desc=Cinema Points are awarded by the GM; you can hold up to [[" + cinema_point_max + "]] at a time. You can spend one Cinema Point to do any " +
 		"one of the following (whether or not it's your turn):" + _n + _bull + "Grant one skill +4 pool points for one round" + _bull + "Gain +1 AP for one round" + 
-		_bull + "Double all your movement speeds for one round" + _bull + "Move to the current spot in Reflex order" + _bull + "Instantly heal a number of " +
-		"HP equal to your maximum short rest HP roll" + _bull + "Instantly recover a number of EP equal to your maximum short rest EP roll" + _bull + 
-		"Convert a success to a critical success" + _bull + "Convert a critical failure to a regular failure" + _bull + "Automatically stabilize if dying" + 
-		_rn + "For 2 Cinema Points, you can cheat death (the GM decides how)." + _rn + "You may spend more than one Cinema Point at a time if you wish.}}'";
+		_bull + "Double all your movement speeds for one round" + _bull + "Move to the current spot in Reflex order if you haven’t gone yet this round" + _bull + 
+		"Instantly heal a number of HP equal to your maximum short rest HP roll" + _bull + "Instantly recover a number of EP equal to your maximum short rest " +
+		"EP roll" + _bull + "Convert a success to a critical success" + _bull + "Convert a critical failure to a regular failure" + _bull + "Automatically " +
+		"stabilize if dying" + _rn + "For 2 Cinema Points, you can cheat death (the GM decides how)." + _rn + "You may spend more than one Cinema Point at a " +
+		"time if you wish.}}'";
 		startRoll(roll_text, (results) => {
 			finishRoll(results.rollId);
 		});
