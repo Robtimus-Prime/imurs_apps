@@ -11378,7 +11378,6 @@ on('change:armor_name change:defend_tier change:shield_dr', function() {
 
 on('change:use_shield change:attack_tier change:attack_melee_with_shield_training change:attack_missile_with_shield_training', function(eventInfo) {
 	getAttrs(['use_shield', 'attack_tier', 'attack_melee_with_shield_training', 'attack_missile_with_shield_training', 'defend_advantage'], function(values) {
-		console.log(eventInfo);
 		let has_shield_dr = 
 			values.use_shield == 'on' && 
 			get_int_or_zero(values.attack_tier) >= 3 &&
