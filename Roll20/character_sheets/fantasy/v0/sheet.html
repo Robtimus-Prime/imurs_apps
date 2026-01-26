@@ -9723,11 +9723,10 @@ on('change:' + speed_get_array.join(' change:'), function() {
 
 on("clicked:recoveryinfo", function() {
 	let roll_text = "/w @{character_name} '&{template:custom} {{title=Death & Dying}} " +
-	"{{desc=When knocked below 1 HP, you are placed at 0 HP and dying. While dying, you can attempt a TN 12 recovery check each round on " +
-	"your turn - the check is 2d10 (exploding)." + _rn + "If you " +
-	"get three successes, you are stable and unconscious, no longer dying, and will wake up after a short rest (though you will not recover " +
-	"any HP or EP). If you get three failures, you die. A critical success counts as two successes, and a critical failure counts as two " +
-	"failures. If your third successful recovery check is a critical success, you are conscious, no longer dying, and placed at 1 HP." + 
+	"{{desc=When knocked below 1 HP, you are placed at 0 HP and dying. While dying, you attempt a 1-round skill test against TN 12. The skill check is a " +
+	"flat 2d10, exploding. " + _rn + "If you succeed the skill test, you are stable and unconscious, no longer dying, and will wake up after a short rest " +
+	"(though you will not recover any HP or EP). If you fail the skill test, you die. If you critically succeed the skill test, you are " +
+	"conscious, no longer dying, and placed at 1 HP." + 
 	_rn + "An ally can also attempt a TN 16 First Aid (immediate) check to stabilize you, spend 2 AP to pour a healing " +
 	"draft or potion down your throat, or heal you with magic. If you receive any healing at all, you are conscious and no longer dying. }}'";
 	startRoll(roll_text, (results) => {
@@ -13398,18 +13397,17 @@ on("clicked:persuadebluffinfo", function() {
 	getAttrs(["persuade_total"], function(values) {
 		let total = get_int_or_zero(values.persuade_total);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Persuade (bluff) info}} " +
-		"{{Distract=Perception (notice) check}} {{Impersonate=Intuition check}} {{Lie=Intuition check}} " +
+		"{{Distract=Perception (notice) check}} {{Impersonate=Persuade (intuition) check}} {{Lie=Persuade (intuition) check}} " +
 		"{{desc=Bluff has three uses: distract, impersonate, and lie." +
 		header_text('Distract') + "You can make Persuade (bluff) check to cause a distraction for 1 AP. Each creature you are trying " +
 		"to distract makes a Perception (notice) check against your skill check, and if they fail, they are distracted for one round, which you can " +
 		"use to move or make a Sneak (stealth) check without them noticing. If they succeed, they are aware you were trying to trick them." +
-		header_text('Impersonate') + "You can make Persuade (bluff) check to impersonate someone else. The first time a person interacts with " +
-		"you, they can make an Intuition check versus your original Persuade (bluff) check. If they are successful, they know you aren’t who you say " +
-		"you are. If they critically succeed, they instantly recognize you if they would know you normally. If they fail, they believe you are who " +
-		"you are impersonating. " +
+		header_text('Impersonate') + "You can make Persuade (bluff) check to impersonate someone else. The first time a given person interacts with you, " +
+		"you must attempt a 1-minute Persuade (bluff) test versus their Persuade (intuition). If you fail, they know you aren’t who you say you are. If " +
+		"you critically fail, they instantly recognize you if they would know you normally. If you succeed, they believe you are who you are impersonating. " +
 		header_text('Lie') + "You attempt to tell a convincing lie by making a Persuade (bluff) check, which is opposed by your target’s " +
-		"Intuition check. This takes at least 3 AP (or more, GM’s discretion). If you succeed, your target believes your lie. If you fail, your target " +
-		"does not believe your lie, and gains advantage on Intuition checks against you for the rest of the conversation. " +
+		"Persuade (intuition) check. This is at least a 1-AP skill test (or more, GM’s discretion). If you succeed, your target believes your lie. If you " +
+		"fail, your target does not believe your lie, and gains advantage on Persuade (intuition) checks against you for the rest of the conversation. " +
 		get_persuade_text() + "}}'";
 		startRoll(roll_text, (results) => {
 			finishRoll(results.rollId);
@@ -13423,12 +13421,12 @@ on("clicked:persuadediplomacyinfo", function() {
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Persuade (diplomacy) info}} " +
 		"{{Gather information=TN per GM}} {{Improve attitude=TN per GM}} " +
 		"{{desc=Diplomacy has two uses: gather information and improve attitude." +
-		header_text('Gather Information') + "You can make Persuade (diplomacy) check to gather information, which takes at least 2 hours " +
+		header_text('Gather Information') + "You can attempt a Persuade (diplomacy) test to gather information, which is at least a 1-hour skill test " +
 		"(or more, GM’s discretion). The GM will decide if this involves other things, like buying food or drinks for people, etc. The Target Number " +
 		"and effects are set by the GM. " +
 		header_text('Improve Attitude') + "You can attempt to improve the attitudes of one or more people by making a Persuade (diplomacy) " +
-		"check. The Target Number depends on many factors, and is set by the GM. This takes at least 3 AP (or more, GM’s discretion). If successful, " +
-		"your target(s) attitudes are improved. Your target also gets an Intuition check to see how heavily you are candy-coating things, with a " +
+		"test. The Target Number depends on many factors, and is set by the GM. This is at least a 1-AP skill test (or more, GM’s discretion). If successful, " +
+		"your target(s) attitudes are improved. Your target also gets an Persuade (intuition) check to see how heavily you are candy-coating things, with a " +
 		"Target Number of your Persuade (diplomacy) check. " + get_persuade_text() + "}}'";
 		startRoll(roll_text, (results) => {
 			finishRoll(results.rollId);
@@ -13444,9 +13442,9 @@ on("clicked:persuadeintimidateinfo", function() {
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Persuade (intimidate) info}} " +
 		"{{Coerce=Mental Resilience (willpower) check}} {{Demoralize=Mental Resilience (willpower) check}} {{Taunt=Mental Resilience (willpower) check}} " +
 		"{{desc=Intimidate has three uses: coerce, demoralize, and taunt." +
-		header_text('Coerce') + "You can attempt to coerce a target into doing what you want. You make a Persuade (intimidate) check, " +
-		"which is opposed by your target’s Mental Resilience (willpower) check. This takes at least 3 AP (or more, GM’s discretion). If successful, " +
-		"your target behaves in a helpful way for as long as you remain a threat. Your target also gets an Intuition check to see whether or not you " +
+		header_text('Coerce') + "You can attempt to coerce a target into doing what you want. You attempt a Persuade (intimidate) test, " +
+		"which is opposed by your target’s Mental Resilience (willpower) check. This is at least a 1-AP skill test  (or more, GM’s discretion). If successful, " +
+		"your target behaves in a helpful way for as long as you remain a threat. Your target also gets a Persuade (intuition) check to see whether or not you " +
 		"will make good on your threats, with a Target Number of your Persuade (intimidate) check. " +
 		header_text('Demoralize') + "You can make Persuade (intimidate) check opposed by your target’s Mental Resilience (willpower) check " +
 		"to demoralize them for 1 AP. If you succeed, they are scared for " + effect_tier + ". " +
@@ -13475,10 +13473,10 @@ on("clicked:securitydisabledeviceinfo", function() {
 		let total = get_int_or_zero(values.security_total);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Security (disable device) info}} " +
 		"{{Disable device=TN per GM}} {{Bypass device=TN + 6}} " +
-		"{{desc=You can spend 6 Action Points to attempt to disable an alarm system or trap, making a Security (disable) check. " +
+		"{{desc=You can attempt a 2-AP Security (disable device) test to disable an alarm system or trap. " +
 		"The Target Number depends on the alarm system or trap to be disabled. " +
-		_rn + "If you fail the Security (disable) check, you set off the alarm or trap. " +
-		_rn + "If you beat the TN by 6 or more, you can bypass the alarm or trap and allow others with you to bypass it, but leave it set." +
+		_rn + "If you fail the Security (disable device) test, you set off the alarm or trap. " +
+		_rn + "If you critically succeed the test, you can bypass the alarm or trap and allow others with you to bypass it, but leave it set." +
 		spend_pool_security('reduce the number of Action Points it takes to disable an alarm or trap, at a cost of 1 point per –1 AP ' +
 		'(minimum one Action Point).') + "}}'";
 		startRoll(roll_text, (results) => {
@@ -13492,7 +13490,7 @@ on("clicked:securitypicklocksinfo", function() {
 		let total = get_int_or_zero(values.security_total);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Security (pick locks) info}} " +
 		"{{Pick lock=TN per GM}} " +
-		"{{desc=You can spend 4 Action Points to attempt to pick a lock, making a Security (pick locks) check. The Target number depends on the lock " +
+		"{{desc=You can attempt a 1-AP Security (pick locks) test to pick a lock. The Target number depends on the lock " +
 		"to be picked." + _rn + "You suffer great disadvantage on a Security (pick locks) check unless you have lock picking tools. " +
 		spend_pool_security('reduce the number of Action Points it takes to pick a lock, at a cost of 1 point per –1 AP (minimum one ' +
 		'Action Point).') + "}}'";
@@ -13557,7 +13555,7 @@ on("clicked:naturehandleanimalinfo", function() {
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Nature (handle animal) info}} " +
 		"{{desc=You can use this skill application to improve the attitude of an animal (or similar creature) as per Persuade (diplomacy). " + _rn + 
 		"You can also use this to get an animal to perform an action it might not normally do, like stay, heel, guard, or attack. In this case, your " +
-		"Nature (handle animal) check is opposed to the animal’s Mental Resilience (willpower) check. If you spend one week and succeed at a skill " +
+		"Nature (handle animal) check is opposed to the animal’s Mental Resilience (willpower) check. If you succeed at a 2-day skill " +
 		"test, you can teach an animal one of those tricks permanently." + _rn + "If the animal already knows the attack action, you can get it to " +
 		"use a special combat action (like flank, fight recklessly, or guard)." + get_nature_text() + "}}'";
 		startRoll(roll_text, (results) => {
@@ -16745,7 +16743,7 @@ on("clicked:neuromancytelepathyinfo", function() {
 		}
 		let tier1_text = _rn + "For 5 EP, you can send a single telepathic message to a single target, up to one sentence. This version of the spell has a " +
 		"duration of instantaneous." + _rn + "For 10 EP, you can establish a shallow connection with a single target. If affected, you can read the target’s " +
-		"surface thoughts for 1 AP, which grants you advantage on Defend and Intuition checks against them. In addition, you might gain some useful " +
+		"surface thoughts for 1 AP, which grants you advantage on Defend and Persuade (intuition) checks against them. In addition, you might gain some useful " +
 		"information, depending on what they are thinking about. This version of the spell has a base duration of short rest with checks (2 successes)." + _rn + "As soon as a target is " +
 		"affected, they can make a TN 24 Perception (notice) check to notice the mental intrusion. If they succeed, you must make a Neuromancy (telepathy) " +
 		"check versus their Mental Resilience (willpower) check each time you attempt to read their surface thoughts for the duration of the spell." + _rn +
