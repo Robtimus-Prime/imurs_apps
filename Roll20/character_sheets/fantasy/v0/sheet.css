@@ -161,11 +161,28 @@ h1 {
 	float: right;
 }
 
-.dialog div.damage-resistance > label {
+.dialog div.damage-resistance > div > span > span > label,
+.dialog div.damage-resistance > div > span > span > span > label {
 	font-weight: normal;
 	width: 65px;
 	padding-left: 10px;
 	padding-right: 0px;
+}
+
+.dialog div.damage-resistance > div > span > span > label.immunity {
+	width: 105px;
+	font-weight: bold;
+	color: white;
+}
+
+.dialog div.damage-resistance > div > span > span > span > label.minor-vulnerability {
+	text-decoration: underline;
+	color: #d400ff;
+}
+
+.dialog div.damage-resistance > div > span > span > label.major-vulnerability {
+	text-decoration: underline line-through;
+	color: #a000c0;
 }
 
 .dialog div.full-width {
@@ -211,6 +228,10 @@ h1 {
 
 .ui-dialog .charsheet div.monstrous-boon {
 	float: left;
+}
+
+.ui-dialog .charsheet div.monstrous-boon.long-boon-name > span.ability > div.skillname > label {
+	width: 350px;
 }
 
 .tiny-text {

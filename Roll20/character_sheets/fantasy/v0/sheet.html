@@ -1963,66 +1963,342 @@
 		<div class="damage-resistance top-space">
 			<span class="tiny-text dr-header">Total &nbsp; &nbsp; Natural &nbsp; &nbsp; Item &nbsp; &nbsp; Spell</span>
 			<span class="tiny-text dr-header">Total &nbsp; &nbsp; Natural &nbsp; &nbsp; Item &nbsp; &nbsp; Spell</span>
-			<label> Physical </label>
-			<input name="attr_dr_physical_total" type="text" class="final-number final-number-small" readonly />
-			<input name="attr_dr_physical_natural" type="text" class="final-number partial-number-small" readonly />
-			<input name="attr_dr_physical_item" type="text" />
-			<input name="attr_dr_physical_spell" type="text" />
-			<label> Heat </label>
-			<input name="attr_dr_heat_total" type="text" class="final-number final-number-small" readonly />
-			<input name="attr_dr_heat_natural" type="text" class="final-number partial-number-small" readonly />
-			<input name="attr_dr_heat_item" type="text" />
-			<input name="attr_dr_heat_spell" type="text" />
-			<label> Arcane </label>
-			<input name="attr_dr_arcane_total" type="text" class="final-number final-number-small" readonly />
-			<input name="attr_dr_arcane_natural" type="text" class="final-number partial-number-small" readonly />
-			<input name="attr_dr_arcane_item" type="text" />
-			<input name="attr_dr_arcane_spell" type="text" />
-			<label> Mental </label>
-			<input name="attr_dr_mental_total" type="text" class="final-number final-number-small" readonly />
-			<input name="attr_dr_mental_natural" type="text" class="final-number partial-number-small" readonly />
-			<input name="attr_dr_mental_item" type="text" />
-			<input name="attr_dr_mental_spell" type="text" />
-			<label> Chemical </label>
-			<input name="attr_dr_chemical_total" type="text" class="final-number final-number-small" readonly />
-			<input name="attr_dr_chemical_natural" type="text" class="final-number partial-number-small" readonly />
-			<input name="attr_dr_chemical_item" type="text" />
-			<input name="attr_dr_chemical_spell" type="text" />
-			<label> Poison </label>
-			<input name="attr_dr_poison_total" type="text" class="final-number final-number-small" readonly />
-			<input name="attr_dr_poison_natural" type="text" class="final-number partial-number-small" readonly />
-			<input name="attr_dr_poison_item" type="text" />
-			<input name="attr_dr_poison_spell" type="text" />
-			<label> Cold </label>
-			<input name="attr_dr_cold_total" type="text" class="final-number final-number-small" readonly />
-			<input name="attr_dr_cold_natural" type="text" class="final-number partial-number-small" readonly />
-			<input name="attr_dr_cold_item" type="text" />
-			<input name="attr_dr_cold_spell" type="text" />
-			<label> Sonic </label>
-			<input name="attr_dr_sonic_total" type="text" class="final-number final-number-small" readonly />
-			<input name="attr_dr_sonic_natural" type="text" class="final-number partial-number-small" readonly />
-			<input name="attr_dr_sonic_item" type="text" />
-			<input name="attr_dr_sonic_spell" type="text" />
-			<label> Disease </label>
-			<input name="attr_dr_disease_total" type="text" class="final-number final-number-small" readonly />
-			<input name="attr_dr_disease_natural" type="text" class="final-number partial-number-small" readonly />
-			<input name="attr_dr_disease_item" type="text" />
-			<input name="attr_dr_disease_spell" type="text" />
-			<label> Spectral </label>
-			<input name="attr_dr_spectral_total" type="text" class="final-number final-number-small" readonly />
-			<input name="attr_dr_spectral_natural" type="text" class="final-number partial-number-small" readonly />
-			<input name="attr_dr_spectral_item" type="text" />
-			<input name="attr_dr_spectral_spell" type="text" />
-			<label> Electricity </label>
-			<input name="attr_dr_electricity_total" type="text" class="final-number final-number-small" readonly />
-			<input name="attr_dr_electricity_natural" type="text" class="final-number partial-number-small" readonly />
-			<input name="attr_dr_electricity_item" type="text" />
-			<input name="attr_dr_electricity_spell" type="text" />
-			<label> Vibrant </label>
-			<input name="attr_dr_vibrant_total" type="text" class="final-number final-number-small" readonly />
-			<input name="attr_dr_vibrant_natural" type="text" class="final-number partial-number-small" readonly />
-			<input name="attr_dr_vibrant_item" type="text" />
-			<input name="attr_dr_vibrant_spell" type="text" />
+			<div>
+				<span>
+					<input name="attr_bb_major_natural_damage_vulnerability_physical" type="hidden" class="show-ability" value="false" />
+					<span class="ability">
+						<label class="major-vulnerability"> Physical </label>
+					</span>
+					<span class="no-ability">
+						<input name="attr_bb_minor_natural_damage_vulnerability_physical" type="hidden" class="show-ability" value="false" />
+						<span class="ability">
+							<label class="minor-vulnerability"> Physical </label>
+						</span>
+						<span class="no-ability">
+							<label> Physical </label>
+						</span>
+					</span>
+				</span>
+				<span>
+					<input name="attr_bb_natural_damage_immunity_physical" type="hidden" class="show-ability" value="false" />
+					<span class="ability">
+						<label class="immunity"> Immune </label>
+					</span>
+					<span class="no-ability">
+						<input name="attr_dr_physical_total" type="text" class="final-number final-number-small" readonly />
+						<input name="attr_dr_physical_natural" type="text" class="final-number partial-number-small" readonly />
+						<input name="attr_dr_physical_item" type="text" />
+						<input name="attr_dr_physical_spell" type="text" />
+					</span>
+				</span>
+				<span>
+					<input name="attr_bb_major_natural_damage_vulnerability_heat" type="hidden" class="show-ability" value="false" />
+					<span class="ability">
+						<label class="major-vulnerability"> Heat </label>
+					</span>
+					<span class="no-ability">
+						<input name="attr_bb_minor_natural_damage_vulnerability_heat" type="hidden" class="show-ability" value="false" />
+						<span class="ability">
+							<label class="minor-vulnerability"> Heat </label>
+						</span>
+						<span class="no-ability">
+							<label> Heat </label>
+						</span>
+					</span>
+				</span>
+				<span>
+					<input name="attr_bb_natural_damage_immunity_heat" type="hidden" class="show-ability" value="false" />
+					<span class="ability">
+						<label class="immunity"> Immune </label>
+					</span>
+					<span class="no-ability">
+						<input name="attr_dr_heat_total" type="text" class="final-number final-number-small" readonly />
+						<input name="attr_dr_heat_natural" type="text" class="final-number partial-number-small" readonly />
+						<input name="attr_dr_heat_item" type="text" />
+						<input name="attr_dr_heat_spell" type="text" />
+					</span>
+				</span>
+			</div>
+			<div>
+				<span>
+					<input name="attr_bb_major_natural_damage_vulnerability_arcane" type="hidden" class="show-ability" value="false" />
+					<span class="ability">
+						<label class="major-vulnerability"> Arcane </label>
+					</span>
+					<span class="no-ability">
+						<input name="attr_bb_minor_natural_damage_vulnerability_arcane" type="hidden" class="show-ability" value="false" />
+						<span class="ability">
+							<label class="minor-vulnerability"> Arcane </label>
+						</span>
+						<span class="no-ability">
+							<label> Arcane </label>
+						</span>
+					</span>
+				</span>
+				<span>
+					<input name="attr_bb_natural_damage_immunity_arcane" type="hidden" class="show-ability" value="false" />
+					<span class="ability">
+						<label class="immunity"> Immune </label>
+					</span>
+					<span class="no-ability">
+						<input name="attr_dr_arcane_total" type="text" class="final-number final-number-small" readonly />
+						<input name="attr_dr_arcane_natural" type="text" class="final-number partial-number-small" readonly />
+						<input name="attr_dr_arcane_item" type="text" />
+						<input name="attr_dr_arcane_spell" type="text" />
+					</span>
+				</span>
+				<span>
+					<input name="attr_bb_major_natural_damage_vulnerability_mental" type="hidden" class="show-ability" value="false" />
+					<span class="ability">
+						<label class="major-vulnerability"> Mental </label>
+					</span>
+					<span class="no-ability">
+						<input name="attr_bb_minor_natural_damage_vulnerability_mental" type="hidden" class="show-ability" value="false" />
+						<span class="ability">
+							<label class="minor-vulnerability"> Mental </label>
+						</span>
+						<span class="no-ability">
+							<label> Mental </label>
+						</span>
+					</span>
+				</span>
+				<span>
+					<input name="attr_bb_natural_damage_immunity_mental" type="hidden" class="show-ability" value="false" />
+					<span class="ability">
+						<label class="immunity"> Immune </label>
+					</span>
+					<span class="no-ability">
+						<input name="attr_dr_mental_total" type="text" class="final-number final-number-small" readonly />
+						<input name="attr_dr_mental_natural" type="text" class="final-number partial-number-small" readonly />
+						<input name="attr_dr_mental_item" type="text" />
+						<input name="attr_dr_mental_spell" type="text" />
+					</span>
+				</span>
+			</div>
+			<div>
+				<span>
+					<input name="attr_bb_major_natural_damage_vulnerability_chemical" type="hidden" class="show-ability" value="false" />
+					<span class="ability">
+						<label class="major-vulnerability"> Chemical </label>
+					</span>
+					<span class="no-ability">
+						<input name="attr_bb_minor_natural_damage_vulnerability_chemical" type="hidden" class="show-ability" value="false" />
+						<span class="ability">
+							<label class="minor-vulnerability"> Chemical </label>
+						</span>
+						<span class="no-ability">
+							<label> Chemical </label>
+						</span>
+					</span>
+				</span>
+				<span>
+					<input name="attr_bb_natural_damage_immunity_chemical" type="hidden" class="show-ability" value="false" />
+					<span class="ability">
+						<label class="immunity"> Immune </label>
+					</span>
+					<span class="no-ability">
+						<input name="attr_dr_chemical_total" type="text" class="final-number final-number-small" readonly />
+						<input name="attr_dr_chemical_natural" type="text" class="final-number partial-number-small" readonly />
+						<input name="attr_dr_chemical_item" type="text" />
+						<input name="attr_dr_chemical_spell" type="text" />
+					</span>
+				</span>
+				<span>
+					<input name="attr_bb_major_natural_damage_vulnerability_poison" type="hidden" class="show-ability" value="false" />
+					<span class="ability">
+						<label class="major-vulnerability"> Poison </label>
+					</span>
+					<span class="no-ability">
+						<input name="attr_bb_minor_natural_damage_vulnerability_poison" type="hidden" class="show-ability" value="false" />
+						<span class="ability">
+							<label class="minor-vulnerability"> Poison </label>
+						</span>
+						<span class="no-ability">
+							<label> Poison </label>
+						</span>
+					</span>
+				</span>
+				<span>
+					<input name="attr_bb_natural_damage_immunity_poison" type="hidden" class="show-ability" value="false" />
+					<span class="ability">
+						<label class="immunity"> Immune </label>
+					</span>
+					<span class="no-ability">
+						<input name="attr_dr_poison_total" type="text" class="final-number final-number-small" readonly />
+						<input name="attr_dr_poison_natural" type="text" class="final-number partial-number-small" readonly />
+						<input name="attr_dr_poison_item" type="text" />
+						<input name="attr_dr_poison_spell" type="text" />
+					</span>
+				</span>
+			</div>
+			<div>
+				<span>
+					<input name="attr_bb_major_natural_damage_vulnerability_cold" type="hidden" class="show-ability" value="false" />
+					<span class="ability">
+						<label class="major-vulnerability"> Cold </label>
+					</span>
+					<span class="no-ability">
+						<input name="attr_bb_minor_natural_damage_vulnerability_cold" type="hidden" class="show-ability" value="false" />
+						<span class="ability">
+							<label class="minor-vulnerability"> Cold </label>
+						</span>
+						<span class="no-ability">
+							<label> Cold </label>
+						</span>
+					</span>
+				</span>
+				<span>
+					<input name="attr_bb_natural_damage_immunity_cold" type="hidden" class="show-ability" value="false" />
+					<span class="ability">
+						<label class="immunity"> Immune </label>
+					</span>
+					<span class="no-ability">
+						<input name="attr_dr_cold_total" type="text" class="final-number final-number-small" readonly />
+						<input name="attr_dr_cold_natural" type="text" class="final-number partial-number-small" readonly />
+						<input name="attr_dr_cold_item" type="text" />
+						<input name="attr_dr_cold_spell" type="text" />
+					</span>
+				</span>
+				<span>
+					<input name="attr_bb_major_natural_damage_vulnerability_sonic" type="hidden" class="show-ability" value="false" />
+					<span class="ability">
+						<label class="major-vulnerability"> Sonic </label>
+					</span>
+					<span class="no-ability">
+						<input name="attr_bb_minor_natural_damage_vulnerability_sonic" type="hidden" class="show-ability" value="false" />
+						<span class="ability">
+							<label class="minor-vulnerability"> Sonic </label>
+						</span>
+						<span class="no-ability">
+							<label> Sonic </label>
+						</span>
+					</span>
+				</span>
+				<span>
+					<input name="attr_bb_natural_damage_immunity_sonic" type="hidden" class="show-ability" value="false" />
+					<span class="ability">
+						<label class="immunity"> Immune </label>
+					</span>
+					<span class="no-ability">
+						<input name="attr_dr_sonic_total" type="text" class="final-number final-number-small" readonly />
+						<input name="attr_dr_sonic_natural" type="text" class="final-number partial-number-small" readonly />
+						<input name="attr_dr_sonic_item" type="text" />
+						<input name="attr_dr_sonic_spell" type="text" />
+					</span>
+				</span>
+			</div>
+			<div>
+				<span>
+					<input name="attr_bb_major_natural_damage_vulnerability_disease" type="hidden" class="show-ability" value="false" />
+					<span class="ability">
+						<label class="major-vulnerability"> Disease </label>
+					</span>
+					<span class="no-ability">
+						<input name="attr_bb_minor_natural_damage_vulnerability_disease" type="hidden" class="show-ability" value="false" />
+						<span class="ability">
+							<label class="minor-vulnerability"> Disease </label>
+						</span>
+						<span class="no-ability">
+							<label> Disease </label>
+						</span>
+					</span>
+				</span>
+				<span>
+					<input name="attr_bb_natural_damage_immunity_disease" type="hidden" class="show-ability" value="false" />
+					<span class="ability">
+						<label class="immunity"> Immune </label>
+					</span>
+					<span class="no-ability">
+						<input name="attr_dr_disease_total" type="text" class="final-number final-number-small" readonly />
+						<input name="attr_dr_disease_natural" type="text" class="final-number partial-number-small" readonly />
+						<input name="attr_dr_disease_item" type="text" />
+						<input name="attr_dr_disease_spell" type="text" />
+					</span>
+				</span>
+				<span>
+					<input name="attr_bb_major_natural_damage_vulnerability_spectral" type="hidden" class="show-ability" value="false" />
+					<span class="ability">
+						<label class="major-vulnerability"> Spectral </label>
+					</span>
+					<span class="no-ability">
+						<input name="attr_bb_minor_natural_damage_vulnerability_spectral" type="hidden" class="show-ability" value="false" />
+						<span class="ability">
+							<label class="minor-vulnerability"> Spectral </label>
+						</span>
+						<span class="no-ability">
+							<label> Spectral </label>
+						</span>
+					</span>
+				</span>
+				<span>
+					<input name="attr_bb_natural_damage_immunity_spectral" type="hidden" class="show-ability" value="false" />
+					<span class="ability">
+						<label class="immunity"> Immune </label>
+					</span>
+					<span class="no-ability">
+						<input name="attr_dr_spectral_total" type="text" class="final-number final-number-small" readonly />
+						<input name="attr_dr_spectral_natural" type="text" class="final-number partial-number-small" readonly />
+						<input name="attr_dr_spectral_item" type="text" />
+						<input name="attr_dr_spectral_spell" type="text" />
+					</span>
+				</span>
+			</div>
+			<div>
+				<span>
+					<input name="attr_bb_major_natural_damage_vulnerability_electricity" type="hidden" class="show-ability" value="false" />
+					<span class="ability">
+						<label class="major-vulnerability"> Electricity </label>
+					</span>
+					<span class="no-ability">
+						<input name="attr_bb_minor_natural_damage_vulnerability_electricity" type="hidden" class="show-ability" value="false" />
+						<span class="ability">
+							<label class="minor-vulnerability"> Electricity </label>
+						</span>
+						<span class="no-ability">
+							<label> Electricity </label>
+						</span>
+					</span>
+				</span>
+				<span>
+					<input name="attr_bb_natural_damage_immunity_electricity" type="hidden" class="show-ability" value="false" />
+					<span class="ability">
+						<label class="immunity"> Immune </label>
+					</span>
+					<span class="no-ability">
+						<input name="attr_dr_electricity_total" type="text" class="final-number final-number-small" readonly />
+						<input name="attr_dr_electricity_natural" type="text" class="final-number partial-number-small" readonly />
+						<input name="attr_dr_electricity_item" type="text" />
+						<input name="attr_dr_electricity_spell" type="text" />
+					</span>
+				</span>
+				<span>
+					<input name="attr_bb_major_natural_damage_vulnerability_vibrant" type="hidden" class="show-ability" value="false" />
+					<span class="ability">
+						<label class="major-vulnerability"> Vibrant </label>
+					</span>
+					<span class="no-ability">
+						<input name="attr_bb_minor_natural_damage_vulnerability_vibrant" type="hidden" class="show-ability" value="false" />
+						<span class="ability">
+							<label class="minor-vulnerability"> Vibrant </label>
+						</span>
+						<span class="no-ability">
+							<label> Vibrant </label>
+						</span>
+					</span>
+				</span>
+				<span>
+					<input name="attr_bb_natural_damage_immunity_vibrant" type="hidden" class="show-ability" value="false" />
+					<span class="ability">
+						<label class="immunity"> Immune </label>
+					</span>
+					<span class="no-ability">
+						<input name="attr_dr_vibrant_total" type="text" class="final-number final-number-small" readonly />
+						<input name="attr_dr_vibrant_natural" type="text" class="final-number partial-number-small" readonly />
+						<input name="attr_dr_vibrant_item" type="text" />
+						<input name="attr_dr_vibrant_spell" type="text" />
+					</span>
+				</span>
+			</div>
 		</div>
 		
 		<div class="damage-resistance top-space">
@@ -2186,7 +2462,7 @@
 		</div>
 
 		<!-- Minor Aura of Protection -->
-		<div class="monstrous-boon top-line">
+		<div class="monstrous-boon top-line long-boon-name">
 			<input name="attr_bb_minor_aura_of_protection" type="hidden" class="show-ability" value="false" />
 			<span class="ability">
 				<div class="skillname">
@@ -2196,7 +2472,7 @@
 		</div>
 
 		<!-- Major Aura of Protection -->
-		<div class="monstrous-boon top-line">
+		<div class="monstrous-boon top-line long-boon-name">
 			<input name="attr_bb_major_aura_of_protection" type="hidden" class="show-ability" value="false" />
 			<span class="ability">
 				<div class="skillname">
