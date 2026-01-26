@@ -9164,9 +9164,10 @@ on("clicked:recovery", function() {
 		let failures  = get_int_or_zero(values.recovery_failures);
 		let pr_tier   = get_int_or_zero(values.pr_tier);
 		let diehard   = get_bool(values.ps_die_hard);
-		let tn        = 12 - (diehard ? pr_tier : 0);
+		let tn        = 12;
+		let roll      = (diehard ? '3d10!!k2' : '2d10!!');
 
-		startRoll("@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Recovery}} {{Recovery=[[2d10!!]]}}'", (results) => {
+		startRoll("@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Recovery}} {{Recovery=[[" + roll + "]]}}'", (results) => {
 			if (results.results.Recovery.result >= (tn + 10)) {
 				successes += 2;
 			}
