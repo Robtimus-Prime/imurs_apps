@@ -13472,7 +13472,7 @@ on("clicked:securitydisabledeviceinfo", function() {
 	getAttrs(["security_total"], function(values) {
 		let total = get_int_or_zero(values.security_total);
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Security (disable device) info}} " +
-		"{{Disable device=TN per GM}} {{Bypass device=TN + 6}} " +
+		"{{Disable device=TN per GM}} {{Bypass device=Critical success}} " +
 		"{{desc=You can attempt a 2-AP Security (disable device) test to disable an alarm system or trap. " +
 		"The Target Number depends on the alarm system or trap to be disabled. " +
 		_rn + "If you fail the Security (disable device) test, you set off the alarm or trap. " +
