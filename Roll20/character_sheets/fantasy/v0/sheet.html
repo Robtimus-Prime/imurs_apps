@@ -1804,20 +1804,6 @@
 			</span>
 		</div>
 
-		<!-- Regeneration -->
-		<div class="monstrous-boon top-line">
-			<input name="attr_bb_regeneration" type="hidden" class="show-ability" value="false" />
-			<span class="ability">
-				<div class="skillname">
-					<label> Regeneration <button type="action" name="act_regenerationinfo" class="info-button generic-skill" /> </label>
-				</div>
-				<div class="top-space">
-					<button type="action" name="act_rollregenerationhealing" />
-					Roll Regeneration Healing
-				</div>
-			</span>
-		</div>
-
 		<!-- Rend -->
 		<div class="monstrous-boon top-line">
 			<input name="attr_ps_rend" type="hidden" class="show-ability" value="false" />
@@ -1867,17 +1853,6 @@
 				<div class="skillname">
 					<label> Tomb Rot <button type="action" name="act_tombrotinfo" class="info-button generic-skill" /> </label>
 				</div>
-			</span>
-		</div>
-
-		<!-- Total Magic Immunity -->
-		<div class="monstrous-boon top-line">
-			<input name="attr_bb_total_magic_immunity" type="hidden" class="show-ability" value="false" />
-			<span class="ability">
-				<div class="skillname">
-					<label class="legendary"> Total Magic Immunity <button type="action" name="act_totalmagicimmunityinfo" class="info-button generic-skill" /> </label>
-				</div>
-				<textarea class="large" name="attr_total_magic_immunity_exceptions"></textarea>
 			</span>
 		</div>
 
@@ -2209,6 +2184,52 @@
 		<div>
 			<span class="tiny-text pool-footer">Total &nbsp; &nbsp; Extra</span>
 		</div>
+
+		<!-- Minor Aura of Protection -->
+		<div class="monstrous-boon top-line">
+			<input name="attr_bb_minor_aura_of_protection" type="hidden" class="show-ability" value="false" />
+			<span class="ability">
+				<div class="skillname">
+					<label> Minor Aura of Protection <button type="action" name="act_minorauraofprotectioninfo" class="info-button generic-skill" /> </label>
+				</div>
+			</span>
+		</div>
+
+		<!-- Major Aura of Protection -->
+		<div class="monstrous-boon top-line">
+			<input name="attr_bb_major_aura_of_protection" type="hidden" class="show-ability" value="false" />
+			<span class="ability">
+				<div class="skillname">
+					<label> Major Aura of Protection <button type="action" name="act_majorauraofprotectioninfo" class="info-button generic-skill" /> </label>
+				</div>
+			</span>
+		</div>
+
+		<!-- Regeneration -->
+		<div class="monstrous-boon top-line">
+			<input name="attr_bb_regeneration" type="hidden" class="show-ability" value="false" />
+			<span class="ability">
+				<div class="skillname">
+					<label> Regeneration <button type="action" name="act_regenerationinfo" class="info-button generic-skill" /> </label>
+				</div>
+				<div class="top-space">
+					<button type="action" name="act_rollregenerationhealing" />
+					Roll Regeneration Healing
+				</div>
+			</span>
+		</div>
+
+		<!-- Total Magic Immunity -->
+		<div class="monstrous-boon top-line">
+			<input name="attr_bb_total_magic_immunity" type="hidden" class="show-ability" value="false" />
+			<span class="ability">
+				<div class="skillname">
+					<label class="legendary"> Total Magic Immunity <button type="action" name="act_totalmagicimmunityinfo" class="info-button generic-skill" /> </label>
+				</div>
+				<textarea class="large" name="attr_total_magic_immunity_exceptions"></textarea>
+			</span>
+		</div>
+
 	</div>
 
 </div>
@@ -7823,18 +7844,6 @@ function get_area(area_type, area_size) {
 	return area;
 }
 
-function get_aura_area_size(has_large_size, has_huge_size) {
-	let size = 7;
-	if (has_large_size) {
-		size = 8;
-	}
-	else if (has_huge_size) {
-		size = 9;
-	}
-	
-	return size;
-}
-
 // CP Calc Functions
 function cp_calc_skill_points(points) {
 	let cp = 0;
@@ -9242,6 +9251,28 @@ healing_potion_type_array.forEach( function (potion) {
 					finishRoll(results.rollId);
 				});
 			}
+		});
+	});
+});
+
+on("clicked:minorauraofprotectioninfo", function() {
+	let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: Minor Aura of Protection}} {{Area Size=One adjacent creature}} " +
+	"{{desc=You radiate a minor aura of protection. You and one adjacent creature of your choice gain advantage on all Defend, Mental Resilience, and Physical " +
+	"Resilience checks. As soon as either you or the protected creature fails a Defend, Mental Resilience, or Physical Resilience check, the effect ends " +
+	"until your next short rest.}}'";
+	startRoll(roll_text, (results) => {
+		finishRoll(results.rollId);
+	});
+});
+
+on("clicked:majorauraofprotectioninfo", function() {
+	getAttrs(["size_modifier_aura"], function(values) {
+		let aura_area_size = 7 + get_int_or_zero(values.size_modifier_aura);
+		let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: Major Aura of Protection}} {{Area Size=[[" + aura_area_size + 
+		"]] **sq**}} {{desc=You radiate an aura of protection. You and any ally within the nova gain advantage on all Defend, Mental Resilience, and Physical " +
+		"Resilience checks}}'";
+		startRoll(roll_text, (results) => {
+			finishRoll(results.rollId);
 		});
 	});
 });
@@ -12684,24 +12715,24 @@ if (poison_attack_boon) {
 }
 
 on("change:bb_regeneration", function() {
-	getAttrs(["bb_regeneration", "boons_and_banes"], function(values) {
+	getAttrs(['bb_regeneration', 'bb_regeneration_raw'], function(values) {
 		let has_regeneration = get_bool(values.bb_regeneration);
 		//console.log(`bb_regeneration: ${values.bb_regeneration}; has_regeneration: ${has_regeneration}`);
 		let healing = '0';
 		let vulnerability = '';
 
 		if (has_regeneration) {
-			let regex = /(^|,)regeneration(\d+?d6),(.+?)(,|$)/;
-			let matches = parse_textarea(values.boons_and_banes).match(regex);
+			let regex = /regeneration(\d+?d6),(\w+)/;
+			let matches = values.bb_regeneration_raw.match(regex);
 			//console.log(matches);
-			healing = matches[2];
-			vulnerability = matches[3];
+			healing = matches[1];
+			vulnerability = matches[2];
 			vulnerability = vulnerability.replace('and', ' and ').replace('or', ' or ').replace('coldiron', 'cold iron');
 		}
 
 		setAttrs({
-			"regeneration_healing":       healing,
-			"regeneration_vulnerability": vulnerability
+			'regeneration_healing':       healing,
+			'regeneration_vulnerability': vulnerability
 		});
 	});	
 });
