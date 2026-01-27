@@ -6541,16 +6541,6 @@
 				</div>
 
 				<div>
-					<label style="width: 125px;"> Damage Modifier </label>
-					<div class="input-group">
-						<input name="attr_dynamancy_damage_dice_modifier" type="text" />
-						<span class="input-group-addon" style="width: 10%"> d6 </span>
-					</div>
-					&nbsp; +
-					<input name="attr_dynamancy_damage_static_modifier" type="text" />
-				</div>
-
-				<div>
 					<input name="attr_show_dynamancy_attack" type="hidden" class="show-ability" value="true" />
 					<span class="ability">
 						<div class="top-space">
@@ -6561,6 +6551,15 @@
 								<input name="attr_dynamancy_attack_training" type="checkbox" />
 								<span class="skill-tem skill-training"> Training </span>
 							</label>
+							<div>
+								<label style="width: 125px;"> Damage Modifier </label>
+								<div class="input-group">
+									<input name="attr_dynamancy_damage_dice_modifier" type="text" />
+									<span class="input-group-addon" style="width: 10%"> d6 </span>
+								</div>
+								&nbsp; +
+								<input name="attr_dynamancy_damage_static_modifier" type="text" />
+							</div>
 							<input name="attr_dynamancy_attack_roll" type="hidden" value="2d6" />
 							<div>
 								<input name="attr_show_dynamancy_attack_0_ep" type="hidden" class="show-ep-0" value="false" />
@@ -6608,6 +6607,13 @@
 								<input name="attr_dynamancy_duration_attack_training" type="checkbox" />
 								<span class="skill-tem skill-training"> Training </span>
 							</label>
+							<div>
+								<label style="width: 125px;"> Damage Modifier </label>
+								<div class="input-group">
+									<input name="attr_duration_attack_damage_dice_modifier" type="text" />
+									<span class="input-group-addon" style="width: 10%"> d6 </span>
+								</div>
+							</div>
 							<input name="attr_dynamancy_duration_attack_roll" type="hidden" value="2d6" />
 							<div>
 								<input name="attr_show_dynamancy_duration_attack_10_ep" type="hidden" class="show-ep-10" value="false" />
@@ -9090,10 +9096,11 @@ function cast_attack(ep_cost) {
 }
 
 function cast_duration_attack(ep_cost) {
-	getAttrs(["dynamancy_duration_attack_toggle", "dynamancy_tier"], function(values) {
-		let toggle = get_bool(values.dynamancy_duration_attack_toggle);
-		let tier = get_int_or_zero(values.dynamancy_tier);
-		let dice = tier * (ep_cost >= 30 ? 2 : 1);
+	getAttrs(["dynamancy_duration_attack_toggle", "dynamancy_tier", "duration_attack_damage_dice_modifier"], function(values) {
+		let toggle   = get_bool(values.dynamancy_duration_attack_toggle);
+		let tier     = get_int_or_zero(values.dynamancy_tier);
+		let dice_mod = get_int_or_zero(values.duration_attack_damage_dice_modifier);
+		let dice     = tier * (ep_cost >= 30 ? 2 : 1) + dice_mod;
 		let die_size = (ep_cost % 20 == 0 ? 10 : 6);
 
 		setAttrs({
@@ -11257,10 +11264,14 @@ use_pool_points_for_damage_array.forEach( function(skill) {
 				}
 			}
 			
-			setAttrs({
-				[`${skill}_damage_dice_modifier`]:   damage_dice_mod,
-				[`${skill}_damage_static_modifier`]: damage_static_mod
-			});
+			let set_object = { [`${skill}_damage_dice_modifier`]: damage_dice_mod, [`${skill}_damage_static_modifier`]: damage_static_mod };
+
+			if (skill == 'dynamancy') {
+				let duration_attack_dice_mod = (values[`use_${skill}_pool_points`] == 'on' ? Math.floor(get_int_or_zero(values[`${skill}_pool_points_to_use`]) / 3) : '');
+				set_object['duration_attack_damage_dice_modifier'] = duration_attack_dice_mod;
+			}
+			
+			setAttrs(set_object);
 		});
 	});
 });
