@@ -14267,16 +14267,20 @@ on("clicked:alterationalterarmorinfo", function() {
 		let tier2_effect = (show_alteration_alter_armor_20_ep ? `{{20 EP=Add/remove eldritch${_or}Greater energy armor}} ` : '');
 		let tier3_effect = (show_alteration_alter_armor_30_ep ? '{{30 EP=Add/remove epic}} ' : '');
 		let tier4_effect = (show_alteration_alter_armor_40_ep ? '{{40 EP=Add/remove legendary}} ' : '');
-		let tier2_text = (show_alteration_alter_armor_20_ep ? _pow + 'Any armor you wear becomes magic armor for as long as you’re wearing it.' : '');
+		let power_text   = (show_alteration_alter_armor_20_ep ? _pow + 'Any armor you wear becomes magic armor for as long as you’re wearing it.' : '');
+		let tier2_text   = (show_alteration_alter_armor_20_ep ? _rn + 'Alternatively, for 20 EP, you can make energy armor into greater energy armor (for ' +
+		'all damage types the armor protects against). You can add this version of the spell to a typical version of this spell in a single casting, ' +
+		'but you must pay the totalled EP cost for both versions.' : '');
 		let desc = "*Alter armor* can add or remove magic, eldritch, epic, or legendary bonuses from armor, based on your tier in Alteration " +
-		"and how much EP you spend. " + tier2_text + _rn +
+		"and how much EP you spend. " + power_text + _rn +
 		"Armor that you make magic with this spell is also energy armor of " + tier_effect_alteration(tier, 1, ' damage types') + " you know. If you target " +
-		"magic armor of a given tier (magic, eldritch, etc.) with a spell of that same tier, you can add one extra damage type to the energy armor." +
+		"magic armor of a given tier (magic, eldritch, etc.) with a spell of that same tier, you can add one extra damage type to the energy armor." + tier2_text +
 		_rn + "If you target an area with this spell, it can only affect one suit of armor per affected square. The DR bonuses granted by this spell do not " +
 		"stack with those from magic, eldritch, epic, or legendary armor, nor do they stack with DR bonuses from the Conjuration (armor) spell." + 
-		spend_pool_alteration('increase the DR further, at a cost of 1 point per additional 1 DR. If you know the secondary effect ' +
-		'for a damage type this spell protects against, you can spend 3 pool points to make the spell negate the secondary effect of that damage type ' +
-		'against ' + tier_effect_alteration(tier, 1, ' successful attacks') + ' each round.');
+		spend_pool_alteration('increase the DR further, at a cost of 1 point per additional 1 DR. You can also add protection against damage types you know at ' +
+		'a cost of 1 point per additional type. ' + _rn + _star + ' If you know the secondary effect for a damage type this spell protects against, you can ' +
+		'spend 3 pool points to make the spell negate the secondary effect of that damage type against ' + tier_effect_alteration(tier, 1, ' successful attacks') + 
+		' each round.');
 		let roll_text = get_spell_info('Alteration (alter armor)', '2 AP', range + ' squares', base_duration, duration_bonus, area_type_list,
 		'Item', 'Physical Resilience', tier1_effect + tier2_effect + tier3_effect + tier4_effect, desc, true);
 		startRoll(roll_text, (results) => {
@@ -14319,14 +14323,19 @@ on("clicked:alterationalterweaponinfo", function() {
 		let tier1_effect = 										 '{{10 EP=Add/remove magic}} ';
 		let tier2_effect = (show_alteration_alter_weapon_20_ep ? `{{20 EP=Add/remove eldritch${_or}Energy weapon}} ` : '');
 		let tier3_effect = (show_alteration_alter_weapon_30_ep ? `{{30 EP=Add/remove epic${_or}Greater energy weapon}} ` : '');
-		let tier4_effect = (show_alteration_alter_weapon_40_ep ? '{{40 EP=Add legendary}} ' : '');
-		let tier2_text = (show_alteration_alter_weapon_20_ep ? _pow + 'Any weapon you wield becomes a magic weapon for as long as you’re wielding it.' : '');
+		let tier4_effect = (show_alteration_alter_weapon_40_ep ? '{{40 EP=Add/remove legendary}} ' : '');
+		let power_text   = (show_alteration_alter_weapon_20_ep ? _pow + 'Any weapon you wield becomes a magic weapon for as long as you’re wielding it.' : '');
+		let tier2_text   = (show_alteration_alter_weapon_20_ep ? _rn + 'Alternatively, for 20 EP, you can change a magic weapon into an energy weapon. You ' +
+		'can add this version of the spell to a typical version of this spell in a single casting, but you must pay the totalled EP cost for both versions.' : '');
+		let tier3_text   = (show_alteration_alter_weapon_30_ep ? _rn + 'Alternatively, for 30 EP, you can change a magic weapon into a greater energy weapon. ' +
+		'You can add this version of the spell to a typical version of this spell in a single casting, but you must pay the totalled EP cost for both versions.' 
+		: '');
 		let desc = "*Alter weapon* can add or remove magic, eldritch, epic, or legendary bonuses from weapons, based on your tier in Alteration and how " +
-		"much EP you spend. The additional magic damage these weapons cause can be of any type you know." + tier2_text + _rn + 
+		"much EP you spend. The additional magic damage these weapons cause can be of any type you know." + power_text + tier2_text + tier3_text + _rn + 
 		"If you target an area with this spell, it can only affect one weapon per affected square. The damage bonuses granted by this spell can be of any " +
 		"damage type you know, and do not stack with those from magic, eldritch, epic, or legendary weapons." + spend_pool_alteration('increase the damage ' +
-		'further, at a cost of 4 points per additional die. If you know the secondary effect for a damage type this spell adds to the weapon, you can spend ' +
-		'3 pool points to make targets suffer the secondary effect of that damage type on up to ' + 
+		'further, at a cost of 4 points per additional die. ' + _rn + _star + ' If you know the secondary effect for a damage type this spell adds to the ' +
+		'weapon, you can spend 3 pool points to make targets suffer the secondary effect of that damage type on up to ' + 
 		tier_effect_alteration(tier, 1, ' successful attacks') + ' each round. If the secondary effect is additional damage, targets suffer the same damage ' +
 		'added to the weapon by this spell.');
 		let roll_text = get_spell_info('Alteration (alter weapon)', '2 AP', range + ' squares', base_duration, duration_bonus, area_type_list,
@@ -14806,8 +14815,9 @@ on("clicked:conjurationarmorinfo", function() {
 		"amount of EP you spend. You can grant DR against " +
 		"more than one set of damage types with a single casting of *armor*, but you must pay the EP cost for each separately." + _rn + "The DR granted by " +
 		"this spell does not stack with DR from any armor worn." +
-		spend_pool_conjuration('increase the DR further, at a cost of 1 point per additional 2 DR. If you know the secondary effect for a damage type this ' +
-		'spell protects against, you can make the spell negate the secondary effect of that damage type up to once per round per 3 pool points spent.');
+		spend_pool_conjuration('increase the DR further, at a cost of 1 point per additional 2 DR. You can also add protection against damage types you know ' +
+		'at a cost of 1 point per additional type.' + _rn + _star + ' If you know the secondary effect for a damage type this spell protects against, you can ' +
+		'make the spell negate the secondary effect of that damage type for up to '  + tier_effect_conjuration(tier, 1, ' successful attacks') + '.');
 		let roll_text = get_spell_info('Conjuration (armor)', '2 AP', range + ' squares', dur_concentration_w_pool, duration_bonus, area_type_list,
 		'Creature', 'Auto (willing)', tier1_effect + tier2_effect + tier3_effect + tier4_effect + '{{Damage Types=Any ' + 
 		tier_effect_conjuration(tier, 1, '') + ' you know}} ', desc);
