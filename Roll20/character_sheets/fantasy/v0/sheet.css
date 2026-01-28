@@ -161,6 +161,8 @@ h1 {
 	float: right;
 }
 
+.dialog div.damage-resistance > label,
+.dialog div.damage-resistance > div > span > label,
 .dialog div.damage-resistance > div > span > span > label,
 .dialog div.damage-resistance > div > span > span > span > label {
 	font-weight: normal;

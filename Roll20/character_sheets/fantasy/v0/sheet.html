@@ -8230,6 +8230,16 @@ function parse_armor(armor_text) {
 		armor_object = { tier: 1, type: 'minor', dr: 2, carry: 0 };
 	}
 	
+	if (text.includes('adamantite')) {
+		armor_object['material_bonus'] = 4;
+	}
+	else if (text.includes('astracite')) {
+		armor_object['material_bonus'] = 8;
+	}
+	else {
+		armor_object['material_bonus'] = 0;
+	}
+	
 	let magic_object = get_magic_item_object(text);
 	if (magic_object) {
 		armor_object['magic_bonus_by_tier'] = magic_object.dr_bonus_by_tier;
@@ -11674,14 +11684,13 @@ damage_type_array.forEach( function(damage_type) {
 	});
 });
 
-on('change:armor_name change:defend_tier change:shield_dr', function() {
-	getAttrs(['armor_name', 'defend_tier', 'shield_dr'], function(values) {
-		let shield_dr = get_int_or_zero(values.shield_dr);
+on('change:armor_name change:defend_tier', function() {
+	getAttrs(['armor_name', 'defend_tier'], function(values) {
 		if (!is_armor(values.armor_name)) {
 			if (values.armor_name != '') {
 				console.error(`"${values.armor_name}" is not recognized as armor`);
 			}
-			setAttrs({ 'dr_physical_item': shield_dr });
+			setAttrs({ 'dr_physical_item': 0 });
 			return;
 		}
 		let armor_object = parse_armor(values.armor_name);
@@ -11689,7 +11698,7 @@ on('change:armor_name change:defend_tier change:shield_dr', function() {
 		if (armor_object.magic_bonus_by_tier) {
 			dr_value += armor_object.magic_bonus_by_tier[get_int_or_zero(values.defend_tier)];
 		}
-		dr_value += shield_dr;
+		dr_value += armor_object.material_bonus;
 		setAttrs({ 'dr_physical_item': dr_value });
 	});
 });
