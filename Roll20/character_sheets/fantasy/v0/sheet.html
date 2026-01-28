@@ -2308,11 +2308,6 @@
 		<div class="damage-resistance top-space">
 			<label> Armor </label>
 			<input name="attr_armor_name" type="text" class="weapon armor" />
-			&nbsp; 
-			<label class="skill-tem-container">
-				<input name="attr_use_shield" type="checkbox" />
-				<span class="skill-tem skill-training"> &nbsp; Shield </span>
-			</label>
 		</div>
 
 		<div class="section-header top-space">
@@ -11699,19 +11694,6 @@ on('change:armor_name change:defend_tier change:shield_dr', function() {
 	});
 });
 
-on('change:use_shield change:attack_tier change:attack_melee_with_shield_training change:attack_missile_with_shield_training', function(eventInfo) {
-	getAttrs(['use_shield', 'attack_tier', 'attack_melee_with_shield_training', 'attack_missile_with_shield_training', 'defend_advantage'], function(values) {
-		let has_shield_dr = 
-			values.use_shield == 'on' && 
-			(values.attack_melee_with_shield_training == 'on' || values.attack_missile_with_shield_training == 'on');
-		let set_object = { 'shield_dr': (has_shield_dr ? get_int_or_zero(values.attack_tier) : 0) };
-		if (eventInfo.sourceAttribute == 'use_shield' && eventInfo.previousValue != eventInfo.newValue) {
-			set_object['defend_advantage'] = apply_advantage(values.defend_advantage, (values.use_shield != 'on')) ;
-		}
-		setAttrs(set_object);
-	});
-});
-
 const area_type_array = ['area_type_blast', 'area_type_burst', 'area_type_line', 'area_type_nova', 'area_type_wall'];
 
 on('change:' + area_type_array.join(' change:'), function() {
@@ -13234,7 +13216,7 @@ function get_attack_free_hand_info(type, tier, mod = 0, trained = false, attribu
 function get_attack_with_shield_info(type, tier, mod = 0, trained = false, attribute_name = "Physique") {
 	let type_lower = type.toLowerCase();
 	let info = header_text(type + ' with Shield') + "You wield a one-handed " + type_lower + " weapon in one hand, and a shield in the other. " +
-	`You gain a **+**${tier_effect_attack(tier, 1, '')} bonus to your DR (physical).`;
+	`You gain ${tier_effect_attack(tier, 1, ' bonus Defend pool points')}, which you can only use to reduce damage.`;
 	if (type_lower == "missile") {
 		info += get_1h_missile_range_descripiton(tier, mod, trained, attribute_name);
 		info = info.replaceAll("[combat style]", type_lower + " with shield");
@@ -14267,7 +14249,7 @@ on("clicked:alterationalterarmorinfo", function() {
 		let tier2_effect = (show_alteration_alter_armor_20_ep ? `{{20 EP=Add/remove eldritch${_or}Greater energy armor}} ` : '');
 		let tier3_effect = (show_alteration_alter_armor_30_ep ? '{{30 EP=Add/remove epic}} ' : '');
 		let tier4_effect = (show_alteration_alter_armor_40_ep ? '{{40 EP=Add/remove legendary}} ' : '');
-		let power_text   = (show_alteration_alter_armor_20_ep ? _pow + 'Any armor you wear becomes magic armor for as long as you’re wearing it.' : '');
+		let power_text   = (show_alteration_alter_armor_20_ep ? _pow + 'Any armor you wear becomes magic for as long as you’re wearing it.' : '');
 		let tier2_text   = (show_alteration_alter_armor_20_ep ? _rn + 'Alternatively, for 20 EP, you can make energy armor into greater energy armor (for ' +
 		'all damage types the armor protects against). You can add this version of the spell to a typical version of this spell in a single casting, ' +
 		'but you must pay the totalled EP cost for both versions.' : '');
@@ -14275,8 +14257,8 @@ on("clicked:alterationalterarmorinfo", function() {
 		"and how much EP you spend. " + power_text + _rn +
 		"Armor that you make magic with this spell is also energy armor of " + tier_effect_alteration(tier, 1, ' damage types') + " you know. If you target " +
 		"magic armor of a given tier (magic, eldritch, etc.) with a spell of that same tier, you can add one extra damage type to the energy armor." + tier2_text +
-		_rn + "If you target an area with this spell, it can only affect one suit of armor per affected square. The DR bonuses granted by this spell do not " +
-		"stack with those from magic, eldritch, epic, or legendary armor, nor do they stack with DR bonuses from the Conjuration (armor) spell." + 
+		_rn + "If you target an area with this spell, it can only affect one suit of armor per affected square. The DR bonuses granted by this spell " +
+		"do not stack with those from magic, eldritch, epic, or legendary armor, nor do they stack with DR bonuses from the Conjuration (armor) spell." + 
 		spend_pool_alteration('increase the DR further, at a cost of 1 point per additional 1 DR. You can also add protection against damage types you know at ' +
 		'a cost of 1 point per additional type. ' + _rn + _star + ' If you know the secondary effect for a damage type this spell protects against, you can ' +
 		'spend 3 pool points to make the spell negate the secondary effect of that damage type against ' + tier_effect_alteration(tier, 1, ' successful attacks') + 
