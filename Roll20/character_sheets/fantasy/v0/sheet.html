@@ -305,8 +305,8 @@
 		
 		<div class="top-space bottom-pad">
 			<label class="magic-type-container">
-				<input name="attr_use_precise_strike" type="checkbox" />
-				<span class="magic-type combat-action"> Precise Strike </span>
+				<input name="attr_use_charge" type="checkbox" />
+				<span class="magic-type combat-action"> Charge </span>
 			</label>
 			&nbsp;
 			<label class="magic-type-container combat-action-container-right">
@@ -323,8 +323,8 @@
 	
 		<div class="top-space bottom-pad">
 			<label class="magic-type-container">
-				<input name="attr_use_charge" type="checkbox" />
-				<span class="magic-type combat-action"> Charge </span>
+				<input name="attr_use_precise_strike" type="checkbox" />
+				<span class="magic-type combat-action"> Precise Strike </span>
 			</label>
 			&nbsp;
 			<label class="magic-type-container combat-action-container-right">
@@ -1869,16 +1869,24 @@
 		
 		<div class="top-space bottom-pad">
 			<label class="magic-type-container">
-				<input name="attr_use_fight_defensively" type="checkbox" />
-				<span class="magic-type combat-action"> Fight Defensively </span>
-			</label>
-			&nbsp;
-			<label class="magic-type-container combat-action-container-right">
 				<input name="attr_use_guard" type="checkbox" />
 				<span class="magic-type combat-action"> Guard </span>
 			</label>
 			&nbsp;
+			<label class="magic-type-container combat-action-container-right">
+				<input name="attr_use_fight_defensively" type="checkbox" />
+				<span class="magic-type combat-action"> Fight Defensively </span>
+			</label>
+			&nbsp;
 			<label class="magic-type-container combat-action-container-far-right">
+				<input name="attr_use_defensive_stance" type="checkbox" />
+				<input name="attr_show_defensive_stance" type="hidden" class="show-rage" value="false" />
+				<span class="magic-type combat-action"> Defensive Stance </span>
+			</label>
+		</div>
+
+		<div class="top-space bottom-pad">
+			<label class="magic-type-container">
 				<input name="attr_use_protect" type="checkbox" />
 				<span class="magic-type combat-action"> Protect </span>
 			</label>
@@ -7653,7 +7661,7 @@ function get_tier(skill_points) {
 }
 
 function get_roll(training, advantage, explode) {
-	console.log(`get_roll: training = ${training}; advantage = ${advantage}; explode = ${explode}`);
+	//console.log(`get_roll: training = ${training}; advantage = ${advantage}; explode = ${explode}`);
 	let roll = 'd6';
 	if (training == 'on') { 
 		roll = 'd10!!'; 
@@ -7717,8 +7725,8 @@ function get_rake_bonus_damage(weapon_name) {
 	let bonus = 0;
 	let regex = /rake[ \(]+(\d+) claws/;
 	let matches = weapon_name.match(regex);
-	console.log(matches);
 	if (matches) {
+		//console.log(matches);
 		let claws = get_int_or_zero(matches[1]);
 		bonus = claws - 1;
 	}
@@ -7743,7 +7751,7 @@ function get_weapon_damage(weapon_name, tier, modifier = 0, use_charge = false) 
 	if (weapon_name) {
 		weapon_dice = base_damage + tier + get_rake_bonus_damage(weapon_name) + get_swarm_bonus_damage(weapon_name) + modifier;
 	}
-	console.log(`weapon: ${weapon_name}; damage dice: ${weapon_dice}`);
+	//console.log(`weapon: ${weapon_name}; damage dice: ${weapon_dice}`);
 	return weapon_dice;
 }
 
@@ -10100,84 +10108,140 @@ on("clicked:reflexinfo", function() {
 	});
 });
 
-on('change:use_precise_strike', function() {
-	getAttrs(['use_precise_strike', 'use_sneak_attack', 'attack_advantage'], function(values) {
-		let precise_strike_on = (values.use_precise_strike == 'on');
-		let attack_advantage = apply_advantage(values.attack_advantage, precise_strike_on);
+const special_combat_actions_array = [
+	'use_charge', 'use_fight_recklessly', 'use_rage', 'use_precise_strike', 'use_sneak_attack',
+	'use_fight_defensively', 'use_defensive_stance', 'use_guard', 'use_protect'
+];
 
-		setAttrs({
-			'use_sneak_attack': (precise_strike_on ? values.use_sneak_attack : '0' ),
-			'attack_advantage': attack_advantage,
-			'attack_advantage_text': get_advantage_text(attack_advantage)
-		});
+function turn_off_combat_actions_except(exception_array) {
+	let set_object = {};
+	for (let action of special_combat_actions_array.filter(a => !exception_array.includes(a))) {
+		set_object[action] = '0';
+	}
+	return set_object;
+}
+
+on('change:use_charge', function() {
+	getAttrs(["use_charge", "attack_advantage", "defend_advantage"], function(values) {
+		let charge_on = (values.use_charge == 'on');
+		console.log(`turn charge ${(charge_on ? 'on' : 'off')}`);
+		let set_object = {
+			"attack_advantage": apply_advantage(values.attack_advantage, !charge_on),
+			"defend_advantage": apply_advantage(values.defend_advantage,  charge_on)
+		};
+		if (charge_on) {
+			set_object = {...set_object, ...turn_off_combat_actions_except(['use_charge'])};
+		}
+		setAttrs(set_object);
 	});
 });
 
 on("change:use_fight_recklessly", function() {
-	getAttrs(["use_fight_recklessly", "attack_advantage", "defend_advantage"], function(values) {
+	getAttrs(["use_fight_recklessly", "use_rage", "attack_advantage", "defend_advantage"], function(values) {
 		let fight_recklessly_on = (values.use_fight_recklessly == 'on');
-		setAttrs({
-			"attack_advantage": apply_advantage(values.attack_advantage, !fight_recklessly_on),
-			"defend_advantage": apply_advantage(values.defend_advantage,  fight_recklessly_on)
-		});
+		console.log(`turn fight recklessly ${(fight_recklessly_on ? 'on' : 'off')}`);
+		let set_object = {
+			'use_rage':         (fight_recklessly_on ? values.use_rage : '0' ),
+			'attack_advantage': apply_advantage(values.attack_advantage, !fight_recklessly_on),
+			'defend_advantage': apply_advantage(values.defend_advantage,  fight_recklessly_on)
+		};
+		if (fight_recklessly_on) {
+			set_object = {...set_object, ...turn_off_combat_actions_except(['use_fight_recklessly', 'use_rage'])};
+		}
+		setAttrs(set_object);
 	});
 });
 
 on('change:use_rage', function() {
 	getAttrs(['use_rage', 'mr_advantage'], function(values) {
 		let rage_on = (values.use_rage == 'on');
-
-		setAttrs({
+		console.log(`turn rage ${(rage_on ? 'on' : 'off')}`);
+		let set_object = {
 			'use_fight_recklessly': values.use_rage,
-			'mr_advantage' : apply_advantage(values.mr_advantage, !rage_on)
-		});
+			'mr_advantage':         apply_advantage(values.mr_advantage, !rage_on)
+		};
+		setAttrs(set_object);
 	});
 });
 
-on("change:use_fight_defensively", function() {
-	getAttrs(["use_fight_defensively", "attack_advantage", "defend_advantage"], function(values) {
-		let fight_defensively_on = (values.use_fight_defensively == 'on');
-		setAttrs({
-			"attack_advantage": apply_advantage(values.attack_advantage,  fight_defensively_on),
-			"defend_advantage": apply_advantage(values.defend_advantage, !fight_defensively_on)
-		});
-	});
-});
-
-on('change:use_charge', function() {
-	getAttrs(["use_charge", "attack_advantage", "defend_advantage"], function(values) {
-		let charge_on = (values.use_charge == 'on');
-		let defend_advantage = (charge_on ? apply_advantage(values.defend_advantage, true) : values.defend_advantage);
-		setAttrs({
-			"attack_advantage": apply_advantage(values.attack_advantage, !charge_on),
-			"defend_advantage": defend_advantage
-		});
+on('change:use_precise_strike', function() {
+	getAttrs(['use_precise_strike', 'use_sneak_attack', 'attack_advantage'], function(values) {
+		let precise_strike_on = (values.use_precise_strike == 'on');
+		console.log(`turn precise strike ${(precise_strike_on ? 'on' : 'off')}`);
+		let attack_advantage = apply_advantage(values.attack_advantage, precise_strike_on);
+		let set_object = {
+			'use_sneak_attack': (precise_strike_on ? values.use_sneak_attack : '0' ),
+			'attack_advantage': attack_advantage,
+			'attack_advantage_text': get_advantage_text(attack_advantage)
+		};
+		if (precise_strike_on) {
+			set_object = {...set_object, ...turn_off_combat_actions_except(['use_precise_strike', 'use_sneak_attack'])};
+		}
+		setAttrs(set_object);
 	});
 });
 
 on('change:use_sneak_attack', function() {
 	getAttrs(['use_sneak_attack', 'use_precise_strike'], function(values) {
-		setAttrs({
-			'use_precise_strike': (values.use_sneak_attack == 'on' ? 'on' : values.use_precise_strike)
-		});
+		let sneak_attack_on = (values.use_sneak_attack == 'on');
+		console.log(`turn sneak attack ${(sneak_attack_on ? 'on' : 'off')}`);
+		let set_object = { 'use_precise_strike': (sneak_attack_on ? 'on' : values.use_precise_strike) };
+		setAttrs(set_object);
+	});
+});
+
+on("change:use_fight_defensively", function() {
+	getAttrs(["use_fight_defensively", "use_defensive_stance", "attack_advantage", "defend_advantage"], function(values) {
+		let fight_defensively_on = (values.use_fight_defensively == 'on');
+		console.log(`turn fight defensively ${(fight_defensively_on ? 'on' : 'off')}`);
+		let set_object = {
+			"attack_advantage":      apply_advantage(values.attack_advantage,  fight_defensively_on),
+			"defend_advantage":      apply_advantage(values.defend_advantage, !fight_defensively_on),
+			'use_defensive_stance':  (fight_defensively_on ? values.use_defensive_stance : '0'),
+			'show_defensive_stance': fight_defensively_on
+		};
+		if (fight_defensively_on) {
+			set_object = {...set_object, ...turn_off_combat_actions_except(['use_fight_defensively'])};
+		}
+		setAttrs(set_object);
 	});
 });
 
 on("change:use_guard", function() {
-	getAttrs(["use_guard", "defend_advantage"], function(values) {
+	getAttrs(["use_guard", "use_defensive_stance", "defend_advantage"], function(values) {
 		let guard_on = (values.use_guard == 'on');
-		setAttrs({
-			"defend_advantage": apply_advantage(apply_advantage(values.defend_advantage, !guard_on), !guard_on)
-		});
+		console.log(`turn guard ${(guard_on ? 'on' : 'off')}`);
+		let set_object = { 
+			'defend_advantage':      apply_advantage(apply_advantage(values.defend_advantage, !guard_on), !guard_on),
+			'use_defensive_stance':  (guard_on ? values.use_defensive_stance : '0'),
+			'show_defensive_stance': guard_on
+		};
+		if (guard_on) {
+			set_object = {...set_object, ...turn_off_combat_actions_except(['use_guard'])};
+		}
+		setAttrs(set_object);
+	});
+});
+
+on("change:use_defensive_stance", function() {
+	getAttrs(["use_defensive_stance", "defend_tier"], function(values) {
+		let defensive_stance_on = (values.use_defensive_stance == 'on');
+		console.log(`turn defensive stance ${(defensive_stance_on ? 'on' : 'off')}`);
+		let physical_dr_bonus   = get_int_or_zero(values.defend_tier) * (defensive_stance_on ? 4 : 0);
+		let set_object = { 'defensive_stance_dr_bonus': physical_dr_bonus };
+		setAttrs(set_object);
 	});
 });
 
 on("change:use_protect", function() {
 	getAttrs(["use_protect", "defend_advantage"], function(values) {
 		let protect_on = (values.use_protect == 'on');
-		setAttrs({
-			"defend_advantage": apply_advantage(values.defend_advantage, protect_on)
-		});
+		console.log(`turn protect ${(protect_on ? 'on' : 'off')}`);
+		let set_object = { 'defend_advantage': apply_advantage(values.defend_advantage, protect_on) };
+		if (protect_on) {
+			set_object = {...set_object, ...turn_off_combat_actions_except(['use_protect'])};
+		}
+		setAttrs(set_object);
 	});
 });
 
@@ -11192,14 +11256,15 @@ combat_style_array.forEach( function(style) {
 	getAttrs_array.push(
 		'attack_tier', 'combat_expertise_modifier', 'size_modifier_damage', 
 		'attack_damage_dice_modifier', 'attack_damage_static_modifier',
-		'use_precise_strike', 'deadly_precision_modifier', 'use_rage', 'rage_modifier',
+		'use_precise_strike', 'deadly_precision_modifier', 'use_sneak_attack',
+		'sneak_attack_modifier', 'use_rage', 'rage_modifier', 'use_charge',
 		'swarm_damage_bonus'
 	);
 
 	let change = 'change:' + getAttrs_array.join(' change:');
 
 	on(change, function() {
-		console.log(`${style.name} weapon changed`);
+		//console.log(`${style.name} weapon changed`);
 		getAttrs(getAttrs_array, function(values) {
 			let tier                      = get_int_or_zero(values.attack_tier);
 			let size_modifier             = get_int_or_zero(values.size_modifier_damage);
@@ -11684,13 +11749,14 @@ damage_type_array.forEach( function(damage_type) {
 	});
 });
 
-on('change:armor_name change:defend_tier', function() {
-	getAttrs(['armor_name', 'defend_tier'], function(values) {
+on('change:armor_name change:defend_tier change:defensive_stance_dr_bonus', function() {
+	getAttrs(['armor_name', 'defend_tier', 'defensive_stance_dr_bonus'], function(values) {
+		let defensive_stance_dr_bonus = get_int_or_zero(values.defensive_stance_dr_bonus);
 		if (!is_armor(values.armor_name)) {
 			if (values.armor_name != '') {
 				console.error(`"${values.armor_name}" is not recognized as armor`);
 			}
-			setAttrs({ 'dr_physical_item': 0 });
+			setAttrs({ 'dr_physical_item': defensive_stance_dr_bonus });
 			return;
 		}
 		let armor_object = parse_armor(values.armor_name);
@@ -11698,7 +11764,7 @@ on('change:armor_name change:defend_tier', function() {
 		if (armor_object.magic_bonus_by_tier) {
 			dr_value += armor_object.magic_bonus_by_tier[get_int_or_zero(values.defend_tier)];
 		}
-		dr_value += armor_object.material_bonus;
+		dr_value += armor_object.material_bonus + defensive_stance_dr_bonus;
 		setAttrs({ 'dr_physical_item': dr_value });
 	});
 });
@@ -11719,6 +11785,7 @@ on('change:' + area_type_array.join(' change:'), function() {
 });
 
 const passive_skill_array = [
+	{ name: 'ps_absolute_protector',          search_text: 'absoluteprotector',         cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_action_hero',                 search_text: 'actionhero',                cs_cp_cost:  3, ncs_cp_cost:  3 },
 	{ name: 'ps_arcane_trapfinding',          search_text: 'arcanetrapfinding',         cs_cp_cost:  0, ncs_cp_cost:  6 },
 	{ name: 'ps_archers_stance',              search_text: 'archersstance',             cs_cp_cost:  6, ncs_cp_cost:  0 },
@@ -11761,7 +11828,6 @@ const passive_skill_array = [
 	{ name: 'ps_pounce',                      search_text: 'pounce',                    cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_powerful_blow',               search_text: 'powerfulblow',              cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_precise_shot',                search_text: 'preciseshot',               cs_cp_cost:  6, ncs_cp_cost:  0 },
-	{ name: 'ps_protector',                   search_text: 'protector',                 cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_quick_draw',                  search_text: 'quickdraw',                 cs_cp_cost:  3, ncs_cp_cost:  0 },
 	{ name: 'ps_quintessence',                search_text: 'quintessence',              cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_rage',                        search_text: 'rage',                      cs_cp_cost:  6, ncs_cp_cost:  0 },
