@@ -310,29 +310,34 @@
 			</label>
 			&nbsp;
 			<label class="magic-type-container combat-action-container-right">
-				<input name="attr_use_fight_recklessly" type="checkbox" />
-				<span class="magic-type combat-action"> Fight Recklessly </span>
+				<input name="attr_use_precise_strike" type="checkbox" />
+				<span class="magic-type combat-action"> Precise Strike </span>
 			</label>
 			&nbsp;
 			<label class="magic-type-container combat-action-container-far-right">
-				<input name="attr_use_rage" type="checkbox" />
-				<input name="attr_ps_rage" type="hidden" class="show-rage" value="false" />
-				<span class="magic-type combat-action"> Rage </span>
+				<input name="attr_use_sneak_attack" type="checkbox" />
+				<input name="attr_ps_sneak_attack" type="hidden" class="show-rage" value="false" />
+				<span class="magic-type combat-action"> Sneak Attack </span>
 			</label>
 		</div>
 	
 		<div class="top-space bottom-pad">
 			<label class="magic-type-container">
-				<input name="attr_use_precise_strike" type="checkbox" />
-				<span class="magic-type combat-action"> Precise Strike </span>
+				<input name="attr_use_fight_recklessly" type="checkbox" />
+				<span class="magic-type combat-action"> Fight Recklessly </span>
 			</label>
 			&nbsp;
 			<label class="magic-type-container combat-action-container-right">
-				<input name="attr_use_sneak_attack" type="checkbox" />
-				<input name="attr_ps_sneak_attack" type="hidden" class="show-rage" value="false" />
-				<span class="magic-type combat-action"> Sneak Attack </span>
+				<input name="attr_use_rage" type="checkbox" />
+				<input name="attr_ps_rage" type="hidden" class="show-rage" value="false" />
+				<span class="magic-type combat-action"> Rage </span>
 			</label>
 			&nbsp;
+			<label class="magic-type-container combat-action-container-far-right">
+				<input name="attr_use_wild_rage" type="checkbox" />
+				<input name="attr_ps_wild_rage" type="hidden" class="show-rage" value="false" />
+				<span class="magic-type combat-action"> Wild Rage </span>
+			</label>
 		</div>
 	
 		<div>
@@ -7705,7 +7710,7 @@ function apply_advantage(current_advantage, index_modifier, disadvantage = false
 	else {
 		index_modifier = 0;
 	}
-	console.log(`new_index: ${new_index}, new_advantage: ${new_advantage}, index_modifier: ${index_modifier}`);
+	//console.log(`new_index: ${new_index}, new_advantage: ${new_advantage}, index_modifier: ${index_modifier}`);
 	return { 'advantage': new_advantage, 'index_modifier': index_modifier };
 }
 
@@ -10173,15 +10178,25 @@ on('change:use_fight_recklessly', function() {
 });
 
 on('change:use_rage', function() {
-	getAttrs(['use_rage', 'mr_advantage', 'mr_advantage_index_modifier'], function(values) {
+	getAttrs(['use_rage', 'use_wild_rage', 'mr_advantage', 'mr_advantage_index_modifier'], function(values) {
 		let rage_on = (values.use_rage == 'on');
 		console.log(`turn rage ${(rage_on ? 'on' : 'off')}`);
 		let mr_object = apply_advantage(values.mr_advantage, get_int_or_zero(values.mr_advantage_index_modifier), !rage_on);
 		let set_object = {
 			'use_fight_recklessly':        values.use_rage,
+			'use_wild_rage':               (rage_on ? values.use_wild_rage : '0'),
 			'mr_advantage':                mr_object.advantage,
 			'mr_advantage_index_modifier': mr_object.index_modifier
 		};
+		setAttrs(set_object);
+	});
+});
+
+on('change:use_wild_rage', function() {
+	getAttrs(['use_rage', 'use_wild_rage'], function(values) {
+		let wild_rage_on = (values.use_wild_rage == 'on');
+		console.log(`turn wild rage ${(wild_rage_on ? 'on' : 'off')}`);
+		let set_object = { 'use_rage': (wild_rage_on ? 'on' : values.use_rage) };
 		setAttrs(set_object);
 	});
 });
@@ -10237,8 +10252,8 @@ on('change:use_guard', function() {
 	getAttrs(['use_guard', 'use_defensive_stance', 'defend_advantage', 'defend_advantage_index_modifier'], function(values) {
 		let guard_on = (values.use_guard == 'on');
 		console.log(`turn guard ${(guard_on ? 'on' : 'off')}`);
-		let defend_object = apply_advantage(values.defend_advantage, get_int_or_zero(values.defend_advantage_index_modifier), !fight_defensively_on);
-		defend_object     = apply_advantage(defend_object.advantage, defend_object.index_modifier, !fight_defensively_on);
+		let defend_object = apply_advantage(values.defend_advantage, get_int_or_zero(values.defend_advantage_index_modifier), !guard_on);
+		defend_object     = apply_advantage(defend_object.advantage, defend_object.index_modifier, !guard_on);
 		let set_object = {
 			'defend_advantage':                defend_object.advantage,
 			'defend_advantage_index_modifier': defend_object.index_modifier,
@@ -11290,8 +11305,8 @@ combat_style_array.forEach( function(style) {
 		'attack_tier', 'combat_expertise_modifier', 'size_modifier_damage', 
 		'attack_damage_dice_modifier', 'attack_damage_static_modifier',
 		'use_precise_strike', 'deadly_precision_modifier', 'use_sneak_attack',
-		'sneak_attack_modifier', 'use_rage', 'rage_modifier', 'use_charge',
-		'swarm_damage_bonus'
+		'sneak_attack_modifier', 'use_rage', 'rage_modifier', 'use_wild_rage',
+		'use_charge', 'swarm_damage_bonus'
 	);
 
 	let change = 'change:' + getAttrs_array.join(' change:');
@@ -11317,6 +11332,9 @@ combat_style_array.forEach( function(style) {
 			
 			let rage_on       = (values.use_rage == 'on');
 			let rage_modifier = get_int_or_zero(values.rage_modifier);
+			if (values.use_wild_rage == 'on') {
+				rage_modifier *= 2;
+			}
 			
 			let modifier = size_modifier + style.damage_bonus(tier) + mob_damage_bonus + swarm_damage_bonus +
 				(precise_strike_on ? 1 + deadly_precision_modifier : (rage_on ? rage_modifier : combat_expertise_modifier));
@@ -11852,6 +11870,7 @@ const passive_skill_array = [
 	{ name: 'ps_focused_healing',             search_text: 'focusedhealing',            cs_cp_cost:  4, ncs_cp_cost:  0 },
 	{ name: 'ps_force_weapon',                search_text: 'force_weapon',              cs_cp_cost:  3, ncs_cp_cost:  0 },
 	{ name: 'ps_gang_up',                     search_text: 'gangup',                    cs_cp_cost:  6, ncs_cp_cost:  0 },
+	{ name: 'ps_iron_skin',                   search_text: 'ironskin',                  cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_mage_rage',                   search_text: 'magerage',                  cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_mind_stab',                   search_text: 'mindstab',                  cs_cp_cost:  3, ncs_cp_cost:  0 },
 	{ name: 'ps_mob',                         search_text: 'mob',                       cs_cp_cost:  6, ncs_cp_cost:  0 },
@@ -11884,6 +11903,7 @@ const passive_skill_array = [
 	{ name: 'ps_sweeping_attack',             search_text: 'sweepingattack',            cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_tunnel_fighting',             search_text: 'tunnelfighting',            cs_cp_cost:  3, ncs_cp_cost:  0 },
 	{ name: 'ps_vitality',                    search_text: 'vitality',                  cs_cp_cost:  6, ncs_cp_cost:  0 },
+	{ name: 'ps_wild_rage',                   search_text: 'wildrage',                  cs_cp_cost:  6, ncs_cp_cost:  0 },
 ];
 
 const magic_skill_base_array = active_skill_array
