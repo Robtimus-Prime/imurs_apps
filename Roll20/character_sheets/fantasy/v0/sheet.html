@@ -7690,18 +7690,30 @@ function get_advantage_text(advantage) {
 	return advantage.replace('tA', 't A').replace('tD', 't D').replace('Novantage', '');
 }
 
-function apply_advantage(current_advantage, disadvantage = false) {
+function apply_advantage(current_advantage, index_modifier, disadvantage = false) {
 	let advantage_array = ['GreatDisadvantage', 'Disadvantage', 'Novantage', 'Advantage', 'GreatAdvantage'];
-	let index = advantage_array.indexOf(current_advantage);
-	let new_index = (disadvantage ? Math.max(index - 1, 0) : Math.min(index + 1, advantage_array.length - 1));
-	return advantage_array[new_index];
+	let last            = advantage_array.length - 1;
+	let index           = advantage_array.indexOf(current_advantage) + index_modifier;
+	let new_index       = (disadvantage ? index - 1 : index + 1);
+	let new_advantage   = advantage_array[Math.max(Math.min(new_index, last), 0)];
+	if (new_index > last) {
+		index_modifier = new_index - last;
+	}
+	else if (new_index < 0) {
+		index_modifier = new_index;
+	}
+	else {
+		index_modifier = 0;
+	}
+	console.log(`new_index: ${new_index}, new_advantage: ${new_advantage}, index_modifier: ${index_modifier}`);
+	return { 'advantage': new_advantage, 'index_modifier': index_modifier };
 }
 
 const magic_item_bonus_array = [
 	{ name: 'magic',     tier: 1, damage_bonus_by_tier: [ 0, 1, 1, 2, 2 ], dr_bonus_by_tier: [ 0, 4,  6,  8,  8 ], explode_value_by_tier: [ 10, 9, 9, 8, 8 ] },
-	{ name: 'eldritch',  tier: 2, damage_bonus_by_tier: [ 0, 1, 2, 3, 4 ], dr_bonus_by_tier: [ 0, 4,  8, 12, 16 ], explode_value_by_tier: [ 10, 8, 8, 7, 7 ] },
-	{ name: 'epic',      tier: 3, damage_bonus_by_tier: [ 0, 2, 3, 5, 6 ], dr_bonus_by_tier: [ 0, 6, 12, 18, 24 ], explode_value_by_tier: [ 10, 7, 7, 6, 6 ] },
-	{ name: 'legendary', tier: 4, damage_bonus_by_tier: [ 0, 2, 4, 6, 8 ], dr_bonus_by_tier: [ 0, 8, 16, 24, 36 ], explode_value_by_tier: [ 10, 6, 6, 6, 6 ] }
+	{ name: 'eldritch',  tier: 2, damage_bonus_by_tier: [ 0, 1, 2, 3, 4 ], dr_bonus_by_tier: [ 0, 4,  8, 12, 16 ], explode_value_by_tier: [ 10, 9, 8, 7, 7 ] },
+	{ name: 'epic',      tier: 3, damage_bonus_by_tier: [ 0, 2, 3, 5, 6 ], dr_bonus_by_tier: [ 0, 6, 12, 18, 24 ], explode_value_by_tier: [ 10, 8, 7, 7, 6 ] },
+	{ name: 'legendary', tier: 4, damage_bonus_by_tier: [ 0, 2, 4, 6, 8 ], dr_bonus_by_tier: [ 0, 8, 16, 24, 36 ], explode_value_by_tier: [ 10, 7, 7, 6, 6 ] }
 ];
 
 function is_magic_item(text) {
@@ -10122,12 +10134,16 @@ function turn_off_combat_actions_except(exception_array) {
 }
 
 on('change:use_charge', function() {
-	getAttrs(["use_charge", "attack_advantage", "defend_advantage"], function(values) {
+	getAttrs(['use_charge', 'attack_advantage', 'attack_advantage_index_modifier', 'defend_advantage', 'defend_advantage_index_modifier'], function(values) {
 		let charge_on = (values.use_charge == 'on');
 		console.log(`turn charge ${(charge_on ? 'on' : 'off')}`);
+		let attack_object = apply_advantage(values.attack_advantage, get_int_or_zero(values.attack_advantage_index_modifier), !charge_on);
+		let defend_object = apply_advantage(values.defend_advantage, get_int_or_zero(values.defend_advantage_index_modifier),  charge_on);
 		let set_object = {
-			"attack_advantage": apply_advantage(values.attack_advantage, !charge_on),
-			"defend_advantage": apply_advantage(values.defend_advantage,  charge_on)
+			'attack_advantage':                attack_object.advantage,
+			'attack_advantage_index_modifier': attack_object.index_modifier,
+			'defend_advantage':                defend_object.advantage,
+			'defend_advantage_index_modifier': defend_object.index_modifier,
 		};
 		if (charge_on) {
 			set_object = {...set_object, ...turn_off_combat_actions_except(['use_charge'])};
@@ -10136,14 +10152,18 @@ on('change:use_charge', function() {
 	});
 });
 
-on("change:use_fight_recklessly", function() {
-	getAttrs(["use_fight_recklessly", "use_rage", "attack_advantage", "defend_advantage"], function(values) {
+on('change:use_fight_recklessly', function() {
+	getAttrs(['use_fight_recklessly', 'use_rage', 'attack_advantage', 'attack_advantage_index_modifier', 'defend_advantage', 'defend_advantage_index_modifier'], function(values) {
 		let fight_recklessly_on = (values.use_fight_recklessly == 'on');
 		console.log(`turn fight recklessly ${(fight_recklessly_on ? 'on' : 'off')}`);
+		let attack_object = apply_advantage(values.attack_advantage, get_int_or_zero(values.attack_advantage_index_modifier), !fight_recklessly_on);
+		let defend_object = apply_advantage(values.defend_advantage, get_int_or_zero(values.defend_advantage_index_modifier),  fight_recklessly_on);
 		let set_object = {
-			'use_rage':         (fight_recklessly_on ? values.use_rage : '0' ),
-			'attack_advantage': apply_advantage(values.attack_advantage, !fight_recklessly_on),
-			'defend_advantage': apply_advantage(values.defend_advantage,  fight_recklessly_on)
+			'use_rage':                        (fight_recklessly_on ? values.use_rage : '0' ),
+			'attack_advantage':                attack_object.advantage,
+			'attack_advantage_index_modifier': attack_object.index_modifier,
+			'defend_advantage':                defend_object.advantage,
+			'defend_advantage_index_modifier': defend_object.index_modifier
 		};
 		if (fight_recklessly_on) {
 			set_object = {...set_object, ...turn_off_combat_actions_except(['use_fight_recklessly', 'use_rage'])};
@@ -10153,26 +10173,28 @@ on("change:use_fight_recklessly", function() {
 });
 
 on('change:use_rage', function() {
-	getAttrs(['use_rage', 'mr_advantage'], function(values) {
+	getAttrs(['use_rage', 'mr_advantage', 'mr_advantage_index_modifier'], function(values) {
 		let rage_on = (values.use_rage == 'on');
 		console.log(`turn rage ${(rage_on ? 'on' : 'off')}`);
+		let mr_object = apply_advantage(values.mr_advantage, get_int_or_zero(values.mr_advantage_index_modifier), !rage_on);
 		let set_object = {
-			'use_fight_recklessly': values.use_rage,
-			'mr_advantage':         apply_advantage(values.mr_advantage, !rage_on)
+			'use_fight_recklessly':        values.use_rage,
+			'mr_advantage':                mr_object.advantage,
+			'mr_advantage_index_modifier': mr_object.index_modifier
 		};
 		setAttrs(set_object);
 	});
 });
 
 on('change:use_precise_strike', function() {
-	getAttrs(['use_precise_strike', 'use_sneak_attack', 'attack_advantage'], function(values) {
+	getAttrs(['use_precise_strike', 'use_sneak_attack', 'attack_advantage', 'attack_advantage_index_modifier'], function(values) {
 		let precise_strike_on = (values.use_precise_strike == 'on');
 		console.log(`turn precise strike ${(precise_strike_on ? 'on' : 'off')}`);
-		let attack_advantage = apply_advantage(values.attack_advantage, precise_strike_on);
+		let attack_object = apply_advantage(values.attack_advantage, get_int_or_zero(values.attack_advantage_index_modifier), precise_strike_on);
 		let set_object = {
-			'use_sneak_attack': (precise_strike_on ? values.use_sneak_attack : '0' ),
-			'attack_advantage': attack_advantage,
-			'attack_advantage_text': get_advantage_text(attack_advantage)
+			'use_sneak_attack':                (precise_strike_on ? values.use_sneak_attack : '0'),
+			'attack_advantage':                attack_object.advantage,
+			'attack_advantage_index_modifier': attack_object.index_modifier
 		};
 		if (precise_strike_on) {
 			set_object = {...set_object, ...turn_off_combat_actions_except(['use_precise_strike', 'use_sneak_attack'])};
@@ -10190,15 +10212,19 @@ on('change:use_sneak_attack', function() {
 	});
 });
 
-on("change:use_fight_defensively", function() {
-	getAttrs(["use_fight_defensively", "use_defensive_stance", "attack_advantage", "defend_advantage"], function(values) {
+on('change:use_fight_defensively', function() {
+	getAttrs(['use_fight_defensively', 'use_defensive_stance', 'attack_advantage', 'attack_advantage_index_modifier', 'defend_advantage', 'defend_advantage_index_modifier'], function(values) {
 		let fight_defensively_on = (values.use_fight_defensively == 'on');
 		console.log(`turn fight defensively ${(fight_defensively_on ? 'on' : 'off')}`);
+		let attack_object = apply_advantage(values.attack_advantage, get_int_or_zero(values.attack_advantage_index_modifier),  fight_defensively_on);
+		let defend_object = apply_advantage(values.defend_advantage, get_int_or_zero(values.defend_advantage_index_modifier), !fight_defensively_on);
 		let set_object = {
-			"attack_advantage":      apply_advantage(values.attack_advantage,  fight_defensively_on),
-			"defend_advantage":      apply_advantage(values.defend_advantage, !fight_defensively_on),
-			'use_defensive_stance':  (fight_defensively_on ? values.use_defensive_stance : '0'),
-			'show_defensive_stance': fight_defensively_on
+			'attack_advantage':                attack_object.advantage,
+			'attack_advantage_index_modifier': attack_object.index_modifier,
+			'defend_advantage':                defend_object.advantage,
+			'defend_advantage_index_modifier': defend_object.index_modifier,
+			'use_defensive_stance':            (fight_defensively_on ? values.use_defensive_stance : '0'),
+			'show_defensive_stance':           fight_defensively_on
 		};
 		if (fight_defensively_on) {
 			set_object = {...set_object, ...turn_off_combat_actions_except(['use_fight_defensively'])};
@@ -10207,14 +10233,17 @@ on("change:use_fight_defensively", function() {
 	});
 });
 
-on("change:use_guard", function() {
-	getAttrs(["use_guard", "use_defensive_stance", "defend_advantage"], function(values) {
+on('change:use_guard', function() {
+	getAttrs(['use_guard', 'use_defensive_stance', 'defend_advantage', 'defend_advantage_index_modifier'], function(values) {
 		let guard_on = (values.use_guard == 'on');
 		console.log(`turn guard ${(guard_on ? 'on' : 'off')}`);
-		let set_object = { 
-			'defend_advantage':      apply_advantage(apply_advantage(values.defend_advantage, !guard_on), !guard_on),
-			'use_defensive_stance':  (guard_on ? values.use_defensive_stance : '0'),
-			'show_defensive_stance': guard_on
+		let defend_object = apply_advantage(values.defend_advantage, get_int_or_zero(values.defend_advantage_index_modifier), !fight_defensively_on);
+		defend_object     = apply_advantage(defend_object.advantage, defend_object.index_modifier, !fight_defensively_on);
+		let set_object = {
+			'defend_advantage':                defend_object.advantage,
+			'defend_advantage_index_modifier': defend_object.index_modifier,
+			'use_defensive_stance':            (guard_on ? values.use_defensive_stance : '0'),
+			'show_defensive_stance':           guard_on
 		};
 		if (guard_on) {
 			set_object = {...set_object, ...turn_off_combat_actions_except(['use_guard'])};
@@ -10223,8 +10252,8 @@ on("change:use_guard", function() {
 	});
 });
 
-on("change:use_defensive_stance", function() {
-	getAttrs(["use_defensive_stance", "defend_tier"], function(values) {
+on('change:use_defensive_stance', function() {
+	getAttrs(['use_defensive_stance', 'defend_tier'], function(values) {
 		let defensive_stance_on = (values.use_defensive_stance == 'on');
 		console.log(`turn defensive stance ${(defensive_stance_on ? 'on' : 'off')}`);
 		let physical_dr_bonus   = get_int_or_zero(values.defend_tier) * (defensive_stance_on ? 4 : 0);
@@ -10233,11 +10262,15 @@ on("change:use_defensive_stance", function() {
 	});
 });
 
-on("change:use_protect", function() {
-	getAttrs(["use_protect", "defend_advantage"], function(values) {
+on('change:use_protect', function() {
+	getAttrs(['use_protect', 'defend_advantage', 'defend_advantage_index_modifier'], function(values) {
 		let protect_on = (values.use_protect == 'on');
 		console.log(`turn protect ${(protect_on ? 'on' : 'off')}`);
-		let set_object = { 'defend_advantage': apply_advantage(values.defend_advantage, protect_on) };
+		let defend_object = apply_advantage(values.defend_advantage, get_int_or_zero(values.defend_advantage_index_modifier), protect_on);
+		let set_object = {
+			'defend_advantage':                defend_object.advantage,
+			'defend_advantage_index_modifier': defend_object.index_modifier
+		};
 		if (protect_on) {
 			set_object = {...set_object, ...turn_off_combat_actions_except(['use_protect'])};
 		}
