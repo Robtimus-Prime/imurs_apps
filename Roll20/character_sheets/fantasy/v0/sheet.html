@@ -9426,6 +9426,11 @@ function cast_imbue(ep_cost) {
 	cast_prowess_imbue(ep_cost, false);
 }
 
+const special_combat_actions_array = [
+	'use_charge', 'use_fight_recklessly', 'use_rage', 'use_wild_rage', 'use_precise_strike', 'use_sneak_attack',
+	'use_fight_defensively', 'use_defensive_stance', 'use_guard', 'use_protect'
+];
+
 on('sheet:opened', function() {
 	getAttrs(['sheet_is_initialized', 'passive_skills', 'boons_and_banes', 'mob_skill_bonus'], function(values) {
 		let initialized     = get_bool(values.sheet_is_initialized  );
@@ -9436,7 +9441,7 @@ on('sheet:opened', function() {
 		}
 		if (!initialized) {
 			console.log('Initializing new character sheet');
-			let set_object = { 'sheet_is_initialized': true };
+			let set_object = { 'sheet_is_initialized': false, 'sheet_initialization_check_count': 0 };
 			if (values.passive_skills.trim().length == 0) {
 				console.log('No passive skills; setting all to false');
 				passive_skill_array.forEach(function(ps) {
@@ -9456,6 +9461,41 @@ on('sheet:opened', function() {
 					}
 				});
 			}
+			console.log('Set all special combat actions to off');
+			for (let action of special_combat_actions_array) {
+				set_object[action] = '0';
+			}
+			setAttrs(set_object);
+		}
+	});
+});
+
+on('change:sheet_initialization_check_count', function() {
+	let get_array = special_combat_actions_array;
+	get_array.push('sheet_initialization_check_count');
+	getAttrs(get_array, function(values) {
+		console.log(`sheet_initialization_check_count changed to ${values.sheet_initialization_check_count}`);
+		let set_object = { 'sheet_initialization_check_count': get_int_or_zero(values.sheet_initialization_check_count) + 1 };
+		let all_special_combat_actions_off = true;
+		for (let action of special_combat_actions_array) {
+			all_special_combat_actions_off ||= (values[action] == '0');
+		}
+		if (all_special_combat_actions_off) {
+			set_object = { 'sheet_is_initialized': true };
+		}
+		setAttrs(set_object);
+	});
+});
+
+on('change:sheet_is_initialized', function() {
+	getAttrs(['sheet_is_initialized'], function(values) {
+		if (get_bool(values.sheet_is_initialized)) {
+			console.log('Sheet has been initialized');
+			let set_object = {
+				'attack_advantage':     'Novantage',
+				'defend_advantage':     'Novantage',
+				'mr_advantage':         'Novantage'
+			};
 			setAttrs(set_object);
 		}
 	});
@@ -10125,11 +10165,6 @@ on("clicked:reflexinfo", function() {
 	});
 });
 
-const special_combat_actions_array = [
-	'use_charge', 'use_fight_recklessly', 'use_rage', 'use_precise_strike', 'use_sneak_attack',
-	'use_fight_defensively', 'use_defensive_stance', 'use_guard', 'use_protect'
-];
-
 function turn_off_combat_actions_except(exception_array) {
 	let set_object = {};
 	for (let action of special_combat_actions_array.filter(a => !exception_array.includes(a))) {
@@ -10171,7 +10206,7 @@ on('change:use_fight_recklessly', function() {
 			'defend_advantage_index_modifier': defend_object.index_modifier
 		};
 		if (fight_recklessly_on) {
-			set_object = {...set_object, ...turn_off_combat_actions_except(['use_fight_recklessly', 'use_rage'])};
+			set_object = {...set_object, ...turn_off_combat_actions_except(['use_fight_recklessly', 'use_rage', 'use_wild_rage'])};
 		}
 		setAttrs(set_object);
 	});
