@@ -10263,41 +10263,69 @@ on('change:use_sneak_attack', function() {
 });
 
 on('change:use_fight_defensively', function() {
-	getAttrs(['use_fight_defensively', 'ps_defensive_stance', 'use_defensive_stance', 'attack_advantage', 'attack_advantage_index_modifier', 'defend_advantage', 'defend_advantage_index_modifier'], function(values) {
+	getAttrs(['use_fight_defensively', 'use_guard', 'guard_just_turned_on', 'ps_defensive_stance', 'use_defensive_stance', 'attack_advantage', 'attack_advantage_index_modifier', 'defend_advantage', 'defend_advantage_index_modifier'], function(values) {
 		let fight_defensively_on = (values.use_fight_defensively == 'on');
+		let guard_on             = (values.use_guard == 'on');
 		console.log(`turn fight defensively ${(fight_defensively_on ? 'on' : 'off')}`);
 		let attack_object = apply_advantage(values.attack_advantage, get_int_or_zero(values.attack_advantage_index_modifier),  fight_defensively_on);
 		let defend_object = apply_advantage(values.defend_advantage, get_int_or_zero(values.defend_advantage_index_modifier), !fight_defensively_on);
 		let set_object = {
-			'attack_advantage':                attack_object.advantage,
-			'attack_advantage_index_modifier': attack_object.index_modifier,
-			'defend_advantage':                defend_object.advantage,
-			'defend_advantage_index_modifier': defend_object.index_modifier,
-			'use_defensive_stance':            (fight_defensively_on ? values.use_defensive_stance : '0'),
-			'show_defensive_stance':           fight_defensively_on && get_bool(values.ps_defensive_stance)
+			'fight_defensively_just_turned_on': fight_defensively_on,
+			'attack_advantage':                 attack_object.advantage,
+			'attack_advantage_index_modifier':  attack_object.index_modifier,
+			'defend_advantage':                 defend_object.advantage,
+			'defend_advantage_index_modifier':  defend_object.index_modifier
 		};
-		if (fight_defensively_on) {
-			set_object = {...set_object, ...turn_off_combat_actions_except(['use_fight_defensively'])};
+		if (get_bool(values.guard_just_turned_on)) {
+			set_object = {...set_object, ...{ 'guard_just_turned_on': false }};
 		}
+		else {
+			set_object = {...set_object, ...{
+				'use_defensive_stance':  (fight_defensively_on ? values.use_defensive_stance : '0'),
+				'show_defensive_stance': fight_defensively_on && get_bool(values.ps_defensive_stance)
+			}};
+		}
+		if (fight_defensively_on) {
+			let exception_array = ['use_fight_defensively'];
+			if (guard_on) {
+				exception_array.push('use_defensive_stance');
+			}
+			set_object = {...set_object, ...turn_off_combat_actions_except(exception_array)};
+		}
+		console.log(set_object);
 		setAttrs(set_object);
 	});
 });
 
 on('change:use_guard', function() {
-	getAttrs(['use_guard', 'ps_defensive_stance', 'use_defensive_stance', 'defend_advantage', 'defend_advantage_index_modifier'], function(values) {
-		let guard_on = (values.use_guard == 'on');
+	getAttrs(['use_fight_defensively', 'use_guard', 'fight_defensively_just_turned_on', 'ps_defensive_stance', 'use_defensive_stance', 'defend_advantage', 'defend_advantage_index_modifier'], function(values) {
+		let fight_defensively_on = (values.use_fight_defensively == 'on');
+		let guard_on             = (values.use_guard == 'on');
 		console.log(`turn guard ${(guard_on ? 'on' : 'off')}`);
 		let defend_object = apply_advantage(values.defend_advantage, get_int_or_zero(values.defend_advantage_index_modifier), !guard_on);
 		defend_object     = apply_advantage(defend_object.advantage, defend_object.index_modifier, !guard_on);
 		let set_object = {
+			'guard_just_turned_on':            guard_on,
 			'defend_advantage':                defend_object.advantage,
-			'defend_advantage_index_modifier': defend_object.index_modifier,
-			'use_defensive_stance':            (guard_on ? values.use_defensive_stance : '0'),
-			'show_defensive_stance':           guard_on && get_bool(values.ps_defensive_stance)
+			'defend_advantage_index_modifier': defend_object.index_modifier
 		};
-		if (guard_on) {
-			set_object = {...set_object, ...turn_off_combat_actions_except(['use_guard'])};
+		if (get_bool(values.fight_defensively_just_turned_on)) {
+			set_object = {...set_object, ...{ 'fight_defensively_just_turned_on': false }};
 		}
+		else {
+			set_object = {...set_object, ...{
+				'use_defensive_stance':  (guard_on ? values.use_defensive_stance : '0'),
+				'show_defensive_stance': guard_on && get_bool(values.ps_defensive_stance)
+			}};
+		}
+		if (guard_on) {
+			let exception_array = ['use_guard'];
+			if (fight_defensively_on) {
+				exception_array.push('use_defensive_stance');
+			}
+			set_object = {...set_object, ...turn_off_combat_actions_except(exception_array)};
+		}
+		console.log(set_object);
 		setAttrs(set_object);
 	});
 });
