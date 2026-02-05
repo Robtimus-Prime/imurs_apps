@@ -10228,7 +10228,7 @@ on('change:use_sneak_attack', function() {
 });
 
 on('change:use_fight_defensively', function() {
-	getAttrs(['use_fight_defensively', 'use_defensive_stance', 'attack_advantage', 'attack_advantage_index_modifier', 'defend_advantage', 'defend_advantage_index_modifier'], function(values) {
+	getAttrs(['use_fight_defensively', 'ps_defensive_stance', 'use_defensive_stance', 'attack_advantage', 'attack_advantage_index_modifier', 'defend_advantage', 'defend_advantage_index_modifier'], function(values) {
 		let fight_defensively_on = (values.use_fight_defensively == 'on');
 		console.log(`turn fight defensively ${(fight_defensively_on ? 'on' : 'off')}`);
 		let attack_object = apply_advantage(values.attack_advantage, get_int_or_zero(values.attack_advantage_index_modifier),  fight_defensively_on);
@@ -10239,7 +10239,7 @@ on('change:use_fight_defensively', function() {
 			'defend_advantage':                defend_object.advantage,
 			'defend_advantage_index_modifier': defend_object.index_modifier,
 			'use_defensive_stance':            (fight_defensively_on ? values.use_defensive_stance : '0'),
-			'show_defensive_stance':           fight_defensively_on
+			'show_defensive_stance':           fight_defensively_on && get_bool(values.ps_defensive_stance)
 		};
 		if (fight_defensively_on) {
 			set_object = {...set_object, ...turn_off_combat_actions_except(['use_fight_defensively'])};
@@ -10249,7 +10249,7 @@ on('change:use_fight_defensively', function() {
 });
 
 on('change:use_guard', function() {
-	getAttrs(['use_guard', 'use_defensive_stance', 'defend_advantage', 'defend_advantage_index_modifier'], function(values) {
+	getAttrs(['use_guard', 'ps_defensive_stance', 'use_defensive_stance', 'defend_advantage', 'defend_advantage_index_modifier'], function(values) {
 		let guard_on = (values.use_guard == 'on');
 		console.log(`turn guard ${(guard_on ? 'on' : 'off')}`);
 		let defend_object = apply_advantage(values.defend_advantage, get_int_or_zero(values.defend_advantage_index_modifier), !guard_on);
@@ -10258,7 +10258,7 @@ on('change:use_guard', function() {
 			'defend_advantage':                defend_object.advantage,
 			'defend_advantage_index_modifier': defend_object.index_modifier,
 			'use_defensive_stance':            (guard_on ? values.use_defensive_stance : '0'),
-			'show_defensive_stance':           guard_on
+			'show_defensive_stance':           guard_on && get_bool(values.ps_defensive_stance)
 		};
 		if (guard_on) {
 			set_object = {...set_object, ...turn_off_combat_actions_except(['use_guard'])};
