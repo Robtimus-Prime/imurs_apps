@@ -11306,7 +11306,8 @@ combat_style_array.forEach( function(style) {
 		'attack_damage_dice_modifier', 'attack_damage_static_modifier',
 		'use_precise_strike', 'deadly_precision_modifier', 'use_sneak_attack',
 		'sneak_attack_modifier', 'use_rage', 'rage_modifier', 'use_wild_rage',
-		'use_charge', 'swarm_damage_bonus'
+		'use_charge', 'swarm_damage_bonus', 'use_fight_defensively', 'use_guard',
+		'use_fight_recklessly', 'use_protect',  'use_defensive_stance'
 	);
 
 	let change = 'change:' + getAttrs_array.join(' change:');
@@ -11322,27 +11323,37 @@ combat_style_array.forEach( function(style) {
 			let mob_damage_bonus          = get_int_or_zero(values.mob_damage_bonus);
 			let swarm_damage_bonus        = get_int_or_zero(values.swarm_damage_bonus);
 			let set_array = {};
+			
+			let use_any_special_action = (
+				values.use_charge           == 'on' || values.use_precise_strike    == 'on' || values.use_sneak_attack     == 'on' || 
+				values.use_fight_recklessly == 'on' || values.use_rage              == 'on' || values.use_wild_rage        == 'on' || 
+				values.use_guard            == 'on' || values.use_fight_defensively == 'on' || values.use_defensive_stance == 'on' || 
+				values.use_protect          == 'on'
+			);
+			combat_expertise_modifier = (use_any_special_action ? 0 : combat_expertise_modifier);
 
-			let precise_strike_on         = (values.use_precise_strike == 'on');
-			let deadly_precision_modifier = get_int_or_zero(values.deadly_precision_modifier);
-
-			if (values.use_sneak_attack == 'on') {
-				deadly_precision_modifier += get_int_or_zero(values.sneak_attack_modifier);
+			let precise_strike_modifier = 0;
+			let precise_strike_on       = (values.use_precise_strike == 'on');
+			if (precise_strike_on) {
+				precise_strike_modifier = 1 + 
+					get_int_or_zero(values.deadly_precision_modifier) + 
+					(values.use_sneak_attack == 'on' ? get_int_or_zero(values.sneak_attack_modifier) : 0);
 			}
 			
+			let rage_modifier = 0;
 			let rage_on       = (values.use_rage == 'on');
-			let rage_modifier = get_int_or_zero(values.rage_modifier);
-			if (values.use_wild_rage == 'on') {
-				rage_modifier *= 2;
+			if (rage_on) {
+				rage_modifier = get_int_or_zero(values.rage_modifier) * (values.use_wild_rage == 'on' ? 2 : 1);
 			}
 			
-			let modifier = size_modifier + style.damage_bonus(tier) + mob_damage_bonus + swarm_damage_bonus +
-				(precise_strike_on ? 1 + deadly_precision_modifier : (rage_on ? rage_modifier : combat_expertise_modifier));
+			let modifier = 
+				size_modifier + style.damage_bonus(tier) + mob_damage_bonus + swarm_damage_bonus +
+				precise_strike_modifier + rage_modifier + combat_expertise_modifier + damage_dice_modifier;
 
 			// set physical & magic damage amounts & roll text for each weapon
 			for (let i = 1; i <= style.count; i++) {
 				let weapon_name     = values[`${style.name}_weapon${i}_name`].trim();
-				let physical_damage = get_weapon_damage(weapon_name, tier, modifier + damage_dice_modifier, (values.use_charge == 'on'));
+				let physical_damage = get_weapon_damage(weapon_name, tier, modifier, (values.use_charge == 'on'));
 				let magic_object    = get_magic_item_object(weapon_name);
 				let magic_damage    = (magic_object ? magic_object.damage_bonus_by_tier[tier] : 0);
 				let roll_text       = get_weapon_roll_text(
