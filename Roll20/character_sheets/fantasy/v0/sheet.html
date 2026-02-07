@@ -1746,6 +1746,16 @@
 			</span>
 		</div>
 
+		<!-- Lycanthropy -->
+		<div class="monstrous-boon top-line">
+			<input name="attr_bb_lycanthropy" type="hidden" class="show-ability" value="false" />
+			<span class="ability">
+				<div class="skillname">
+					<label> Lycanthropy <button type="action" name="act_lycanthropyinfo" class="info-button generic-skill" /> </label>
+				</div>
+			</span>
+		</div>
+
 		<!-- Mob -->
 		<div class="monstrous-boon top-line">
 			<input name="attr_ps_mob" type="hidden" class="show-ability" value="false" />
@@ -9682,6 +9692,43 @@ on('clicked:legendaryactioninfo', function() {
 		"on all Physical and Mental resilience checks." + _rn + "In addition, they can take legendary actions outside of their normal turn, which don’t cost AP to " +
 		"use. They can take up to three legendary actions per round, which happen after any other creature’s turn. Only one legendary action may be taken at a time." +
 		header_text('Legendary Actions', false) + _bull + 'Perception check to detect a creature' + _bull + 'Attack check' + custom_action + "}}'";
+		
+		startRoll(roll_text, (results) => {
+			finishRoll(results.rollId);
+		});
+	});
+});
+
+const lycanthropy_type_array = [
+	{ name: 'werebear',  curse_attack: 'bite', bb_list: [ 'Large Size', 'Natural Attack (bite)', 'Natural Attack (claw x2)', 'Free Grapple (claw x2)', 'NDR (physical) 30'], ps_list: [] },
+	{ name: 'wereboar',  curse_attack: 'gore', bb_list: [ 'Ferocity', 'Natural Attack (gore)', 'NDR (physical) 24'], ps_list: [] },
+	{ name: 'wererat',   curse_attack: 'bite', bb_list: [ 'Disease Attack (bite', 'tier 2', 'filth fever)', 'Natural Attack (bite)', 'NDR (physical) 24'], ps_list: [] },
+	{ name: 'weretiger', curse_attack: 'bite', bb_list: [ 'Large Size', 'Natural Attack (bite)', 'Natural Attack (claw x2)', 'Free Grapple (bite)', 'Free Grapple (claw x2)', 'NDR (physical) 26', 'Rake'], ps_list: ['Pounce'] },
+	{ name: 'werewolf',  curse_attack: 'bite', bb_list: [ 'Natural Attack (bite)', 'Free Knockdown (bite)', 'NDR (physical) 26'], ps_list: [] }
+];
+
+on('clicked:lycanthropyinfo', function() {
+	getAttrs(['bb_lycanthropy_raw'], function(values) {
+		let type = values.bb_lycanthropy_raw.split('lycanthropy')[1];
+		let type_object = lycanthropy_type_array.find(t => t.name == type);
+		let ps_text = '';
+		if (type_object.ps_list.length > 0) {
+			ps_text = _rn + 'The monster also gains the following passive skill(s): ' + _bull + type_object.ps_list.join(_bull);
+		}
+		let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: Lycanthropy}} " +
+		"{{desc=The monster carries the curse of lycanthropy, which is a magical disease that allows it to transform into a powerful animal hybrid form, but may not be " +
+		"able to control its actions." + _rn + `All monsters with this boon gain the following boons and banes:${_bull} Ultravision${_bull} Scent${_bull} Material ` + 
+		"Vulnerability (silver)" + _rn + `They also gain the following passive skills:${_bull} Rage${_bull} Wild Rage` + _rn + "In addition, monsters with lycanthropy " +
+		"(called lycanthropes) can influence animals of their type with Persuade (diplomacy) as if it were Nature (handle animal). They also gain advantage on Persuade " +
+		"(diplomacy) and Nature (handle animal) checks when dealing with animals of their type." + _rn + "Lycanthropes cannot choose to enter a normal rage - when they " +
+		"rage it always must be a wild rage. When they wild rage, they transform into an animal hybrid form and gain a number of monstrous boons. This transformation takes " +
+		"1 AP. This form maintains all of their equipment, even if their size changes." + _rn + `This monster is a ${type}, and gains the following additional boons:` + 
+		_bull + type_object.bb_list.join(_bull) + ps_text + _rn + `In addition, the ${type}’s ${type_object.curse_attack} attack can pass on the curse of lycanthropy if the ` +
+		"target takes damage and fails aTN 18 Fortitude (constitution) check. The curse will only manifest on the night of the next full moon. Once a given " +
+		"creature successfully resists the curse, the lycanthrope cannot attempt to pass the curse onto that same creature again until it takes a long rest." + _rn +
+		"Every full moon, lycanthropes must attempt a 1-round Mental Resilience (willpower) test versus TN 36 or change to hybrid form and go on a rampage, attempting to " +
+		"kill or destroy any creature or object in their path. During this rampage, the monster is not in control of its own actions and cannot even attempt Mental " +
+		"Resilience checks to avoid attacking allies. A rampaging lycanthrope must continually wild rage." + " }}'";
 		
 		startRoll(roll_text, (results) => {
 			finishRoll(results.rollId);
