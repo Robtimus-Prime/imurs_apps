@@ -1663,6 +1663,16 @@
 			</span>
 		</div>
 
+		<!-- Facehugger -->
+		<div class="monstrous-boon top-line">
+			<input name="attr_bb_facehugger" type="hidden" class="show-ability" value="false" />
+			<span class="ability">
+				<div class="skillname">
+					<label> Facehugger <button type="action" name="act_facehuggerinfo" class="info-button generic-skill" /> </label>
+				</div>
+			</span>
+		</div>
+
 		<!-- Gaze Attack -->
 		<div class="monstrous-boon top-line">
 			<input name="attr_bb_gaze_attack_1" type="hidden" class="show-ability" value="false" />
@@ -9724,7 +9734,7 @@ on('clicked:lycanthropyinfo', function() {
 		"rage it always must be a wild rage. When they wild rage, they transform into an animal hybrid form and gain a number of monstrous boons. This transformation takes " +
 		"1 AP. This form maintains all of their equipment, even if their size changes." + _rn + `This monster is a ${type}, and gains the following additional boons:` + 
 		_bull + type_object.bb_list.join(_bull) + ps_text + _rn + `In addition, the ${type}’s ${type_object.curse_attack} attack can pass on the curse of lycanthropy if the ` +
-		"target takes damage and fails aTN 18 Fortitude (constitution) check. The curse will only manifest on the night of the next full moon. Once a given " +
+		"target takes damage and fails a TN 18 Fortitude (constitution) check. The curse will only manifest on the night of the next full moon. Once a given " +
 		"creature successfully resists the curse, the lycanthrope cannot attempt to pass the curse onto that same creature again until it takes a long rest." + _rn +
 		"Every full moon, lycanthropes must attempt a 1-round Mental Resilience (willpower) test versus TN 36 or change to hybrid form and go on a rampage, attempting to " +
 		"kill or destroy any creature or object in their path. During this rampage, the monster is not in control of its own actions and cannot even attempt Mental " +
@@ -12252,6 +12262,7 @@ const boons_and_banes_array = [
 	{ name: 'bb_disease_immunity',                    search_text: 'diseaseimmunity',           cs_cp_cost:  45, ncs_cp_cost:   0, increment: 0, max_count:  1 },
 	{ name: 'bb_energy_drain',                        search_text: 'energydrain',               cs_cp_cost:  30, ncs_cp_cost:   0, increment: 0, max_count:  1 },
 	{ name: 'bb_engulf',                              search_text: 'engulf',                    cs_cp_cost:  60, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_facehugger',                          search_text: 'facehugger',                cs_cp_cost:  20, ncs_cp_cost:   0, increment: 0, max_count:  1 },
 	{ name: 'bb_fast_movement',                       search_text: 'fastmovement',              cs_cp_cost:   0, ncs_cp_cost:   0, increment: 0, max_count:  1, 
 		cp_function: function(bb_raw) {
 			return parse_movement_boon(bb_raw);
@@ -13022,6 +13033,27 @@ if (gaze_attack_boon) {
 		});
 	}
 }
+
+on('clicked:facehuggerinfo', function() {
+	getAttrs(['size_modifier_skill'], function(values) {
+		let target_size_index = Math.min((get_int_or_zero(values.size_modifier_skill) * -1) + 2, 2);
+		let target_size_array = ['Medium', 'Large', 'Huge'];
+		let target_size = target_size_array[target_size_index];
+		let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: Facehugger}} {{desc=The monster is a facehugger - a creature that completely " +
+		`engulfs a humanoid creature’s head. This facehugger can only target the heads of humanoid creatures up to ${target_size} size. Facehuggers either fly towards ` +
+		"(Fly boon), jump towards (Pounce passive skill), or drop on (Climb boon) their targets." + _rn + "The facehug attack is an Attack (grapple) check made at " +
+		"advantage. Creatures wearing helmets (assume medium and heavy armor includes a helmet) will not be targeted by facehuggers unless they are the only targets, and " +
+		"they gain great advantage on their Defend checks against a facehug attack." + _rn + "If a facehug attack is successful, the target creature is considered blind, " +
+		"grappled, and begins to suffocate. The facehugger is also considered to be grappling, and automatically causes damage as a two-handed melee attack each round. " +
+		"Attacks against a grappling facehugger deal half damage to the facehugger and half to the grappled creature." + _rn + "Creatures can attempt to pull the " +
+		"facehugger off a grappled creature, which takes a successful Attack (grapple) or Athletics (feat) check versus the facehuggers Attack (grapple) check, made at " +
+		"great advantage. If successful, the grappled creature takes damage as if critically hit with the facehuggers Attack (two-handed melee) check.}}'";
+		
+		startRoll(roll_text, (results) => {
+			finishRoll(results.rollId);
+		});
+	});
+});
 
 on("change:bb_huge_size change:bb_large_size change:bb_small_size change:bb_tiny_size", function() {
 	getAttrs(["bb_huge_size", "bb_large_size", "bb_small_size", "bb_tiny_size"], function(values) {
