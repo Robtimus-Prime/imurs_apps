@@ -15111,7 +15111,7 @@ on("clicked:conjurationarmorinfo", function() {
 		let tier3_effect = (show_conjuration_armor_30_ep ? '{{30 EP=' + tier_effect_conjuration(tier, 6, '', 'DR ', 10/6) + '}} ' : '');
 		let tier4_effect = (show_conjuration_armor_40_ep ? '{{40 EP=' + tier_effect_conjuration(tier, 7, '', 'DR ', 12/7) + '}} ' : '');
 		let desc = "With this spell, you envelop a target in magical armor, protecting them from harm. " + _pow + 
-		"You gain " + tier_effect_conjuration(tier, 2, '', 'DR ', 1/2) + ", which applies to every damage type you know." +
+		"You gain " + tier_effect_conjuration(tier, 3, '', 'DR ') + ", which applies to every damage type you know." +
 		_rn + "You can give a target of this spell DR for up to " + tier_effect_conjuration(tier, 1, '') + " damages type you know, based on the " +
 		"amount of EP you spend. You can grant DR against " +
 		"more than one set of damage types with a single casting of *armor*, but you must pay the EP cost for each separately." + _rn + "The DR granted by " +
