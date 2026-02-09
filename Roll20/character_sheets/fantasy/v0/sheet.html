@@ -1843,6 +1843,16 @@
 			</span>
 		</div>
 
+		<!-- Shatter Weapons -->
+		<div class="monstrous-boon top-line">
+			<input name="attr_bb_shatter_weapons" type="hidden" class="show-ability" value="false" />
+			<span class="ability">
+				<div class="skillname">
+					<label> Shatter Weapons <button type="action" name="act_shatterweaponsinfo" class="info-button generic-skill" /> </label>
+				</div>
+			</span>
+		</div>
+	
 		<!-- Swallow Whole -->
 		<div class="monstrous-boon top-line">
 			<input name="attr_bb_swallow_whole" type="hidden" class="show-ability" value="false" />
@@ -9777,6 +9787,16 @@ on("clicked:rendinfo", function() {
 });
 
 
+on("clicked:shatterweaponsinfo", function() {
+	let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: Shatter Weapons}}" +
+	"{{desc=Any time the monster is struck with a weapon, the weapon suffers damage as if successfully hit with the monster’s primary attack. Creatures with the Brawl "+
+	"passive skill that strike the monster suffer that damage themselves.}}'";
+	
+	startRoll(roll_text, (results) => {
+		finishRoll(results.rollId);
+	});
+});
+
 on("clicked:swallowwholeinfo", function() {
 	getAttrs(["swallow_whole_damage", "swallow_whole_hp", "swallow_whole_tn"], function(values) {
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: Swallow Whole}} {{Chemical damage=" + values.swallow_whole_damage + 
@@ -12330,6 +12350,7 @@ const boons_and_banes_array = [
 	},
 	{ name: 'bb_resurrection_vulnerability',          search_text: 'resurrectionvulnerability', cs_cp_cost: -12, ncs_cp_cost:   0, increment: 0, max_count:  1 },
 	{ name: 'bb_scent',                               search_text: 'scent',                     cs_cp_cost:   0, ncs_cp_cost:   6, increment: 0, max_count:  1 },
+	{ name: 'bb_shatter_weapons',                     search_text: 'shatterweapons',            cs_cp_cost:  20, ncs_cp_cost:   0, increment: 0, max_count:  1 }, 
 	{ name: 'bb_slow_movement',                       search_text: 'slowmovement',              cs_cp_cost:   0, ncs_cp_cost:   0, increment: 0, max_count:  1, 
 		cp_function: function(bb_raw) {
 			return parse_movement_boon(bb_raw);
@@ -14985,8 +15006,8 @@ on("clicked:biomancyrevivifyinfo", function() {
 		let tier1_effect = 								   '{{10 EP=10 EP list}} ';
 		let tier2_effect = (show_biomancy_revivify_20_ep ? '{{20 EP=20 EP list}} ' : '');
 		let tier3_effect = (show_biomancy_revivify_30_ep ? '{{30 EP=30 EP list}} ' : '');
-		let tier1_text = 								 `${header_text('10 EP List', false)}${_bull}Alleviate the fatigued condition${_bull}Alleviate the sickened condition${_bull}Alleviate the slowed condition  (each AP of slowness counts as a separate condition)`;
-		let tier2_text = (show_biomancy_revivify_20_ep ? `${header_text('20 EP List', false)}${_bull}Reduce the nauseated condition to sickened${_bull}Reduce the paralyzed condition to slowed (–2 AP)${_bull}Alleviate up to ${tier_effect_biomancy(tier, 1, ' conditions')} from the 10 EP list` : '');
+		let tier1_text = 								 `${header_text('10 EP List', false)}${_bull}Alleviate the deafened condition${_bull}Alleviate the fatigued condition${_bull}Alleviate the sickened condition${_bull}Alleviate the slowed condition  (each AP of slowness counts as a separate condition)`;
+		let tier2_text = (show_biomancy_revivify_20_ep ? `${header_text('20 EP List', false)}${_bull}Alleviate the blinded condition${_bull}Reduce the nauseated condition to sickened${_bull}Reduce the paralyzed condition to slowed (–2 AP)${_bull}Alleviate up to ${tier_effect_biomancy(tier, 1, ' conditions')} from the 10 EP list` : '');
 		let tier3_text = (show_biomancy_revivify_30_ep ? `${header_text('30 EP List', false)}${_bull}Any **2** items from the 20 EP list${_bull}Alleviate the nauseated condition${_bull}Alleviate the paralyzed condition${_bull}Reverse the effects of the Alteration (indurate) spell, reverting the statue back to a living creature` : '');
 		let desc = "This spell can remove one or more physical conditions from the target, based on the amount of EP spent. *Revivify* " +
 		"automatically fails if cast on anything other than a living creature. " + _pow + "When you attempt a second Physical Resilience check to " +
@@ -17071,9 +17092,9 @@ on("clicked:necromancydecrepifyinfo", function() {
 		let show_necromancy_decrepify_30_ep = get_bool(values.show_necromancy_decrepify_30_ep);
 		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
 		let range = get_int_or_zero(values.spell_range);
-		let tier1_effect = 									  '{{10 EP=fatigued}} ';
-		let tier2_effect = (show_necromancy_decrepify_20_ep ? '{{20 EP=fatigued and sickened}} ' : '');
-		let tier3_effect = (show_necromancy_decrepify_30_ep ? '{{30 EP=nauseated}} ' : '');
+		let tier1_effect = 									  `{{10 EP=deafened${_or}fatigued}} `;
+		let tier2_effect = (show_necromancy_decrepify_20_ep ? `{{20 EP=blinded${_or}fatigued and sickened}} ` : '');
+		let tier3_effect = (show_necromancy_decrepify_30_ep ? `{{30 EP=blinded and deafened${_or}nauseated}} ` : '');
 		let desc = "This power adversely affects the biology of a living creature, causing one or more conditions. *Decrepify* automatically " +
 		"fails if cast on anything other than a living creature. " +
 		spend_pool_necromancy('slow the target in addition to the other conditions it suffers, for 3 pool points per AP of slowness.');
