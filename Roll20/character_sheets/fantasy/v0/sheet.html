@@ -11446,7 +11446,7 @@ combat_style_array.forEach( function(style) {
 		'attack_damage_dice_modifier', 'attack_damage_static_modifier',
 		'use_precise_strike', 'deadly_precision_modifier', 'use_sneak_attack',
 		'sneak_attack_modifier', 'use_rage', 'rage_modifier', 'use_wild_rage',
-		'use_charge', 'swarm_damage_bonus', 'use_fight_defensively', 'use_guard',
+		'use_charge', 'use_fight_defensively', 'use_guard',
 		'use_fight_recklessly', 'use_protect',  'use_defensive_stance'
 	);
 
@@ -11461,7 +11461,6 @@ combat_style_array.forEach( function(style) {
 			let damage_dice_modifier      = get_int_or_zero(values.attack_damage_dice_modifier);
 			let damage_static_modifier    = get_int_or_zero(values.attack_damage_static_modifier);
 			let mob_damage_bonus          = get_int_or_zero(values.mob_damage_bonus);
-			let swarm_damage_bonus        = get_int_or_zero(values.swarm_damage_bonus);
 			let set_array = {};
 			
 			let use_any_special_action = (
@@ -11487,8 +11486,8 @@ combat_style_array.forEach( function(style) {
 			}
 			
 			let modifier = 
-				size_modifier + style.damage_bonus(tier) + mob_damage_bonus + swarm_damage_bonus +
-				precise_strike_modifier + rage_modifier + combat_expertise_modifier + damage_dice_modifier;
+				size_modifier + style.damage_bonus(tier) + mob_damage_bonus + precise_strike_modifier + 
+				rage_modifier + combat_expertise_modifier + damage_dice_modifier;
 
 			// set physical & magic damage amounts & roll text for each weapon
 			for (let i = 1; i <= style.count; i++) {
@@ -13396,13 +13395,11 @@ on("change:bb_swarm", function() {
 		let has_swarm = get_bool(values.bb_swarm);
 		let pr_tier   = get_int_or_zero(values.pr_tier);
 		
-		let swarm_damage_bonus  = 0;
 		let swarm_hp_multiplier = 1;
 		let reform_roll         = '';
 		let roll_text           = '';
 
 		if (has_swarm) {
-			swarm_damage_bonus = 2;
 			swarm_hp_multiplier = (values.bb_swarm_raw.includes('nonflying') ? 3 : 7);
 			reform_roll = `1d6cs<${pr_tier}cf>${(pr_tier + 1)}`;
 			roll_text = "@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Swarm Reform}} {{Reform=[[" + reform_roll + "]]}}'";
@@ -13410,7 +13407,6 @@ on("change:bb_swarm", function() {
 
 		setAttrs({ 
 			"swarm_reform_roll_text": roll_text,
-			"swarm_damage_bonus":     swarm_damage_bonus,
 			"swarm_hp_multiplier":    swarm_hp_multiplier
 		});
 	});	
