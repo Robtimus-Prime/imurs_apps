@@ -6088,31 +6088,31 @@
 				</div>
 
 				<div>
-					<input name="attr_show_displacement_fly" type="hidden" class="show-ability" value="true" />
+					<input name="attr_show_displacement_levitate" type="hidden" class="show-ability" value="true" />
 					<span class="ability">
 						<div class="top-line">
-							<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Displacement}} {{Displacement (fly) @{displacement_advantage_text}=[[@{displacement_fly_roll} + @{displacement_total} + @{mob_skill_bonus}]]}}'" />
-							<button type="action" name="act_displacementflyinfo" class="info-button" />
-							<label class="skillapp"> Fly </label>
+							<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Displacement}} {{Displacement (levitate) @{displacement_advantage_text}=[[@{displacement_levitate_roll} + @{displacement_total} + @{mob_skill_bonus}]]}}'" />
+							<button type="action" name="act_displacementlevitateinfo" class="info-button" />
+							<label class="skillapp"> Levitate </label>
 							<label class="skill-tem-container">
-								<input name="attr_displacement_fly_training" type="checkbox" />
+								<input name="attr_displacement_levitate_training" type="checkbox" />
 								<span class="skill-tem skill-training"> Training </span>
 							</label>
-							<input name="attr_displacement_fly_roll" type="hidden" value="2d6" />
+							<input name="attr_displacement_levitate_roll" type="hidden" value="2d6" />
 							<div>
-								<input name="attr_show_displacement_fly_10_ep" type="hidden" class="show-ep-10" value="false" />
-								<input name="attr_show_displacement_fly_20_ep" type="hidden" class="show-ep-20" value="false" />
-								<input name="attr_show_displacement_fly_30_ep" type="hidden" class="show-ep-30" value="false" />
+								<input name="attr_show_displacement_levitate_10_ep" type="hidden" class="show-ep-10" value="false" />
+								<input name="attr_show_displacement_levitate_20_ep" type="hidden" class="show-ep-20" value="false" />
+								<input name="attr_show_displacement_levitate_30_ep" type="hidden" class="show-ep-30" value="false" />
 								<span class="ep-10">
-									<button type="action" name="act_displacementfly10ep" /> 10 EP
+									<button type="action" name="act_displacementlevitate10ep" /> 10 EP
 								</span>
 								<span class="ep-20">
 									&nbsp;
-									<button type="action" name="act_displacementfly20ep" /> 20 EP
+									<button type="action" name="act_displacementlevitate20ep" /> 20 EP
 								</span>
 								<span class="ep-30">
 									&nbsp;
-									<button type="action" name="act_displacementfly30ep" /> 30 EP
+									<button type="action" name="act_displacementlevitate30ep" /> 30 EP
 								</span>
 							</div>
 						</div>
@@ -9002,14 +9002,14 @@ function cast_chronofield(ep_cost) {
 	cast_spell('displacement', 'chronofield', ep_cost, base_duration, collapse_high_duration_bonus, effect);
 }
 
-function cast_fly(ep_cost) {
+function cast_levitate(ep_cost) {
 	let base_duration = (ep_cost == 30 ? dur_short_rest_p_linger : dur_concentration);
 	let effect = "Levitate";
 	if (ep_cost >= 20) {
 		effect = "Fly (speed + @{displacement_tier}) squares";
 	}
 
-	cast_spell('displacement', 'fly', ep_cost, base_duration, false, effect);
+	cast_spell('displacement', 'levitate', ep_cost, base_duration, false, effect);
 }
 
 function cast_stasis(ep_cost) {
@@ -10831,7 +10831,7 @@ const active_skill_array = [
 				] 
 			}, 
 			{
-				name: 'fly', 
+				name: 'levitate', 
 				tier_ep_costs: [ 
 					{ tier: 1, ep_costs: [10] },
 					{ tier: 2, ep_costs: [20] },
@@ -15744,15 +15744,15 @@ on("clicked:displacementchronofield40ep", function() {
 	cast_chronofield(40);
 });
 
-on("clicked:displacementflyinfo", function() {
-	getAttrs(["displacement_tier", "show_displacement_fly_10_ep", "show_displacement_fly_20_ep", "show_displacement_fly_30_ep", "spell_duration_bonus", "spell_range", "spell_area_size", "area_type_nova"], function(values) {
+on("clicked:displacementlevitateinfo", function() {
+	getAttrs(["displacement_tier", "show_displacement_levitate_10_ep", "show_displacement_levitate_20_ep", "show_displacement_levitate_30_ep", "spell_duration_bonus", "spell_range", "spell_area_size", "area_type_nova"], function(values) {
 		let tier = get_int_or_zero(values.displacement_tier);
-		let show_displacement_fly_10_ep = get_bool(values.show_displacement_fly_10_ep);
-		let show_displacement_fly_20_ep = get_bool(values.show_displacement_fly_20_ep);
-		let show_displacement_fly_30_ep = get_bool(values.show_displacement_fly_30_ep);
+		let show_displacement_levitate_10_ep = get_bool(values.show_displacement_levitate_10_ep);
+		let show_displacement_levitate_20_ep = get_bool(values.show_displacement_levitate_20_ep);
+		let show_displacement_levitate_30_ep = get_bool(values.show_displacement_levitate_30_ep);
 		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
 		let base_duration = dur_concentration;
-		if (show_displacement_fly_30_ep) {
+		if (show_displacement_levitate_30_ep) {
 			base_duration = [
 				{ name: '10 or 20 EP', duration: dur_concentration },
 				{ name: '30 EP',       duration: dur_short_rest    }
@@ -15763,21 +15763,21 @@ on("clicked:displacementflyinfo", function() {
 		let nova_area = (values.area_type_nova == 'on' ? `${_n}Nova (${area_size} sq)` : '');
 		let effect_tier = tier_effect_displacement(tier, 1, '');
 		let tier1_effect = 								  "{{10 EP=Levitate}} ";
-		let tier2_effect = (show_displacement_fly_20_ep ? "{{20 EP=Fly (speed +" + effect_tier +") squares}} " : "");
-		let tier3_effect = (show_displacement_fly_30_ep ? "{{30 EP=Fly (speed +" + effect_tier +") squares for hours}} " : "");
+		let tier2_effect = (show_displacement_levitate_20_ep ? "{{20 EP=Fly (speed +" + effect_tier +") squares}} " : "");
+		let tier3_effect = (show_displacement_levitate_30_ep ? "{{30 EP=Fly (speed +" + effect_tier +") squares for hours}} " : "");
 		let tier1_text = _rn + "For 10 EP, the targets can levitate, moving up or down at their normal speed at will. Levitation does not allow " +
 		"horizontal movement, though levitating creatures may find other ways to move themselves horizontally. "
-		let tier2_text = (show_displacement_fly_20_ep ? _rn + "For 20 EP, the targets can fly at a speed (in squares) equal to their " +
+		let tier2_text = (show_displacement_levitate_20_ep ? _rn + "For 20 EP, the targets can fly at a speed (in squares) equal to their " +
 		"normal speed +" + effect_tier + "." : "");
-		let power = (show_displacement_fly_30_ep ? _pow + 'You can fly at will at a speed in squares equal to your normal speed + ' + 
-		tier_effect_displacement(tier, 1, '') : (show_displacement_fly_20_ep ? _pow + 'You can levitate up or down at your normal speed at will.' : ''));
-		let tier3_text = (show_displacement_fly_30_ep ? tier2_text.replace('20', '30') + " In addition, the base duration of this spell becomes " +
+		let power = (show_displacement_levitate_30_ep ? _pow + 'You can fly at will at a speed in squares equal to your normal speed + ' + 
+		tier_effect_displacement(tier, 1, '') : (show_displacement_levitate_20_ep ? _pow + 'You can levitate up or down at your normal speed at will.' : ''));
+		let tier3_text = (show_displacement_levitate_30_ep ? tier2_text.replace('20', '30') + " In addition, the base duration of this spell becomes " +
 		"short rest. " : "");
 		let desc = "This spell grants the target creatures the ability to levitate or fly. " + power + tier1_text + tier2_text + tier3_text +
-		_rn + "When the duration of *fly* expires, any affected creatures who are still airborne float slowly to the ground as if " +
+		_rn + "When the duration of *levitate* expires, any affected creatures who are still airborne float slowly to the ground as if " +
 		"levitating downward for " + tier_effect(tier, 1, ' rounds', 'Displacement', '', 0, 3) + " before falling. " +
 		spend_pool_displacement('increase the target creatures’ fly speed, at a cost of 1 point per extra square of movement.');
-		let roll_text = get_spell_info('Displacement (fly)', '2 AP', range + ' squares', base_duration, duration_bonus, 
+		let roll_text = get_spell_info('Displacement (levitate)', '2 AP', range + ' squares', base_duration, duration_bonus, 
 		`Bolt${nova_area}${_n}Touch`, 'Creature', 'Auto (willing)', tier1_effect + tier2_effect + tier3_effect, desc);
 		startRoll(roll_text, (results) => {
 			finishRoll(results.rollId);
@@ -15785,16 +15785,16 @@ on("clicked:displacementflyinfo", function() {
 	});
 });
 
-on("clicked:displacementfly10ep", function() {
-	cast_fly(10);
+on("clicked:displacementlevitate10ep", function() {
+	cast_levitate(10);
 });
 
-on("clicked:displacementfly20ep", function() {
-	cast_fly(20);
+on("clicked:displacementlevitate20ep", function() {
+	cast_levitate(20);
 });
 
-on("clicked:displacementfly30ep", function() {
-	cast_fly(30);
+on("clicked:displacementlevitate30ep", function() {
+	cast_levitate(30);
 });
 
 on("clicked:displacementstasisinfo", function() {
@@ -15882,7 +15882,7 @@ on("clicked:displacementtelekinesisinfo", function() {
 		"levers, hit switches, etc. Anything that would be complicated to do with one hand may require a Displacement (telekinesis) check (GM’s " +
 		"discretion). " +
 		_rn + "When the duration of *telekinesis* expires, any affected creatures who are airborne float slowly to the ground as if " +
-		"levitating downward (see the *fly* spell) for " + tier_effect(tier, 1, ' rounds', 'Displacement', '', 0, 3) + " before falling. }}'";
+		"levitating downward (see the *levitate* spell) for " + tier_effect(tier, 1, ' rounds', 'Displacement', '', 0, 3) + " before falling. }}'";
 		let roll_text = get_spell_info('Displacement (telekinesis)', '2 AP', range + ' squares', dur_concentration, duration_bonus, 'Self',
 		'Creature or item', 'Mental Resilience', tier1_effect + tier2_effect + tier3_effect + tier4_effect, desc);
 		startRoll(roll_text, (results) => {
