@@ -12094,48 +12094,41 @@ magic_skill_base_array.forEach( function(skill) {
 	}
 });
 
+function get_passives_skills_object(ps_text) {
+	let ps_object = { 'cp_combat_passives': 0, 'cp_non_combat_passives': 0 };
+
+	if (!ps_text || ps_text == '') {
+		return ps_object;
+	}
+	
+	let ps_array = parse_textarea(ps_text).split(',');
+	for (let ps of ps_array) {
+		let object = passive_skill_array.find(s => s.search_text == ps);
+		if (!object) {
+			console.error(`passive skill ${ps} not found`);
+		}
+		else {
+			ps_object.cp_combat_passives     += object.cs_cp_cost;
+			ps_object.cp_non_combat_passives += object.ncs_cp_cost;
+			ps_object[object.name]            = true;
+		}
+	}
+	
+	return ps_object;
+}
+
 function set_passive_skills(eventInfo) {
-	getAttrs(['cp_combat_passives', 'cp_non_combat_passives'], function(values) {
-		let cp_cs_passive  = get_int_or_zero(values.cp_combat_passives    );
-		let cp_ncs_passive = get_int_or_zero(values.cp_non_combat_passives);
+	let old_ps_object = get_passives_skills_object(eventInfo.previousValue);
+	let new_ps_object = get_passives_skills_object(eventInfo.newValue);
 
-//		console.log('set_passive_skills');
-//		console.log(eventInfo);
+	let keys_to_blank_out = Object.keys(old_ps_object).filter(ps => !Object.keys(new_ps_object).includes(ps));
 
-		let old_ps_text = (eventInfo.previousValue ? parse_textarea(eventInfo.previousValue) : '');
-		let new_ps_text = (eventInfo.newValue      ? parse_textarea(eventInfo.newValue)      : '');
+	for (let key of keys_to_blank_out) {
+		new_ps_object[key] = '';
+	}
 
-		let set_array = {};
-		let is_in_old_ps_text = false;
-		let is_in_new_ps_text = false;
-		let cp_cs_change      = 0;
-		let cp_ncs_change     = 0;
-		
-		passive_skill_array.forEach( function(skill) {
-			is_in_old = old_ps_text.includes(skill.search_text);
-			is_in_new = new_ps_text.includes(skill.search_text);
-			if (is_in_old && !is_in_new) {
-				console.log(`remove ${skill.name}`);
-				set_array[skill.name] = false;
-				cp_cs_change         -= skill.cs_cp_cost;
-				cp_ncs_change        -= skill.ncs_cp_cost;
-			}
-			if (is_in_new && !is_in_old) {
-				console.log(`add ${skill.name}`);
-				set_array[skill.name] = true;
-				cp_cs_change         += skill.cs_cp_cost;
-				cp_ncs_change        += skill.ncs_cp_cost;
-			}
-		});
-		
-		let new_cp_cs_passive  = Math.max(0, cp_cs_passive  + cp_cs_change );
-		let new_cp_ncs_passive = Math.max(0, cp_ncs_passive + cp_ncs_change);
-		console.log(`new passive CP; CS ${new_cp_cs_passive}; NCS ${new_cp_ncs_passive}`);
-		set_array['cp_combat_passives']     = new_cp_cs_passive;
-		set_array['cp_non_combat_passives'] = new_cp_ncs_passive;
-		
-		setAttrs(set_array);
-	});
+	console.log(new_ps_object);
+	setAttrs(new_ps_object);
 }
 
 const movement_boon_array = [
@@ -12575,7 +12568,7 @@ function parse_boons_and_banes_text(boons_and_banes_text) {
 	return parsed_array;
 }
 
-function get_boons_and_banes(bb_array) {
+function get_boons_and_banes_object(bb_array) {
 	let set_object  = { cp_combat_boons_banes: 0, cp_non_combat_boons_banes: 0 };
 	if (!bb_array) {
 		return set_object;
@@ -12587,7 +12580,7 @@ function get_boons_and_banes(bb_array) {
 	for (let bb_raw of bb_array) {
 		bb = boons_and_banes_array.find(b => bb_raw.startsWith(b.search_text));
 		if (!bb) {
-			console.error(`${bb_raw} not found`);
+			console.error(`boon/bane ${bb_raw} not found`);
 			continue;
 		}
 		count = set_object[`${bb.name}_count`];
@@ -12635,8 +12628,8 @@ function set_boons_and_banes(eventInfo) {
 	console.log(old_bb_array);
 	console.log(new_bb_array);
 
-	let old_bb_object = get_boons_and_banes(old_bb_array);
-	let new_bb_object = get_boons_and_banes(new_bb_array);
+	let old_bb_object = get_boons_and_banes_object(old_bb_array);
+	let new_bb_object = get_boons_and_banes_object(new_bb_array);
 	//console.log(old_bb_object);
 	//console.log(new_bb_object);
 
