@@ -11988,6 +11988,7 @@ on('change:' + area_type_array.join(' change:'), function() {
 const passive_skill_array = [
 	{ name: 'ps_absolute_protector',          search_text: 'absoluteprotector',         cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_action_hero',                 search_text: 'actionhero',                cs_cp_cost:  3, ncs_cp_cost:  3 },
+	{ name: 'ps_animate_object',              search_text: 'animateobject',             cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_arcane_trapfinding',          search_text: 'arcanetrapfinding',         cs_cp_cost:  0, ncs_cp_cost:  6 },
 	{ name: 'ps_archers_stance',              search_text: 'archersstance',             cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_armor_expertise',             search_text: 'armorexpertise',            cs_cp_cost:  6, ncs_cp_cost:  0 },
@@ -12007,17 +12008,22 @@ const passive_skill_array = [
 	{ name: 'ps_deadly_precision',            search_text: 'deadlyprecision',           cs_cp_cost:  4, ncs_cp_cost:  0 },
 	{ name: 'ps_deathblow',                   search_text: 'deathblow',                 cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_defensive_stance',            search_text: 'defensivestance',           cs_cp_cost:  6, ncs_cp_cost:  0 },
+	{ name: 'ps_devastating_charge',          search_text: 'devastatingcharge',         cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_dexterous_athletics',         search_text: 'dexterousathletics',        cs_cp_cost:  0, ncs_cp_cost:  3 },
 	{ name: 'ps_dexterous_strike',            search_text: 'dexterousstrike',           cs_cp_cost:  3, ncs_cp_cost:  0 },
 	{ name: 'ps_die_hard',                    search_text: 'diehard',                   cs_cp_cost:  3, ncs_cp_cost:  0 },
+	{ name: 'ps_displacement_attack',         search_text: 'displacementattack',        cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_dynamancy_opportunist',       search_text: 'dynamancyopportunist',      cs_cp_cost:  3, ncs_cp_cost:  0 },
 	{ name: 'ps_improved_explosive_death',    search_text: 'improvedexplosivedeath',    cs_cp_cost: 10, ncs_cp_cost:  0 },
 	{ name: 'ps_greater_explosive_death',     search_text: 'greaterexplosivedeath',     cs_cp_cost: 20, ncs_cp_cost:  0 },
 	{ name: 'ps_epic_explosive_death',        search_text: 'epicexplosivedeath',        cs_cp_cost: 30, ncs_cp_cost:  0 },
 	{ name: 'ps_legendary_explosive_death',   search_text: 'legendaryexplosivedeath',   cs_cp_cost: 40, ncs_cp_cost:  0 },
 	{ name: 'ps_far_shot',                    search_text: 'farshot',                   cs_cp_cost:  3, ncs_cp_cost:  0 },
+	{ name: 'ps_flying_kick',                 search_text: 'flyingkick',                cs_cp_cost:  3, ncs_cp_cost:  0 },
 	{ name: 'ps_focused_blasting',            search_text: 'focusedblasting',           cs_cp_cost:  6, ncs_cp_cost:  0 },
+	{ name: 'ps_greater_focused_blasting',    search_text: 'greaterfocusedblasting',    cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_focused_healing',             search_text: 'focusedhealing',            cs_cp_cost:  4, ncs_cp_cost:  0 },
+	{ name: 'ps_greater_focused_healing',     search_text: 'greaterfocusedhealing',     cs_cp_cost:  4, ncs_cp_cost:  0 },
 	{ name: 'ps_force_weapon',                search_text: 'force_weapon',              cs_cp_cost:  3, ncs_cp_cost:  0 },
 	{ name: 'ps_gang_up',                     search_text: 'gangup',                    cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_iron_skin',                   search_text: 'ironskin',                  cs_cp_cost:  6, ncs_cp_cost:  0 },
@@ -12033,9 +12039,12 @@ const passive_skill_array = [
 	{ name: 'ps_quick_draw',                  search_text: 'quickdraw',                 cs_cp_cost:  3, ncs_cp_cost:  0 },
 	{ name: 'ps_quintessence',                search_text: 'quintessence',              cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_rage',                        search_text: 'rage',                      cs_cp_cost:  6, ncs_cp_cost:  0 },
+	{ name: 'ps_ranged_legerdemain',          search_text: 'rangedlegerdemain',         cs_cp_cost:  0, ncs_cp_cost:  6 },
 	{ name: 'ps_rapid_reload',                search_text: 'rapidreload',               cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_rend',                        search_text: 'rend',                      cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_shield_bash',                 search_text: 'shieldbash',                cs_cp_cost:  6, ncs_cp_cost:  0 },
+	{ name: 'ps_sideslip_attack',             search_text: 'sideslipattack',            cs_cp_cost:  6, ncs_cp_cost:  0 },
+	{ name: 'ps_sideslip_defense',            search_text: 'sideslipdefense',           cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_snap_shot',                   search_text: 'snapshot',                  cs_cp_cost:  3, ncs_cp_cost:  0 },
 	{ name: 'ps_sneak_attack',                search_text: 'sneakattack',               cs_cp_cost:  4, ncs_cp_cost:  0 },
 	{ name: 'ps_spell_combat',                search_text: 'spellcombat',               cs_cp_cost:  6, ncs_cp_cost:  0 },
@@ -12055,6 +12064,20 @@ const passive_skill_array = [
 	{ name: 'ps_vitality',                    search_text: 'vitality',                  cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_wild_rage',                   search_text: 'wildrage',                  cs_cp_cost:  6, ncs_cp_cost:  0 },
 ];
+
+damage_type_list.forEach( function(type) {
+	for (let other of damage_type_list) {
+		if (type == other) {
+			continue;
+		}
+		passive_skill_array.push( {
+			name:        `ps_energy_amalgamation_${type}_${other}`,
+			search_text: `energyamalgamation${type}${other}`,
+			cs_cp_cost:  6,
+			ncs_cp_cost: 0
+		} );
+	}
+});
 
 const magic_skill_base_array = active_skill_array
 	.filter(skill => 
