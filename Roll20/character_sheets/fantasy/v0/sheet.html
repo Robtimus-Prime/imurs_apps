@@ -6574,6 +6574,19 @@
 					</span>
 				</div>
 				
+				<!-- Mage Rage -->
+				<div class="top-space bottom-space">
+					<input name="attr_ps_mage_rage" type="hidden" class="show-ability" value="false" />
+					<span class="ability bottom-space">
+						<div>
+							<label class="skill-tem-container">
+								<input name="attr_use_mage_rage" type="checkbox" />
+								<span class="skill-tem magic-focus"> Mage Rage </span>
+							</label>
+						</div>
+					</span>
+				</div>
+				
 				<div class="top-space bottom-space">
 					<label class="skill-tem-container">
 						<input name="attr_use_dynamancy_pool_points" type="checkbox" />
@@ -9141,14 +9154,15 @@ function cast_status(ep_cost) {
 }
 
 function cast_attack(ep_cost) {
-	getAttrs(["dynamancy_attack_toggle", "dynamancy_tier", "ps_focused_blasting", "use_focused_blasting", "dynamancy_damage_dice_modifier"], function(values) {
+	getAttrs(["dynamancy_attack_toggle", "dynamancy_tier", "ps_focused_blasting", "use_focused_blasting", "use_mage_rage", "pr_tier", "dynamancy_damage_dice_modifier"], function(values) {
 		let toggle = get_bool(values.dynamancy_attack_toggle);
 		let tier = get_int_or_zero(values.dynamancy_tier);
 		let has_focus = get_bool(values.ps_focused_blasting);
 		let use_focus = (values.use_focused_blasting == 'on');
-		let dice_mod = get_int_or_zero(values.dynamancy_damage_dice_modifier);
+		let use_rage  = (values.use_mage_rage == 'on');
+		let dice_mod  = get_int_or_zero(values.dynamancy_damage_dice_modifier);
 		let damage_tier = (has_focus && use_focus && ep_cost > 0 ? tier + 1 : tier);
-		let damage = (damage_tier + 1) * (ep_cost < 10 ? 1 : (ep_cost / 10) + 1);
+		let damage = (damage_tier + 1) * (ep_cost < 10 ? 1 : (ep_cost / 10) + 1) + (use_rage ? get_int_or_zero(values.pr_tier) : 0);
 		damage += dice_mod;
 
 		setAttrs({
