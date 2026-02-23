@@ -7806,17 +7806,24 @@ function get_swarm_bonus_damage(weapon_name) {
 	return bonus;
 }
 
-function get_weapon_damage(weapon_name, tier, modifier = 0, use_charge = false) {
-	let weapon_dice = 0;
+function get_charge_damage(weapon_name, has_devastating_charge, has_flying_kick, athletics_tier) {
+	let charge_modifier = (has_devastating_charge ? 1 : 0);
 	let weapon_name_lc = weapon_name.toLowerCase();
-	let base_damage = (weapon_name_lc.includes('improvised') ? 0 : 1);
-	if (use_charge && (weapon_name_lc.includes('lance') || weapon_name_lc.includes('spear') || weapon_name_lc.includes('pike'))) {
-		base_damage++;
+	if (weapon_name_lc.includes('lance') || weapon_name_lc.includes('spear') || weapon_name_lc.includes('pike') ||
+		(has_flying_kick && weapon_name_lc.replaceAll(' ', '').includes('flyingkick'))) {
+		charge_modifier += (has_devastating_charge ? athletics_tier : 1);
 	}
+	//console.log(`get_charge_damage; weapon_name: ${weapon_name}, has_devastating_charge: ${has_devastating_charge}, has_flying_kick: ${has_flying_kick}, athletics_tier: ${athletics_tier}, charge_modifier: ${charge_modifier}`);
+	return charge_modifier;
+}
+
+function get_weapon_damage(weapon_name, tier, modifier = 0) {
+	let weapon_dice = 0;
+	let base_damage = (weapon_name.toLowerCase().includes('improvised') ? 0 : 1);
 	if (weapon_name) {
 		weapon_dice = base_damage + tier + get_rake_bonus_damage(weapon_name) + get_swarm_bonus_damage(weapon_name) + modifier;
 	}
-	//console.log(`weapon: ${weapon_name}; damage dice: ${weapon_dice}`);
+	console.log(`get_weapon_damage; base_damage: ${base_damage}, tier: ${tier}, rake_bonus_damage: ${get_rake_bonus_damage(weapon_name)}, swarm_bonus_damage: ${get_swarm_bonus_damage(weapon_name)}, modifier: ${modifier}`);
 	return weapon_dice;
 }
 
@@ -11466,13 +11473,12 @@ combat_style_array.forEach( function(style) {
 		'attack_damage_dice_modifier', 'attack_damage_static_modifier',
 		'use_precise_strike', 'deadly_precision_modifier', 'use_sneak_attack',
 		'sneak_attack_modifier', 'use_rage', 'rage_modifier', 'use_wild_rage',
-		'use_charge', 'use_fight_defensively', 'use_guard',
+		'use_charge', 'ps_devastating_charge', 'ps_flying_kick', 'athletics_tier',
+		'use_fight_defensively', 'use_guard',
 		'use_fight_recklessly', 'use_protect',  'use_defensive_stance'
 	);
 
-	let change = 'change:' + getAttrs_array.join(' change:');
-
-	on(change, function() {
+	on('change:' + getAttrs_array.join(' change:'), function() {
 		//console.log(`${style.name} weapon changed`);
 		getAttrs(getAttrs_array, function(values) {
 			let tier                      = get_int_or_zero(values.attack_tier);
@@ -11481,7 +11487,7 @@ combat_style_array.forEach( function(style) {
 			let damage_dice_modifier      = get_int_or_zero(values.attack_damage_dice_modifier);
 			let damage_static_modifier    = get_int_or_zero(values.attack_damage_static_modifier);
 			let mob_damage_bonus          = get_int_or_zero(values.mob_damage_bonus);
-			let set_array = {};
+			let set_object                = {};
 			
 			let use_any_special_action = (
 				values.use_charge           == 'on' || values.use_precise_strike    == 'on' || values.use_sneak_attack     == 'on' || 
@@ -11490,6 +11496,8 @@ combat_style_array.forEach( function(style) {
 				values.use_protect          == 'on'
 			);
 			combat_expertise_modifier = (use_any_special_action ? 0 : combat_expertise_modifier);
+			
+			let charge_modifier = 0;
 
 			let precise_strike_modifier = 0;
 			let precise_strike_on       = (values.use_precise_strike == 'on');
@@ -11506,28 +11514,38 @@ combat_style_array.forEach( function(style) {
 			}
 			
 			let modifier = 
-				size_modifier + style.damage_bonus(tier) + mob_damage_bonus + precise_strike_modifier + 
+				size_modifier + style.damage_bonus(tier) + mob_damage_bonus + charge_modifier + precise_strike_modifier + 
 				rage_modifier + combat_expertise_modifier + damage_dice_modifier;
-
+			
 			// set physical & magic damage amounts & roll text for each weapon
 			for (let i = 1; i <= style.count; i++) {
 				let weapon_name     = values[`${style.name}_weapon${i}_name`].trim();
-				let physical_damage = get_weapon_damage(weapon_name, tier, modifier, (values.use_charge == 'on'));
+				// add charge damage if applicable
+				if (values.use_charge == 'on') {
+					charge_modifier = get_charge_damage(weapon_name, get_bool(values.ps_devastating_charge), get_bool(values.ps_flying_kick), get_int_or_zero(values.athletics_tier));
+				}
+
+				let physical_damage = get_weapon_damage(weapon_name, tier, modifier + charge_modifier);
 				let magic_object    = get_magic_item_object(weapon_name);
 				let magic_damage    = (magic_object ? magic_object.damage_bonus_by_tier[tier] : 0);
 				let roll_text       = get_weapon_roll_text(
 					weapon_name, style.name, style.friendly_name, i, style.extra_damage, damage_static_modifier, (magic_damage > 0)
 				);
 
-				set_array[`${style.name}_weapon${i}_physical_damage`] = physical_damage;
-				set_array[`${style.name}_weapon${i}_magic_damage`]    = magic_damage;
-				set_array[`${style.name}_weapon${i}_damage`]          = (physical_damage + magic_damage > 0 ? physical_damage + magic_damage : '');
-				set_array[`${style.name}_weapon${i}_roll_text`]       = roll_text;
+				/*console.log(`${'_'.repeat(80)}\nWEAPON: ${weapon_name}\nsize_modifier: ${size_modifier}, style.damage_bonus: ${style.damage_bonus(tier)}, mob_damage_bonus: ${mob_damage_bonus}, ` +
+				`charge_modifier: ${charge_modifier}, precise_strike_modifier: ${precise_strike_modifier}, rage_modifier: ${rage_modifier}, ` +
+				`combat_expertise_modifier: ${combat_expertise_modifier}, damage_dice_modifier: ${damage_dice_modifier}; TOTAL: ${modifier} (original: ${original_mod_value}, after charge: ${modifier_after_charge})` +
+				`\nphysical_damage: ${physical_damage}, magic_damage: ${magic_damage}`);*/
+
+				set_object[`${style.name}_weapon${i}_physical_damage`] = physical_damage;
+				set_object[`${style.name}_weapon${i}_magic_damage`]    = magic_damage;
+				set_object[`${style.name}_weapon${i}_damage`]          = (physical_damage + magic_damage > 0 ? physical_damage + magic_damage : '');
+				set_object[`${style.name}_weapon${i}_roll_text`]       = roll_text;
 				//console.log(`roll_text = ${roll_text}`);
 			}
 			
-			//console.log(`set_array = ${JSON.stringify(set_array)}`);
-			setAttrs(set_array);
+			//console.log(`set_object = ${JSON.stringify(set_object)}`);
+			setAttrs(set_object);
 		});
 	});
 });
@@ -11593,13 +11611,13 @@ on("clicked:togglecombatstyles", function() {
 			any_hidden ||= !values[show];
 		});
 		
-		let set_array = {};
+		let set_object = {};
 		for (let i = 0; i < show_array.length; i++) {
-			set_array[show_array[i]] = (any_hidden ? true : (values[training_array[i]] == 'on'));
+			set_object[show_array[i]] = (any_hidden ? true : (values[training_array[i]] == 'on'));
 		}
-		//console.log(`set_array = ${JSON.stringify(set_array)}`);
+		//console.log(`set_object = ${JSON.stringify(set_object)}`);
 		
-		setAttrs(set_array);
+		setAttrs(set_object);
 	});
 });
 
