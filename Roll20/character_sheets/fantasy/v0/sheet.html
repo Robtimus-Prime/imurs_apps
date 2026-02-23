@@ -5703,7 +5703,7 @@
 								<input name="attr_show_conjuration_fabricate_30_ep" type="hidden" class="show-ep-30" value="false" />
 								<input name="attr_show_conjuration_fabricate_40_ep" type="hidden" class="show-ep-40" value="false" />
 								<span class="ep-10">
-									<b> Repair </b> <br />
+									<b> Repair/Heal </b> <br />
 									<button type="action" name="act_conjurationfabricaterepair5ep" /> 5 EP
 									&nbsp;
 									<button type="action" name="act_conjurationfabricaterepair10ep" /> 10 EP
@@ -15414,6 +15414,7 @@ on("clicked:conjurationfabricateinfo", function() {
 			attack_text  = _rn + "Alternatively, you can use this spell to conjure something heavy and drop in on your target(s), causing physical damage. " +
 			"This works like Dynamancy (attack), including the basic attack. The physical damage caused is based on how much EP you spend on it.";
 			or_damage = ' or damage';
+			base_duration.push({ name: 'attack', duration: dur_instantaneous });
 		}
 
 		let tier1_effect = basic_effect +						'{{5 EP=**1** item' + 												' of up to ' + tier_effect_conjuration(tier,  10, ' lbs/gc') + _or + 'Repair/heal ' + tier_effect_conjuration(tier, 1, 'd6',  '', 1) + damage_text + basic_attack + '}} ' +
