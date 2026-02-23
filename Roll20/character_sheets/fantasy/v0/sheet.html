@@ -15393,23 +15393,41 @@ on("clicked:conjurationfabricateinfo", function() {
 		let range = get_int_or_zero(values.spell_range);
 		let area_size = get_int_or_zero(values.spell_area_size);
 		let area_type_list = get_area_type_list(area_size, values.area_type_blast, values.area_type_burst, values.area_type_line, values.area_type_nova, values.area_type_wall);
-
 		let damage_text = attribute_mod_effect(attribute_name, attribute_mod) + ' damage'; 
-		let tier1_effect = 										'{{5 EP=**1** item' + 												' of up to ' + tier_effect_conjuration(tier,  10, ' lbs/gc') + _or + 'Repair/heal ' + tier_effect_conjuration(tier, 1, 'd6',  '', 1) + damage_text + '}} ' +
-																'{{10 EP=Up to ' + tier_effect_conjuration(tier, 1, ' items', '') + ' of up to ' + tier_effect_conjuration(tier,  20, ' lbs/gc') + _or + 'Repair/heal ' + tier_effect_conjuration(tier, 1, 'd10', '', 1) + damage_text + '}} ';
-		let tier2_effect = (show_conjuration_fabricate_20_ep  ? '{{20 EP=Up to ' + tier_effect_conjuration(tier, 2, ' items', '') + ' of up to ' + tier_effect_conjuration(tier,  50, ' lbs/gc') + _or + 'Repair/heal ' + tier_effect_conjuration(tier, 2, 'd6',  '', 1) + damage_text + '}} ' : '');
-		let tier3_effect = (show_conjuration_fabricate_30_ep  ? '{{30 EP=Up to ' + tier_effect_conjuration(tier, 3, ' items', '') + ' of up to ' + tier_effect_conjuration(tier, 100, ' lbs/gc') + _or + 'Repair/heal ' + tier_effect_conjuration(tier, 2, 'd10', '', 1) + damage_text + _or + 'Restore **1 destroyed item**}} ' : '');
-		let tier4_effect = (show_conjuration_fabricate_40_ep  ? '{{40 EP=Up to ' + tier_effect_conjuration(tier, 4, ' items', '') + ' of up to ' + tier_effect_conjuration(tier, 250, ' lbs/gc') + _or + 'Repair/heal ' + tier_effect_conjuration(tier, 4, 'd6',  '', 1) + damage_text + _or + 'Restore ' + tier_effect_conjuration(tier, 1, ' destroyed items') + _or + 'Restore **1 destroyed magic item**}} ' : '');
-	
+
+		let basic_attack = '';
+		let basic_effect = '';
+		let tier1_attack = '';
+		let tier2_attack = '';
+		let tier3_attack = '';
+		let tier4_attack = '';
+		let attack_text  = '';
+		let or_damage    = '';
 		if (has_conjuration_attack) {
+			let physical_damage = damage_text.replace('damage', 'physical damage');
+			basic_attack = _or + tier_effect_conjuration(tier, 1, 'd6', '', 1) + physical_damage;
+			tier1_attack = _or + tier_effect_conjuration(tier, 2, 'd6', '', 1) + physical_damage;
+			tier2_attack = _or + tier_effect_conjuration(tier, 3, 'd6', '', 1) + physical_damage;
+			tier3_attack = _or + tier_effect_conjuration(tier, 4, 'd6', '', 1) + physical_damage;
+			tier4_attack = _or + tier_effect_conjuration(tier, 5, 'd6', '', 1) + physical_damage;
+			basic_effect = `{{0 EP=${basic_attack.replace(_or, '')}}}`;
+			attack_text  = _rn + "Alternatively, you can use this spell to conjure something heavy and drop in on your target(s), causing physical damage. " +
+			"This works like Dynamancy (attack), including the basic attack. The physical damage caused is based on how much EP you spend on it.";
+			or_damage = ' or damage';
 		}
 
+		let tier1_effect = basic_effect +						'{{5 EP=**1** item' + 												' of up to ' + tier_effect_conjuration(tier,  10, ' lbs/gc') + _or + 'Repair/heal ' + tier_effect_conjuration(tier, 1, 'd6',  '', 1) + damage_text + basic_attack + '}} ' +
+																'{{10 EP=Up to ' + tier_effect_conjuration(tier, 1, ' items', '') + ' of up to ' + tier_effect_conjuration(tier,  20, ' lbs/gc') + _or + 'Repair/heal ' + tier_effect_conjuration(tier, 1, 'd10', '', 1) + damage_text + tier1_attack + '}} ';
+		let tier2_effect = (show_conjuration_fabricate_20_ep  ? '{{20 EP=Up to ' + tier_effect_conjuration(tier, 2, ' items', '') + ' of up to ' + tier_effect_conjuration(tier,  50, ' lbs/gc') + _or + 'Repair/heal ' + tier_effect_conjuration(tier, 2, 'd6',  '', 1) + damage_text + tier2_attack + '}} ' : '');
+		let tier3_effect = (show_conjuration_fabricate_30_ep  ? '{{30 EP=Up to ' + tier_effect_conjuration(tier, 3, ' items', '') + ' of up to ' + tier_effect_conjuration(tier, 100, ' lbs/gc') + _or + 'Repair/heal ' + tier_effect_conjuration(tier, 2, 'd10', '', 1) + damage_text + tier3_attack + _or + 'Restore **1 destroyed item**}} ' : '');
+		let tier4_effect = (show_conjuration_fabricate_40_ep  ? '{{40 EP=Up to ' + tier_effect_conjuration(tier, 4, ' items', '') + ' of up to ' + tier_effect_conjuration(tier, 250, ' lbs/gc') + _or + 'Repair/heal ' + tier_effect_conjuration(tier, 4, 'd6',  '', 1) + damage_text + tier4_attack + _or + 'Restore ' + tier_effect_conjuration(tier, 1, ' destroyed items') + _or + 'Restore **1 destroyed magic item**}} ' : '');
+	
 		let desc = "This power can create items, repair items, and heal constructs. Creating items is limited by weight or cost, whichever is " +
 		"more restrictive. " + _pow + "For 1 AP, you can create a single item of up to 2 pounds or 2 GC per tier you have in Conjuration (whichever is " +
 		"more restrictive). This item lasts for " + tier_effect(tier, 1, ' rounds', 'Conjuration', '', 0, 3) + "." + _rn + "The number of items you can create and their " +
 		"total maximum weight or cost, or the amount of damage you heal, is based on your tier and how much EP you spend. " + _rn + "Items created by this " +
 		"spell must be created in an environment that can support them, and instantly disappear when the duration runs out. *Fabricate* cannot be used to " +
-		"create magic items. " + spend_pool_conjuration('increase the healing further, at a cost of 2 points per additional 1d6.');
+		"create magic items. " + attack_text + spend_pool_conjuration('increase the healing' + or_damage + ' further, at a cost of 2 points per additional die.');
 		let roll_text = get_spell_info('Conjuration (fabricate)', '10 minutes', range + ' squares', base_duration, duration_bonus, area_type_list,
 		'Creature or item', 'Auto (item, willing)', tier1_effect + tier2_effect + tier3_effect + tier4_effect, desc);
 		startRoll(roll_text, (results) => {
