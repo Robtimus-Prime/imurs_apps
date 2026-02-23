@@ -7823,7 +7823,7 @@ function get_weapon_damage(weapon_name, tier, modifier = 0) {
 	if (weapon_name) {
 		weapon_dice = base_damage + tier + get_rake_bonus_damage(weapon_name) + get_swarm_bonus_damage(weapon_name) + modifier;
 	}
-	console.log(`get_weapon_damage; base_damage: ${base_damage}, tier: ${tier}, rake_bonus_damage: ${get_rake_bonus_damage(weapon_name)}, swarm_bonus_damage: ${get_swarm_bonus_damage(weapon_name)}, modifier: ${modifier}`);
+	//console.log(`get_weapon_damage; base_damage: ${base_damage}, tier: ${tier}, rake_bonus_damage: ${get_rake_bonus_damage(weapon_name)}, swarm_bonus_damage: ${get_swarm_bonus_damage(weapon_name)}, modifier: ${modifier}`);
 	return weapon_dice;
 }
 
@@ -11328,20 +11328,29 @@ active_skill_array.forEach( function(skill) {
 			let natural_ps_improved_name = `ps_improved_natural_magic_${skill.name}`;
 			let natural_ps_greater_name  = `ps_greater_natural_magic_${skill.name}`;
 			let natural_ps_epic_name     = `ps_epic_natural_magic_${skill.name}`;
-			let getAttrs_array_spell = [tier_name, training, natural_boon_name, natural_ps_improved_name, natural_ps_greater_name, natural_ps_epic_name];
-			let change_spell = 'change:' + getAttrs_array_spell.join(' change:');
+			let getAttrs_array_spell     = [tier_name, training, natural_boon_name, natural_ps_improved_name, natural_ps_greater_name, natural_ps_epic_name];
+			let change_spell             = 'change:' + getAttrs_array_spell.join(' change:');
 
 			// Events (magic skills only): skill tier changes
 			// Sets the recharge roll if they have the natural magic boon for this skill
-			on(`change:${tier_name} change:${natural_boon_name}`, function() {
-				getAttrs([natural_boon_name, tier_name], function(values) {
-					let has_natural_magic = get_bool(values[natural_boon_name]);
+			on(`change:${tier_name} change:${natural_boon_name} change:bb_inner_magic change:${advantage_name}`, function() {
+				getAttrs([natural_boon_name, tier_name, advantage_name, 'bb_inner_magic'], function(values) {
 					let tier              = get_int_or_zero(values[tier_name]);
 					let recharge_roll     = '';
 
-					if (has_natural_magic) {
-						recharge_roll = `1d6cs<${tier}cf>${(tier + 1)}`;
+					if (get_bool(values[natural_boon_name])) {
+						let base_roll = '1d6';
+						if ( get_bool(values.bb_inner_magic) && values[advantage_name] != 'GreatDisadvantage') {
+							base_roll = '2d6kl1';
+						}
+						if (!get_bool(values.bb_inner_magic) && values[advantage_name] == 'GreatDisadvantage') {
+							base_roll = '2d6k1';
+						}
+						recharge_roll = `${base_roll}cs<${tier}cf>${(tier + 1)}`;
 					}
+					
+					console.log(`inner_magic: ${get_bool(values.bb_inner_magic)}, advantage_name: ${values[advantage_name]}`);
+					console.log(`${natural_boon_name}: set recharge roll to ${recharge_roll}`);
 
 					setAttrs({ [`natural_magic_${skill.name}_recharge_roll`]: recharge_roll });
 				});	
