@@ -6226,6 +6226,55 @@
 									<button type="action" name="act_displacementteleport40ep" /> 40
 								</span>
 							</div>
+							<input name="attr_ps_displacement_attack" type="hidden" class="show-ability" value="false" />
+							<span class="ability">
+
+								<div class="top-space bottom-space">
+									<label class="skill-tem-container">
+										<input name="attr_use_displacement_pool_points" type="checkbox" />
+										<span class="skill-tem magic-focus"> Use Pool Points </span>
+									</label>
+									<input name="attr_displacement_pool_points_to_use" type="text" style="margin-left: 100px" />
+									points
+								</div>
+
+								<div>
+									<label style="width: 125px;"> Damage Modifier </label>
+									<div class="input-group">
+										<input name="attr_displacement_damage_dice_modifier" type="text" />
+										<span class="input-group-addon" style="width: 10%"> d6 </span>
+									</div>
+									&nbsp; +
+									<input name="attr_displacement_damage_static_modifier" type="text" />
+								</div>
+
+								<div>
+									<input name="attr_show_displacement_teleport_10_ep" type="hidden" class="show-ep-10" value="false" />
+									<input name="attr_show_displacement_teleport_20_ep" type="hidden" class="show-ep-20" value="false" />
+									<input name="attr_show_displacement_teleport_30_ep" type="hidden" class="show-ep-30" value="false" />
+									<input name="attr_show_displacement_teleport_40_ep" type="hidden" class="show-ep-40" value="false" />
+									<span class="ep-10">
+										<b> Attack </b> <br />
+										<button type="action" name="act_displacementteleportattack0ep" /> Basic
+										&nbsp;
+										<button type="action" name="act_displacementteleportattack5ep" /> 5 EP
+										&nbsp;
+										<button type="action" name="act_displacementteleportattack10ep" /> 10 EP
+									</span>
+									<span class="ep-20">
+										<br />
+										<button type="action" name="act_displacementteleportattack20ep" /> 20 EP
+									</span>
+									<span class="ep-30">
+										&nbsp;
+										<button type="action" name="act_displacementteleportattack30ep" /> 30 EP
+									</span>
+									<span class="ep-40">
+										&nbsp;
+										<button type="action" name="act_displacementteleportattack40ep" /> 40 EP
+									</span>
+								</div>
+							</span>
 						</div>
 					</span>
 				</div>
@@ -8872,8 +8921,6 @@ function cast_fabricate_attack(ep_cost) {
 	});
 }
 
-
-
 function cast_shelter(ep_cost) {
 	let base_duration = dur_short_rest_p_linger;
 	let effect = "Cottage";
@@ -9098,6 +9145,23 @@ function cast_teleport(ep_cost) {
 			"displacement_teleport_toggle":        !toggle,
 			"displacement_teleport_base_duration": dur_instantaneous,
 			"displacement_teleport_effect":        effect,
+			"displacement_teleport_ep_cost":       ep_cost
+		});
+	});
+}
+
+function cast_teleport_attack(ep_cost) {
+	getAttrs(["displacement_teleport_toggle", "displacement_tier", "displacement_damage_dice_modifier"], function(values) {
+		let toggle = get_bool(values.displacement_teleport_toggle);
+		let tier = get_int_or_zero(values.displacement_tier);
+		let dice_mod = get_int_or_zero(values.displacement_damage_dice_modifier);
+		let damage = (tier + 1) * (ep_cost < 10 ? 1 : (ep_cost / 10) + 1);
+		damage += dice_mod;
+
+		setAttrs({
+			"displacement_teleport_toggle":        !toggle,
+			"displacement_teleport_base_duration": dur_instantaneous,
+			"displacement_teleport_effect_text":   "{{Damage=[[" + damage + "d6+@{displacement_attribute_modifier}+@{displacement_damage_static_modifier}]]}}", 
 			"displacement_teleport_ep_cost":       ep_cost
 		});
 	});
@@ -11560,7 +11624,7 @@ combat_style_array.forEach( function(style) {
 });
 
 // Set events for using pool points to add damage
-const use_pool_points_for_damage_array = [ 'attack', 'conjuration', 'dynamancy' ];
+const use_pool_points_for_damage_array = [ 'attack', 'conjuration', 'displacement', 'dynamancy' ];
 use_pool_points_for_damage_array.forEach( function(skill) {
 
 	on(`change:use_${skill}_pool_points change:${skill}_pool_points_to_use`, function() {
@@ -15384,7 +15448,6 @@ on("clicked:conjurationfabricateinfo", function() {
 		let show_conjuration_fabricate_20_ep = get_bool(values.show_conjuration_fabricate_20_ep);
 		let show_conjuration_fabricate_30_ep = get_bool(values.show_conjuration_fabricate_30_ep);
 		let show_conjuration_fabricate_40_ep = get_bool(values.show_conjuration_fabricate_40_ep);
-		let has_conjuration_attack = get_bool(values.ps_conjuration_attack);
 		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
 		let base_duration = [
 			{ name: 'fabricate',   duration: dur_concentration },
@@ -15403,7 +15466,7 @@ on("clicked:conjurationfabricateinfo", function() {
 		let tier4_attack = '';
 		let attack_text  = '';
 		let or_damage    = '';
-		if (has_conjuration_attack) {
+		if (get_bool(values.ps_conjuration_attack)) {
 			let physical_damage = damage_text.replace('damage', 'physical damage');
 			basic_attack = _or + tier_effect_conjuration(tier, 1, 'd6', '', 1) + physical_damage;
 			tier1_attack = _or + tier_effect_conjuration(tier, 2, 'd6', '', 1) + physical_damage;
@@ -16011,22 +16074,45 @@ on("clicked:displacementtelekinesis40ep", function() {
 });
 
 on("clicked:displacementteleportinfo", function() {
-	getAttrs(["displacement_tier", "show_displacement_teleport_10_ep", "show_displacement_teleport_20_ep", "show_displacement_teleport_30_ep", "show_displacement_teleport_40_ep", "spell_duration", "spell_range", "spell_area_size", "area_type_nova"], function(values) {
+	getAttrs(["displacement_tier", "displacement_attribute_name", "displacement_attribute_modifier","show_displacement_teleport_10_ep", "show_displacement_teleport_20_ep", "show_displacement_teleport_30_ep", "show_displacement_teleport_40_ep", "ps_displacement_attack", "spell_duration", "spell_range", "spell_area_size", "area_type_nova"], function(values) {
 		let tier = get_int_or_zero(values.displacement_tier);
+		let attribute_name = get_int_or_zero(values.displacement_attribute_name);
+		let attribute_mod  = get_int_or_zero(values.displacement_attribute_modifier);
 		let show_displacement_teleport_10_ep = get_bool(values.show_displacement_teleport_10_ep);
 		let show_displacement_teleport_20_ep = get_bool(values.show_displacement_teleport_20_ep);
 		let show_displacement_teleport_30_ep = get_bool(values.show_displacement_teleport_30_ep);
 		let show_displacement_teleport_40_ep = get_bool(values.show_displacement_teleport_40_ep);
-		let duration = get_int_or_zero(values.spell_duration);
 		let range = get_int_or_zero(values.spell_range);
 		let area_size = get_int_or_zero(values.spell_area_size);
 		let nova_area = (values.area_type_nova == 'on' ? `${_n}Nova (${area_size} sq)` : '');
+
+		let basic_attack = '';
+		let basic_effect = '';
+		let tier1_attack = '';
+		let tier2_attack = '';
+		let tier3_attack = '';
+		let tier4_attack = '';
+		let attack_text  = '';
+		let attack_pool  = '';
+		if (get_bool(values.ps_displacement_attack)) {
+			let physical_damage = attribute_mod_effect(attribute_name, attribute_mod) + ' physical damage';
+			basic_attack =       tier_effect_displacement(tier, 1, 'd6', '', 1) + physical_damage;
+			tier1_attack = _or + tier_effect_displacement(tier, 2, 'd6', '', 1) + physical_damage;
+			tier2_attack = _or + tier_effect_displacement(tier, 3, 'd6', '', 1) + physical_damage;
+			tier3_attack = _or + tier_effect_displacement(tier, 4, 'd6', '', 1) + physical_damage;
+			tier4_attack = _or + tier_effect_displacement(tier, 5, 'd6', '', 1) + physical_damage;
+			basic_effect = `{{0 EP=${basic_attack}}} {{5 EP=${basic_attack}}} `;
+			attack_text  = _rn + "Alternatively, you can use this spell to displace only certain parts of your target(s), causing physical damage. " +
+			"This works like Dynamancy (attack), including the basic attack. The physical damage caused is based on how much EP you spend on it.";
+			attack_pool = spend_pool_displacement('to increase damage at a cost of 1 point per additional point or 2 points per additional die of physical damage.');
+		}
+
 		let effect_100_miles = tier_effect_displacement(tier, 100, ' miles');
 		let effect_500_miles = tier_effect_displacement(tier, 500, ' miles');
-		let tier1_effect = 									   "{{10 EP=Teleport within " + value_effect('range spell statistic', range) + " squares}} ";
-		let tier2_effect = (show_displacement_teleport_20_ep ? "{{20 EP=Teleport within " + effect_100_miles + " if successful}} " : "");
-		let tier3_effect = (show_displacement_teleport_30_ep ? "{{30 EP=Teleport within " + effect_500_miles + " automatically" + _or + "Teleport to another plane or planet, 1d10 &times; 50 miles from your target}} " : "");
-		let tier4_effect = (show_displacement_teleport_40_ep ? "{{40 EP=Teleport anywhere automatically}} " : "");
+		let tier1_effect = basic_effect +					   `{{10 EP=Teleport within ${value_effect('range spell statistic', range)} squares${tier1_attack}}} `;
+		let tier2_effect = (show_displacement_teleport_20_ep ? `{{20 EP=Teleport within ${effect_100_miles} if successful${tier2_attack}}} ` : '');
+		let tier3_effect = (show_displacement_teleport_30_ep ? `{{30 EP=Teleport within ${effect_500_miles} automatically${_or}Teleport to another plane or planet, 1d10 &times; 50 miles from your target${tier3_attack}}} ` : '');
+		let tier4_effect = (show_displacement_teleport_40_ep ? `{{40 EP=Teleport anywhere automatically${tier4_attack}}} ` : '');
 		let free_effect = (show_displacement_teleport_20_ep ? _pow + "Your normal movement becomes a teleportation effect, although it does not change " +
 		"your speed and you must be able to see your destination." : "");
 		if (show_displacement_teleport_30_ep) {
@@ -16049,7 +16135,9 @@ on("clicked:displacementteleportinfo", function() {
 		let tier4_text = (show_displacement_teleport_40_ep ? _rn + "For 40 EP, you can teleport the target creatures anywhere, including a different " +
 		"plane or planet, and arrive at your intended destination." : "");
 		let desc = "This spell instantly transports a creature from one location to another, although it can be risky if you are not familiar with " +
-		"the destination. " + free_effect + tier1_text + tier2_text + tier3_text + tier4_text;
+		"the destination. " + free_effect + tier1_text + tier2_text + tier3_text + tier4_text + attack_text + 
+		spend_pool_displacement('to increase the distance you can teleport when casting the tier 2 or 3 version of this spell at a cost of 1 point per ' +
+		'additional 50 miles.') + attack_pool;
 		let roll_text = get_spell_info('Displacement (teleport)', '2 AP', range + ' squares', dur_instantaneous, 0, `Bolt${nova_area}${_n}Touch`,
 		'Creature', 'Auto (willing)', tier1_effect + tier2_effect + tier3_effect + tier4_effect, desc);
 		startRoll(roll_text, (results) => {
@@ -16072,6 +16160,30 @@ on("clicked:displacementteleport30ep", function() {
 
 on("clicked:displacementteleport40ep", function() {
 	cast_teleport(40);
+});
+
+on("clicked:displacementteleportattack0ep", function() {
+	cast_teleport_attack(0);
+});
+
+on("clicked:displacementteleportattack5ep", function() {
+	cast_teleport_attack(5);
+});
+
+on("clicked:displacementteleportattack10ep", function() {
+	cast_teleport_attack(10);
+});
+
+on("clicked:displacementteleportattack20ep", function() {
+	cast_teleport_attack(20);
+});
+
+on("clicked:displacementteleportattack30ep", function() {
+	cast_teleport_attack(30);
+});
+
+on("clicked:displacementteleportattack40ep", function() {
+	cast_teleport_attack(40);
 });
 
 on("clicked:divinationanalyzeinfo", function() {
