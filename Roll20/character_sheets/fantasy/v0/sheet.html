@@ -5320,6 +5320,26 @@
 								<span class="skill-tem skill-training"> Training </span>
 							</label>
 							<input name="attr_biomancy_heal_damage_roll" type="hidden" value="2d6" />
+							<input name="attr_show_biomancy_heal_damage_10_ep" type="hidden" class="show-ep-10" value="false" />
+							<span class="ep-10">
+								<div class="top-space bottom-space">
+									<label class="skill-tem-container">
+										<input name="attr_use_biomancy_pool_points" type="checkbox" />
+										<span class="skill-tem magic-focus"> Use Pool Points </span>
+									</label>
+									<input name="attr_biomancy_pool_points_to_use" type="text" style="margin-left: 100px" />
+									points
+								</div>
+								<div>
+									<label style="width: 125px;"> Healing Modifier </label>
+									<div class="input-group">
+										<input name="attr_biomancy_healing_dice_modifier" type="text" />
+										<span class="input-group-addon" style="width: 10%"> d </span>
+									</div>
+									&nbsp; +
+									<input name="attr_biomancy_healing_static_modifier" type="text" />
+								</div>
+							</span>
 							<div>
 								<input name="attr_show_biomancy_heal_damage_10_ep" type="hidden" class="show-ep-10" value="false" />
 								<input name="attr_show_biomancy_heal_damage_20_ep" type="hidden" class="show-ep-20" value="false" />
@@ -5673,6 +5693,17 @@
 								<span class="skill-tem skill-training"> Training </span>
 							</label>
 							<input name="attr_conjuration_fabricate_roll" type="hidden" value="2d6" />
+							<input name="attr_show_conjuration_fabricate_10_ep" type="hidden" class="show-ep-10" value="false" />
+							<span class="ep-10">
+								<div class="top-space bottom-space">
+									<label class="skill-tem-container">
+										<input name="attr_use_conjuration_pool_points" type="checkbox" />
+										<span class="skill-tem magic-focus"> Use Pool Points </span>
+									</label>
+									<input name="attr_conjuration_pool_points_to_use" type="text" style="margin-left: 100px" />
+									points
+								</div>
+							</span>
 							<div>
 								<input name="attr_show_conjuration_fabricate_10_ep" type="hidden" class="show-ep-10" value="false" />
 								<input name="attr_show_conjuration_fabricate_20_ep" type="hidden" class="show-ep-20" value="false" />
@@ -5697,7 +5728,19 @@
 									<button type="action" name="act_conjurationfabricatecreate40ep" /> 40 EP
 								</span>
 							</div>
-							<div class="top-space">
+							<input name="attr_show_conjuration_fabricate_10_ep" type="hidden" class="show-ep-10" value="false" />
+							<span class="ep-10">
+								<div class="top-space">
+									<label style="width: 125px;"> Healing Modifier </label>
+									<div class="input-group">
+										<input name="attr_conjuration_healing_dice_modifier" type="text" />
+										<span class="input-group-addon" style="width: 10%"> d </span>
+									</div>
+									&nbsp; +
+									<input name="attr_conjuration_healing_static_modifier" type="text" />
+								</div>
+							</span>
+							<div>
 								<input name="attr_show_conjuration_fabricate_10_ep" type="hidden" class="show-ep-10" value="false" />
 								<input name="attr_show_conjuration_fabricate_20_ep" type="hidden" class="show-ep-20" value="false" />
 								<input name="attr_show_conjuration_fabricate_30_ep" type="hidden" class="show-ep-30" value="false" />
@@ -5724,16 +5767,7 @@
 							<input name="attr_ps_conjuration_attack" type="hidden" class="show-ability" value="false" />
 							<span class="ability">
 
-								<div class="top-space bottom-space">
-									<label class="skill-tem-container">
-										<input name="attr_use_conjuration_pool_points" type="checkbox" />
-										<span class="skill-tem magic-focus"> Use Pool Points </span>
-									</label>
-									<input name="attr_conjuration_pool_points_to_use" type="text" style="margin-left: 100px" />
-									points
-								</div>
-
-								<div>
+								<div class="top-space">
 									<label style="width: 125px;"> Damage Modifier </label>
 									<div class="input-group">
 										<input name="attr_conjuration_damage_dice_modifier" type="text" />
@@ -7409,6 +7443,26 @@
 								<span class="skill-tem skill-training"> Training </span>
 							</label>
 							<input name="attr_necromancy_shape_corpse_roll" type="hidden" value="2d6" />
+							<input name="attr_show_necromancy_shape_corpse_10_ep" type="hidden" class="show-ep-10" value="false" />
+							<span class="ep-10">
+								<div class="top-space bottom-space">
+									<label class="skill-tem-container">
+										<input name="attr_use_necromancy_pool_points" type="checkbox" />
+										<span class="skill-tem magic-focus"> Use Pool Points </span>
+									</label>
+									<input name="attr_necromancy_pool_points_to_use" type="text" style="margin-left: 100px" />
+									points
+								</div>
+								<div>
+									<label style="width: 125px;"> Healing Modifier </label>
+									<div class="input-group">
+										<input name="attr_necromancy_healing_dice_modifier" type="text" />
+										<span class="input-group-addon" style="width: 10%"> d </span>
+									</div>
+									&nbsp; +
+									<input name="attr_necromancy_healing_static_modifier" type="text" />
+								</div>
+							</span>
 							<div>
 								<input name="attr_show_necromancy_shape_corpse_10_ep" type="hidden" class="show-ep-10" value="false" />
 								<input name="attr_show_necromancy_shape_corpse_20_ep" type="hidden" class="show-ep-20" value="false" />
@@ -8669,7 +8723,7 @@ function cast_detoxify(ep_cost) {
 }
 
 function cast_heal_damage(ep_cost) {
-	getAttrs(["biomancy_heal_damage_toggle", "biomancy_tier", "ps_focused_healing", "use_focused_healing"], function(values) {
+	getAttrs(["biomancy_heal_damage_toggle", "biomancy_tier", "ps_focused_healing", "use_focused_healing", "biomancy_healing_dice_modifier"], function(values) {
 		let toggle = get_bool(values.biomancy_heal_damage_toggle);
 		let tier = get_int_or_zero(values.biomancy_tier);
 		let multiplier = 0;
@@ -8686,12 +8740,12 @@ function cast_heal_damage(ep_cost) {
 		let has_focus = get_bool(values.ps_focused_healing);
 		let use_focus = (values.use_focused_healing == 'on');
 		let damage_tier = (has_focus && use_focus ? tier + 1 : tier);
-		let damage = ((damage_tier + 1 ) * multiplier) + "d" +  size;
+		let damage = ((damage_tier + 1 ) * multiplier + get_int_or_zero(values.biomancy_healing_dice_modifier)) + "d" +  size;
 
 		setAttrs({
 			"biomancy_heal_damage_toggle":        !toggle,
 			"biomancy_heal_damage_base_duration": dur_instantaneous,
-			"biomancy_heal_damage_effect_text":   "{{Healing=[[" + damage + "+@{biomancy_attribute_modifier}]]}}", 
+			"biomancy_heal_damage_effect_text":   "{{Healing=[[" + damage + " + @{biomancy_attribute_modifier} + @{biomancy_healing_static_modifier}]]}}", 
 			"biomancy_heal_damage_ep_cost":       ep_cost
 		});
 	});
@@ -8859,6 +8913,7 @@ function cast_fabricate_create(ep_cost) {
 		setAttrs({ 
 			'conjuration_fabricate_toggle':        !toggle,
 			'conjuration_fabricate_effect':        effect, 
+			'conjuration_fabricate_effect_text':   '', 
 			'conjuration_fabricate_base_duration': dur_concentration, 
 			'conjuration_fabricate_ep_cost':       ep_cost 
 		});
@@ -8866,11 +8921,9 @@ function cast_fabricate_create(ep_cost) {
 }
 
 function cast_fabricate_repair(ep_cost) {
-	getAttrs(["conjuration_fabricate_toggle", "conjuration_tier", "conjuration_attribute_modifier"], function(values) {
+	getAttrs(["conjuration_fabricate_toggle", "conjuration_tier", "conjuration_healing_dice_modifier"], function(values) {
 		let toggle = get_bool(values.conjuration_fabricate_toggle);
 		let tier = get_int_or_zero(values.conjuration_tier);
-		let attribute_mod = get_int_or_zero(values.conjuration_attribute_modifier);
-		let plus = (attribute_mod < 0 ? '' : '+');
 
 		let multiplier = 0;
 		let size = ((ep_cost == 10 || ep_cost == 30) ? 10 : 6 );
@@ -8883,7 +8936,7 @@ function cast_fabricate_repair(ep_cost) {
 		else {
 			multiplier = 4;
 		}
-		let damage = ((tier + 1 ) * multiplier) + "d" +  size;
+		let damage = ((tier + 1 ) * multiplier + get_int_or_zero(values.conjuration_healing_dice_modifier)) + "d" +  size;
 
 		let restore_text = '';
 		if (ep_cost == 30) {
@@ -8893,11 +8946,12 @@ function cast_fabricate_repair(ep_cost) {
 			restore_text = _or + "Restore [[" + tier + "]] destroyed items" + _or + "Restore [[1]] destroyed magic item";
 		}
 		
-		let effect = "Repair/heal [[" + damage + plus + attribute_mod + "]]" + restore_text;
+		let effect = "Repair/heal [[" + damage + " + @{conjuration_attribute_modifier} + @{conjuration_healing_static_modifier}]]" + restore_text;
 
 		setAttrs({
 			'conjuration_fabricate_toggle':        !toggle,
 			'conjuration_fabricate_effect':        effect, 
+			'conjuration_fabricate_effect_text':   '', 
 			'conjuration_fabricate_base_duration': dur_instantaneous, 
 			'conjuration_fabricate_ep_cost':       ep_cost 
 		});
@@ -8915,6 +8969,7 @@ function cast_fabricate_attack(ep_cost) {
 		setAttrs({
 			"conjuration_fabricate_toggle":        !toggle,
 			"conjuration_fabricate_base_duration": dur_instantaneous,
+			'conjuration_fabricate_effect':        '', 
 			"conjuration_fabricate_effect_text":   "{{Damage=[[" + damage + "d6+@{conjuration_attribute_modifier}+@{conjuration_damage_static_modifier}]]}}", 
 			"conjuration_fabricate_ep_cost":       ep_cost
 		});
@@ -9383,7 +9438,7 @@ function cast_decrepify(ep_cost) {
 }
 
 function cast_shape_corpse(ep_cost) {
-	getAttrs(["necromancy_shape_corpse_toggle", "necromancy_tier"], function(values) {
+	getAttrs(["necromancy_shape_corpse_toggle", "necromancy_tier", "necromancy_healing_dice_modifier"], function(values) {
 		let toggle = get_bool(values.necromancy_shape_corpse_toggle);
 		let tier = get_int_or_zero(values.necromancy_tier);
 		let multiplier = 0;
@@ -9397,7 +9452,7 @@ function cast_shape_corpse(ep_cost) {
 		else {
 			multiplier = 4;
 		}
-		let damage = ((tier + 1 ) * multiplier) + 'd' +  size;
+		let damage = ((tier + 1 ) * multiplier + get_int_or_zero(values.necromancy_healing_dice_modifier)) + 'd' +  size;
 		let effect = '';
 		if (ep_cost == 5) {
 			effect = 'Shape';
@@ -9411,7 +9466,7 @@ function cast_shape_corpse(ep_cost) {
 		else if (ep_cost == 30) {
 			effect = 'Assemble Huge';
 		}
-		effect = (effect == '' ? '' : effect + ' corpses' + _or) + `Heal [[${damage} + @{necromancy_attribute_modifier}]]`;
+		effect = (effect == '' ? '' : effect + ' corpses' + _or) + `Heal [[${damage} + @{necromancy_attribute_modifier} + @{necromancy_healing_static_modifier}]]`;
 
 		setAttrs({
 			"necromancy_shape_corpse_toggle":        !toggle,
@@ -11623,33 +11678,41 @@ combat_style_array.forEach( function(style) {
 	});
 });
 
-// Set events for using pool points to add damage
-const use_pool_points_for_damage_array = [ 'attack', 'conjuration', 'displacement', 'dynamancy' ];
-use_pool_points_for_damage_array.forEach( function(skill) {
+// Set events for using pool points to add damage or healing
+const use_pool_points_for_damage_or_healing_array = [ 
+	{ name: 'attack',       type: 'damage'  },
+	{ name: 'biomancy',     type: 'healing' },
+	{ name: 'conjuration',  type: 'damage'  },
+	{ name: 'conjuration',  type: 'healing' },
+	{ name: 'displacement', type: 'damage'  },
+	{ name: 'dynamancy' ,   type: 'damage'  },
+	{ name: 'necromancy',   type: 'healing' }
+];
+use_pool_points_for_damage_or_healing_array.forEach( function(skill) {
 
-	on(`change:use_${skill}_pool_points change:${skill}_pool_points_to_use`, function() {
-		getAttrs([`use_${skill}_pool_points`, `${skill}_pool_points_to_use`, `${skill}_pool_total`], function(values) {
-			let damage_dice_mod   = '';
-			let damage_static_mod = '';
+	on(`change:use_${skill.name}_pool_points change:${skill.name}_pool_points_to_use`, function() {
+		getAttrs([`use_${skill.name}_pool_points`, `${skill.name}_pool_points_to_use`, `${skill.name}_pool_total`], function(values) {
+			let dice_mod   = '';
+			let static_mod = '';
 			
-			if (values[`use_${skill}_pool_points`] == 'on') {
-				let pool_total = get_int_or_zero(values[`${skill}_pool_total`]);
-				let use_pool   = get_int_or_zero(values[`${skill}_pool_points_to_use`]);
+			if (values[`use_${skill.name}_pool_points`] == 'on') {
+				let pool_total = get_int_or_zero(values[`${skill.name}_pool_total`]);
+				let use_pool   = get_int_or_zero(values[`${skill.name}_pool_points_to_use`]);
 				
 				if (use_pool % 2 == 1) {
-					damage_static_mod = 1;
+					static_mod = 1;
 					use_pool--;
 				}
 				
 				if (use_pool > 0) {
-					damage_dice_mod = use_pool / 2;
+					dice_mod = use_pool / 2;
 				}
 			}
 			
-			let set_object = { [`${skill}_damage_dice_modifier`]: damage_dice_mod, [`${skill}_damage_static_modifier`]: damage_static_mod };
+			let set_object = { [`${skill.name}_${skill.type}_dice_modifier`]: dice_mod, [`${skill.name}_${skill.type}_static_modifier`]: static_mod };
 
-			if (skill == 'dynamancy') {
-				let duration_attack_dice_mod = (values[`use_${skill}_pool_points`] == 'on' ? Math.floor(get_int_or_zero(values[`${skill}_pool_points_to_use`]) / 3) : '');
+			if (skill.name == 'dynamancy') {
+				let duration_attack_dice_mod = (values[`use_${skill.name}_pool_points`] == 'on' ? Math.floor(get_int_or_zero(values[`${skill.name}_pool_points_to_use`]) / 3) : '');
 				set_object['duration_attack_damage_dice_modifier'] = duration_attack_dice_mod;
 			}
 			
