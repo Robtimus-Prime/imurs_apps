@@ -4649,7 +4649,7 @@
 				<span class="magic-type"> Touch </span>
 			</label>
 		</div>
-		<div class="magic-type-container">
+		<div class="magic-type-container bottom-space">
 			<label class="magic-type-container">
 				<input name="attr_area_type_line" type="checkbox" />
 				<span class="magic-type"> Line </span>
@@ -4661,6 +4661,22 @@
 			</label>
 		</div>
 
+		<div class="top-space bottom-space"> &shy; </div>
+		
+		<div class="top-space bottom-space">
+			<input name="attr_ps_beam" type="hidden" class="show-ability" value="false" />
+			<span class="ability bottom-space">
+				<div class="bottom-space">
+					<label class="magic-type-container">
+						<input name="attr_use_beam" type="checkbox" />
+						<span class="magic-type"> Use Beam </span>
+					</label>
+				</div>
+				<div>
+					<span class="tiny-text"> &nbsp; (after round 1) </span>
+				</div>
+			</span>
+		</div>
 	</div>
 
 </div>
@@ -7954,10 +7970,8 @@ function get_weapon_roll_text(weapon_name, style_name, style_friendly_name, numb
 	return roll_text;
 }
 
-function get_inner_magic_ep_cost(ep_cost, bb_inner_magic) {
-	let inner_magic = get_bool(bb_inner_magic);
-	
-	if (ep_cost > 5 && inner_magic) {
+function get_modified_ep_cost(ep_cost, bb_inner_magic, use_beam) {
+	if (ep_cost > 5 && (get_bool(bb_inner_magic) || use_beam == 'on')) {
 		ep_cost = Math.max(5, ep_cost - 10);
 	}
 	
@@ -8518,7 +8532,7 @@ function get_duration_text(base_duration, duration_bonus, collapse_high_duration
 
 function cast_spell(skill_name, spell_name, ep_cost, base_duration = null, collapse_high_duration_bonus = false, effect = null, effect_attr = null, desc = null) {
 	let natural_magic_name = 'bb_natural_magic_' + skill_name;
-	let get_array = ['spell_duration', 'spell_duration_bonus', 'bb_inner_magic', natural_magic_name, 'keep_ep_in_use', 'essence_points_in_use', 'essence_points'];
+	let get_array = ['spell_duration', 'spell_duration_bonus', 'bb_inner_magic', 'use_beam', natural_magic_name, 'keep_ep_in_use', 'essence_points_in_use', 'essence_points'];
 	
 	getAttrs(get_array, function(values) {
 		let duration          = get_int_or_zero(values.spell_duration);
@@ -8526,7 +8540,7 @@ function cast_spell(skill_name, spell_name, ep_cost, base_duration = null, colla
 		let has_natural_boon  = get_bool(values[natural_magic_name]);
 		let ep                = get_int_or_zero(values.essence_points);
 		let ep_in_use         = get_int_or_zero(values.essence_points_in_use);
-		ep_cost               = (has_natural_boon ? 0 : get_inner_magic_ep_cost(ep_cost, values.bb_inner_magic));
+		ep_cost               = (has_natural_boon ? 0 : get_modified_ep_cost(ep_cost, values.bb_inner_magic, values.use_beam));
 		let keep_ep_in_use    = (values.keep_ep_in_use == 'on' || spell_name.match(/inscribe_.+?_rune/));
 		let new_ep_in_use     = (keep_ep_in_use ? ep_in_use + ep_cost : ep_in_use);
 		let skill_name_cap    = (has_natural_boon ? 'Natural ' : '') + capitalize_first_letter(skill_name);
@@ -11452,17 +11466,18 @@ active_skill_array.forEach( function(skill) {
 
 			// Events (magic skills only): skill tier changes
 			// Sets the recharge roll if they have the natural magic boon for this skill
-			on(`change:${tier_name} change:${natural_boon_name} change:bb_inner_magic change:${advantage_name}`, function() {
-				getAttrs([natural_boon_name, tier_name, advantage_name, 'bb_inner_magic'], function(values) {
+			on(`change:${tier_name} change:${natural_boon_name} change:bb_inner_magic change:use_beam change:${advantage_name}`, function() {
+				getAttrs([natural_boon_name, tier_name, advantage_name, 'bb_inner_magic', 'use_beam'], function(values) {
 					let tier              = get_int_or_zero(values[tier_name]);
 					let recharge_roll     = '';
+					let modify_recharge   = (get_bool(values.bb_inner_magic) || values.use_beam == 'on');
 
 					if (get_bool(values[natural_boon_name])) {
 						let base_roll = '1d6';
-						if ( get_bool(values.bb_inner_magic) && values[advantage_name] != 'GreatDisadvantage') {
+						if ( modify_recharge && values[advantage_name] != 'GreatDisadvantage') {
 							base_roll = '2d6kl1';
 						}
-						if (!get_bool(values.bb_inner_magic) && values[advantage_name] == 'GreatDisadvantage') {
+						if (!modify_recharge && values[advantage_name] == 'GreatDisadvantage') {
 							base_roll = '2d6k1';
 						}
 						recharge_roll = `${base_roll}cs<${tier}cf>${(tier + 1)}`;
