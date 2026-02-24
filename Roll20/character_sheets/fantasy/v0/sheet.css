@@ -118,10 +118,6 @@ h1 {
 	width: 300px;
 }
 
-.dialog div.skillname > label > span.ability {
-	font-size: 13pt;
-}
-
 .dialog div.skillname > label > span.skill-attribute {
 	font-size: 8pt;
 }
