@@ -8451,9 +8451,10 @@ function set_carry_count() {
 		const array = equipment_text.split(',');
 		console.log('equipment: ' + array);
 
-		let count = 0;
-		let mult = 1;
-		let has_backpack = false;
+		let count         = 0;
+		let mult          = 1;
+		let has_sack      = false;
+		let has_backpack  = false;
 		let has_haversack = false;
 
 		console.log('set_carry_count');
@@ -8475,6 +8476,9 @@ function set_carry_count() {
 				count += mult;
 			}
 			
+			if (item == 'sack') {
+				has_sack = true;
+			}
 			if (item == 'backpack') {
 				has_backpack = true;
 			}
@@ -8493,6 +8497,9 @@ function set_carry_count() {
 		}
 		else if (has_backpack) {
 			count = Math.max( count - 5, 1 );
+		}
+		else if (has_sack) {
+			count = Math.max( count - 2, 1 );
 		}
 
 		if (is_armor(values.armor_name)) {
@@ -9760,9 +9767,9 @@ on("clicked:resetrecovery", function() {
 
 const healing_potion_type_array = [
 	{ type: 'magic',     roll: '@{short_rest_hp_roll}'                                                             },
-	{ type: 'eldritch',  roll: 'floor( @{long_rest_hp_roll} / 2)', detoxify_ep: 10, detoxify_tn: 20, or_and: 'or'  },
-	{ type: 'epic',      roll: '@{long_rest_hp_roll}',             detoxify_ep: 20, detoxify_tn: 30, or_and: 'or'  },
-	{ type: 'legendary', roll: '@{long_rest_hp_roll}',             detoxify_ep: 30, detoxify_tn: 40, or_and: 'and' }
+	{ type: 'eldritch',  roll: 'floor( @{long_rest_hp_roll} / 2)', detoxify_ep: 10, detoxify_tn: 16, or_and: 'or'  },
+	{ type: 'epic',      roll: '@{long_rest_hp_roll}',             detoxify_ep: 20, detoxify_tn: 22, or_and: 'or'  },
+	{ type: 'legendary', roll: '@{long_rest_hp_roll}',             detoxify_ep: 30, detoxify_tn: 28, or_and: 'and' }
 ];
 healing_potion_type_array.forEach( function (potion) {
 
