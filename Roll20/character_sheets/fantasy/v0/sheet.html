@@ -2547,7 +2547,17 @@
 				<div class="skillname">
 					<label class="legendary"> Total Magic Immunity <button type="action" name="act_totalmagicimmunityinfo" class="info-button generic-skill" /> </label>
 				</div>
-				<textarea class="large" name="attr_total_magic_immunity_exceptions"></textarea>
+				<textarea class="large" name="attr_total_magic_immunity_exceptions" placeholder="Total Magic Immunity exceptions"></textarea>
+			</span>
+		</div>
+
+		<!-- Weapon Immunity -->
+		<div class="monstrous-boon top-line">
+			<input name="attr_bb_weapon_immunity" type="hidden" class="show-ability" value="false" />
+			<span class="ability">
+				<div class="skillname">
+					<label class="legendary"> Weapon Immunity <button type="action" name="act_weaponimmunityinfo" class="info-button generic-skill" /> </label>
+				</div>
 			</span>
 		</div>
 
@@ -10041,6 +10051,16 @@ on("clicked:totalmagicimmunityinfo", function() {
 	});
 });
 
+on("clicked:weaponimmunityinfo", function() {
+	let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: Weapon Immunity}} " +
+	"{{desc=The monster is immune to damage from non-magical weapons (including natural weapons). This can be overcome by **@{weapon_immunity_magic_tier_name} " +
+	"weapons**. Damage from such weapons is still subject to the monster's normal DR.}}'";
+	
+	startRoll(roll_text, (results) => {
+		finishRoll(results.rollId);
+	});
+});
+
 on("clicked:mobinfo", function() {
 	getAttrs(["mob_member_count", "mob_skill_bonus", "mob_damage_bonus", "mob_hit_points_max"], function(values) {
 		let count          = get_int_or_zero(values.mob_member_count);
@@ -12636,6 +12656,14 @@ const boons_and_banes_array = [
 	{ name: 'bb_undead_ghostly',                      search_text: 'undeadghostly',             cs_cp_cost: 156, ncs_cp_cost:  19, increment: 0, max_count:  1 },
 	{ name: 'bb_undead_skeletal',                     search_text: 'undeadskeletal',            cs_cp_cost:   0, ncs_cp_cost:   0, increment: 0, max_count:  1 },
 	{ name: 'bb_undead_zombified',                    search_text: 'undeadzombified',           cs_cp_cost:   0, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_weapon_immunity',                     search_text: 'weaponimmunity',            cs_cp_cost:   0, ncs_cp_cost:   0, increment: 0, max_count:  1,
+		cp_function: function(bb_raw) {
+			let tier_name  = bb_raw.split('weaponimmunity')[1];
+			let tier       = magic_item_bonus_array.find(m => m.name == tier_name).tier;
+			let cp_costs   = { cs_cp_cost: tier * 25, ncs_cp_cost: 0 };
+			return cp_costs;
+		}
+	},
 	{ name: 'bb_web',                                 search_text: 'web',                       cs_cp_cost:  20, ncs_cp_cost:   0, increment: 0, max_count:  1 }
 ];
 
@@ -13661,6 +13689,18 @@ on('clicked:resetswarmhp', function() {
 		setAttrs({ 'hit_points_extra': 
 			get_int_or_zero(values.swarm_hp_multiplier) * (get_int_or_zero(values.hit_points_max) - get_int_or_zero(values.hit_points_extra)) });
 	});
+});
+
+on("change:bb_weapon_immunity", function() {
+	getAttrs(["bb_weapon_immunity", "bb_weapon_immunity_raw"], function(values) {
+		let magic_tier_name = '';
+
+		if (get_bool(values.bb_weapon_immunity)) {
+			magic_tier_name = values.bb_weapon_immunity_raw.split('weaponimmunity')[1];
+		}
+
+		setAttrs({ "weapon_immunity_magic_tier_name": magic_tier_name });
+	});	
 });
 
 // Overall character CP calc
