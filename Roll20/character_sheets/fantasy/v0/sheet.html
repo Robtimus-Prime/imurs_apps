@@ -24,6 +24,9 @@
 			&nbsp; &nbsp; 
 			<span class="skill-attribute default-attribute"> Non-Combat Score </span>
 			<input name="attr_non_combat_score" type="text" class="final-number" readonly />
+			&nbsp; &nbsp; 
+			<span class="skill-attribute default-attribute"> Character Tier </span>
+			<input name="attr_character_tier" type="text" class="final-number" readonly />
 		</div>
 
 	</div>
@@ -11572,6 +11575,27 @@ active_skill_array.forEach( function(skill) {
 	});
 });
 
+// Update character tier when any skill tier changes
+let all_skill_tiers = active_skill_array.map(s => `${s.name}_tier`);
+on('change:' + all_skill_tiers.join(' change:'), function() {
+	getAttrs(all_skill_tiers, function(values) {
+		let tier_counts = [0, 0, 0, 0, 0];
+		for (let tier of all_skill_tiers) {
+			tier_counts[get_int_or_zero(values[tier])]++;
+		}
+		let character_tier = 0;
+		for (let i = 4; i >= 0; i--) {
+			if (tier_counts[i] >= 3) {
+				character_tier = i;
+				break;
+			}
+		}
+		//console.log(`tier_counts: ${tier_counts}`);
+		//console.log(`character_tier: ${character_tier}`);
+		setAttrs({ 'character_tier': character_tier });
+	});
+});
+
 // Update Skill Combat Score CP
 let combat_score_skill_array = active_skill_array
 	.filter(skill => { return skill.combat_score === true })
@@ -11963,7 +11987,7 @@ proficiency_array.forEach( function(prof) {
 
 on("clicked:toggleactiveskills", function() {
 
-	let active_skill_names = []
+	let active_skill_names = [];
 	active_skill_array.forEach( function(skill) {
 		if ((!skill.passive_skill || !skill.passive_skill.includes('magic')) && 
 			!['perception', 'attack', 'defend', 'pr', 'mr'].includes(skill.name)) {
@@ -13694,7 +13718,7 @@ on("clicked:toggledamagetypes", function() {
 
 on("clicked:togglemagicskills", function() {
 
-	let active_skill_names = []
+	let active_skill_names = [];
 	active_skill_array.forEach( function(skill) {
 		if (skill.passive_skill && skill.passive_skill.includes('magic'))  {
 			active_skill_names.push(skill.name);
