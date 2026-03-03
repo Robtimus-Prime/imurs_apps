@@ -1748,14 +1748,14 @@
 			</span>
 		</div>
 
-		<!-- Legendary Action -->
+		<!-- Legendary Monster -->
 		<div class="monstrous-boon top-line">
 			<input name="attr_bb_legendary_monster" type="hidden" class="show-ability" value="false" />
 			<span class="ability">
 				<div class="skillname">
-					<label class="legendary"> Legendary Action <button type="action" name="act_legendaryactioninfo" class="info-button generic-skill" /> </label>
+					<label class="legendary"> Legendary Monster <button type="action" name="act_legendarymonsterinfo" class="info-button generic-skill" /> </label>
 				</div>
-				<textarea class="legendary" name="attr_legendary_action"></textarea>
+				<textarea class="legendary" name="attr_legendary_action" placeholder="Custom legendary action"></textarea>
 			</span>
 		</div>
 
@@ -8357,17 +8357,20 @@ const attribute_array = [
 	{ name: 'wit',          combat_score: false }
 ];
 
-const attribute_cp_costs = [ -60, -103, -92, -82, -72, -63, -54, -46, -38, -31, -24, -18, -12, -7, -2, 2, 7, 12, 18, 24, 31, 38, 46, 54, 63, 
-72, 82, 92, 103, 114, 126, 138, 151, 164, 178, 192, 207, 222, 238, 254, 271, 288, 306, 324, 343, 362, 382, 402, 423, 444, 466 ];
+const attribute_cp_costs = [ 
+-60, -103, -92, -82, -72, -63, -54, -46, -38, -31, -24, -18, -12, -7, -2, 2, 7, 12, 18, 24, 31, 38, 46, 54, 63, 
+72, 82, 92, 103, 114, 126, 138, 151, 164, 178, 192, 207, 222, 238, 254, 271, 288, 306, 324, 343, 362, 382, 402, 
+423, 444, 466, 488, 511, 534, 558, 582, 607, 632, 658, 684, 711 
+];
 
 attribute_array.forEach( function(attribute) {
 	on('change:' + attribute.name, function() {
 		getAttrs([attribute.name], function(values) {
 			let attribute_value = get_int_or_zero(values[attribute.name]);
 			
-			if (attribute_value > 50) {
-				console.error('Attribute values over 50 are not supported!');
-				setAttrs({ [attribute.name]: 50 });
+			if (attribute_value > 60) {
+				console.error('Attribute values over 60 are not supported!');
+				setAttrs({ [attribute.name]: 60 });
 				return;
 			}
 			
@@ -9873,14 +9876,15 @@ on("clicked:engulfinfo", function() {
 	});
 });
 
-on('clicked:legendaryactioninfo', function() {
+on('clicked:legendarymonsterinfo', function() {
 	getAttrs(['legendary_action'], function(values) {
 		let custom_action = (values.legendary_action ? _bull + values.legendary_action : '');
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: Legendary Monster}} " +
-		"{{desc=The monster is a legendary creature, such as a dragon. Legendary monsters can have a maximum of 60 in each attribute. Legendary monsters gain advantage " +
-		"on all Physical and Mental resilience checks." + _rn + "In addition, they can take legendary actions outside of their normal turn, which don’t cost AP to " +
-		"use. They can take up to three legendary actions per round, which happen after any other creature’s turn. Only one legendary action may be taken at a time." +
-		header_text('Legendary Actions', false) + _bull + 'Perception check to detect a creature' + _bull + 'Attack check' + custom_action + "}}'";
+		"{{desc=The monster is a legendary creature, such as a dragon. Legendary monsters can have a maximum of 60 in each attribute and their maximum HP and EP are " +
+		"equal to their base values &times; 10. Legendary monsters can take legendary actions outside of their normal turn, which don’t cost AP to " +
+		"use. They can take up to [[@{character_tier} + 2]] legendary actions per round, which happen after any other creature’s turn. Only one legendary action may be taken at a time." +
+		header_text('Legendary Actions', false) + _bull + 'Perception check to detect a creature' + _bull + 'Attack check' + _bull + 
+		'Change a failed Mental or Physical Resilience check into a successful one (2 actions)' + custom_action + "}}'";
 		
 		startRoll(roll_text, (results) => {
 			finishRoll(results.rollId);
