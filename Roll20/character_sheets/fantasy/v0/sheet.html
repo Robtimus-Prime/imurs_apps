@@ -11607,7 +11607,8 @@ on('change:' + all_skill_tiers.join(' change:'), function() {
 		for (let tier of all_skill_tiers) {
 			tier_counts[get_int_or_zero(values[tier])]++;
 		}
-		for (let i = 1; i <= 3; i++) {
+		//console.log(`tier_counts (actual): ${tier_counts}`);
+		for (let i = 3; i >= 1; i--) {
 			tier_counts[i] += tier_counts[i + 1];
 		}
 		let character_tier = 0;
@@ -11617,7 +11618,7 @@ on('change:' + all_skill_tiers.join(' change:'), function() {
 				break;
 			}
 		}
-		//console.log(`tier_counts: ${tier_counts}`);
+		//console.log(`tier_counts (effective): ${tier_counts}`);
 		//console.log(`character_tier: ${character_tier}`);
 		setAttrs({ 'character_tier': character_tier });
 	});
