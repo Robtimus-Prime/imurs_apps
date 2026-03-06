@@ -9675,14 +9675,9 @@ const special_combat_actions_array = [
 on('sheet:opened', function() {
 	getAttrs(['sheet_is_initialized', 'passive_skills', 'boons_and_banes', 'mob_skill_bonus'], function(values) {
 		let initialized     = get_bool(values.sheet_is_initialized  );
-		let mob_skill_bonus = get_int_or_zero(values.mob_skill_bonus);
-		if (mob_skill_bonus == 0) {
-			//console.log(`sheet:opened - mob_skill_bonus: ${mob_skill_bonus}`);
-			setAttrs({ "mob_skill_bonus": mob_skill_bonus });
-		}
 		if (!initialized) {
 			console.log('Initializing new character sheet');
-			let set_object = { 'sheet_is_initialized': false, 'sheet_initialization_check_count': 0 };
+			let set_object = { 'sheet_is_initialized': false, 'sheet_initialization_check_count': 0, 'mob_skill_bonus': 0 };
 			if (values.passive_skills.trim().length == 0) {
 				console.log('No passive skills; setting all to false');
 				passive_skill_array.forEach(function(ps) {
@@ -9706,6 +9701,7 @@ on('sheet:opened', function() {
 			for (let action of special_combat_actions_array) {
 				set_object[action] = '0';
 			}
+			console.log(set_object);
 			setAttrs(set_object);
 		}
 	});
