@@ -11607,6 +11607,9 @@ on('change:' + all_skill_tiers.join(' change:'), function() {
 		for (let tier of all_skill_tiers) {
 			tier_counts[get_int_or_zero(values[tier])]++;
 		}
+		for (let i = 1; i <= 3; i++) {
+			tier_counts[i] += tier_counts[i + 1];
+		}
 		let character_tier = 0;
 		for (let i = 4; i >= 0; i--) {
 			if (tier_counts[i] >= 3) {
@@ -12155,30 +12158,8 @@ damage_type_array.forEach( function(damage_type) {
 		});
 	});
 
-	let has_damage_type_name      = `damage_type_${damage_type.name}`;
 	let has_secondary_effect_name = `damage_type_${damage_type.name}_secondary`;
-	
-	on(`change:${has_damage_type_name}`, function() {
-		if (has_damage_type_name === 'damage_type_physical') { return; }
-		getAttrs([has_damage_type_name, 'cp_damage_types'], function(values) {
-			let cp_damage     = get_int_or_zero(values.cp_damage_types);
-			let cp_change     = (values[has_damage_type_name] == 'on' ? 3 : -3);
-			let new_cp_damage = Math.max(0, cp_damage + cp_change);
-			console.log(`cp_damage_types: ${new_cp_damage}`);
-			setAttrs({ 'cp_damage_types': new_cp_damage });
-		});
-	});
-	
-	on(`change:${has_secondary_effect_name}`, function() {
-		getAttrs([has_secondary_effect_name, 'cp_damage_types'], function(values) {
-			let cp_damage     = get_int_or_zero(values.cp_damage_types);
-			let cp_change     = (values[has_secondary_effect_name] == 'on' ? 3 : -3);
-			let new_cp_damage = Math.max(0, cp_damage + cp_change);
-			console.log(`cp_damage_types: ${new_cp_damage}`);
-			setAttrs({ 'cp_damage_types': new_cp_damage });
-		});
-	});
-	
+
 	on(`clicked:damagetype${damage_type.name}info`, function() {
 		getAttrs([has_secondary_effect_name], function(values) {
 			let secondary = '';
@@ -12193,6 +12174,19 @@ damage_type_array.forEach( function(damage_type) {
 		});
 	});
 });
+
+const damage_type_and_secondary_attrs_base = damage_type_list.map(t => `damage_type_${t}`).concat(damage_type_list.map(t => `damage_type_${t}_secondary`));
+const damage_type_and_secondary_attrs = damage_type_and_secondary_attrs_base.filter(t => t != 'damage_type_physical');
+on('change: ' + damage_type_and_secondary_attrs.join(' change:'), function() {
+	getAttrs(damage_type_and_secondary_attrs, function(values) {
+		let cp_damage_types = 0;
+		for (let type of damage_type_and_secondary_attrs) {
+			cp_damage_types += (values[type] == 'on' ? 3 : 0);
+		}
+		console.log(`cp_damage_types: ${cp_damage_types}`);
+		setAttrs({ 'cp_damage_types': cp_damage_types });
+	});
+})
 
 on('change:armor_name change:defend_tier change:defensive_stance_dr_bonus', function() {
 	getAttrs(['armor_name', 'defend_tier', 'defensive_stance_dr_bonus'], function(values) {
