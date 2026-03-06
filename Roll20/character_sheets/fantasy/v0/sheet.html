@@ -7793,14 +7793,40 @@
 
 <script type="text/worker">
 
-const _n = '%NEWLINE%';
-const _rn = _n + _n;
-const _or = _n + '&mdash; or &mdash;' + _n;
+const _log_atts   = 'atts';     // attributes
+const _log_bb     = 'bb';       // boons & banes
+const _log_ps     = 'ps';       // passive skills
+const _log_cp     = 'cp';       // CP calc, combat score & non-combat score, character tier
+const _log_skills = 'skills';   // active skills, including reflex
+const _log_profs  = 'profs';    // proficiencies
+const _log_magic  = 'magic';    // non-skill magic functions
+const _log_gear   = 'gear';     // weapons, armor, carry
+const _log_vital  = 'vital';    // vital stats: EP, HP, long/short rest, recovery, speed
+const _log_pots   = 'pots';     // healing potions
+const _log_combat = 'combat';   // special combat actions
+const _log_all    = 'all';      // everything (override)
+
+const _n    = '%NEWLINE%';
+const _rn   = _n + _n;
+const _or   = _n + '&mdash; or &mdash;' + _n;
 const _bull = _n + ' &#183; ';
 const _star = '&#9734;';
-const _pow = _rn + '**Power:** ';
+const _pow  = _rn + '**Power:** ';
 const _bolt_touch = `Bolt${_n}Touch`;
 const minor_major_array = ['minor', 'major'];
+
+function logg(message_log_level, message) {
+	getAttrs(['log_level'], function(values) {
+		if (!values.log_level) {
+			return;
+		}
+		let log_level = values.log_level.split(',');
+		//console.log(`log_level: [${log_level}]; message_log_level: ${message_log_level}`);
+		if (log_level[0] == _log_all || log_level.includes(message_log_level)) {
+			console.log(message);
+		}
+	});
+}
 
 function get_int_or_zero(value) {
 	if (!value) {
@@ -7846,7 +7872,7 @@ function get_tier(skill_points) {
 }
 
 function get_roll(training, advantage, explode) {
-	//console.log(`get_roll: training = ${training}; advantage = ${advantage}; explode = ${explode}`);
+	logg(_log_skills, `get_roll: training = ${training}; advantage = ${advantage}; explode = ${explode}`);
 	let roll = 'd6';
 	if (training == 'on') { 
 		roll = 'd10!!'; 
@@ -7890,7 +7916,7 @@ function apply_advantage(current_advantage, index_modifier, disadvantage = false
 	else {
 		index_modifier = 0;
 	}
-	//console.log(`new_index: ${new_index}, new_advantage: ${new_advantage}, index_modifier: ${index_modifier}`);
+	logg(_log_skills, `new_index: ${new_index}, new_advantage: ${new_advantage}, index_modifier: ${index_modifier}`);
 	return { 'advantage': new_advantage, 'index_modifier': index_modifier };
 }
 
@@ -7923,7 +7949,8 @@ function get_rake_bonus_damage(weapon_name) {
 	let regex = /rake[ \(]+(\d+) claws/;
 	let matches = weapon_name.match(regex);
 	if (matches) {
-		//console.log(matches);
+		logg(_log_ps, `rake bonus damage for ${weapon_name}`);
+		logg(_log_ps, matches);
 		let claws = get_int_or_zero(matches[1]);
 		bonus = claws - 1;
 	}
@@ -7945,7 +7972,7 @@ function get_charge_damage(weapon_name, has_devastating_charge, has_flying_kick,
 		(has_flying_kick && weapon_name_lc.replaceAll(' ', '').includes('flyingkick'))) {
 		charge_modifier += (has_devastating_charge ? athletics_tier : 1);
 	}
-	//console.log(`get_charge_damage; weapon_name: ${weapon_name}, has_devastating_charge: ${has_devastating_charge}, has_flying_kick: ${has_flying_kick}, athletics_tier: ${athletics_tier}, charge_modifier: ${charge_modifier}`);
+	logg(_log_combat, `get_charge_damage; weapon_name: ${weapon_name}, has_devastating_charge: ${has_devastating_charge}, has_flying_kick: ${has_flying_kick}, athletics_tier: ${athletics_tier}, charge_modifier: ${charge_modifier}`);
 	return charge_modifier;
 }
 
@@ -7955,7 +7982,7 @@ function get_weapon_damage(weapon_name, tier, modifier = 0) {
 	if (weapon_name) {
 		weapon_dice = base_damage + tier + get_rake_bonus_damage(weapon_name) + get_swarm_bonus_damage(weapon_name) + modifier;
 	}
-	//console.log(`get_weapon_damage; base_damage: ${base_damage}, tier: ${tier}, rake_bonus_damage: ${get_rake_bonus_damage(weapon_name)}, swarm_bonus_damage: ${get_swarm_bonus_damage(weapon_name)}, modifier: ${modifier}`);
+	logg(_log_gear, `get_weapon_damage; base_damage: ${base_damage}, tier: ${tier}, rake_bonus_damage: ${get_rake_bonus_damage(weapon_name)}, swarm_bonus_damage: ${get_swarm_bonus_damage(weapon_name)}, modifier: ${modifier}`);
 	return weapon_dice;
 }
 
@@ -7997,7 +8024,7 @@ function parse_textarea(text) {
 
 function decrement_item_count(equipment, regex){
 	let matches = equipment.match(regex);
-	console.log(matches);
+	logg(_log_gear, matches);
 	let item_text = '';
 	let item_count = 0;
 	if (matches) {
@@ -8387,7 +8414,7 @@ attribute_array.forEach( function(attribute) {
 			let attribute_mod = get_modifier(attribute_value);
 			let cp_name       = `cp_${attribute.name}`;
 			let cp_value      = attribute_cp_costs[attribute_value];
-			console.log(`${cp_name}: ${cp_value}`);
+			logg(_log_cp, `${cp_name}: ${cp_value}`);
 			let set_object    = {
 				[attribute.name + '_modifier']: attribute_mod,
 				[cp_name]:                      cp_value
@@ -8400,6 +8427,8 @@ attribute_array.forEach( function(attribute) {
 			if (attribute.name == 'agility') {
 				set_object['agility_speed_modifier'] = Math.floor((attribute_mod / 2) + (attribute_mod < 0 ? 0.5 : 0));
 			}
+			
+			logg(_log_atts, set_object);
 
 			setAttrs(set_object);
 		});
@@ -8415,7 +8444,7 @@ attribute_array.forEach( function(attribute) {
 				cp_attributes += get_int_or_zero(values[attr]);
 			}
 			let attr_key = `cp_${(is_combat_score ? '' : 'non_')}combat_attributes`;
-			console.log(`${attr_key}: ${cp_attributes}`);
+			logg(_log_atts, `${attr_key}: ${cp_attributes}`);
 			setAttrs({ [attr_key]: cp_attributes });
 		});
 	});
@@ -8465,7 +8494,7 @@ function set_carry_count() {
 	getAttrs(['equipment_carry', 'money_gold_coins', 'money_silver_coins', 'money_copper_coins', 'armor_name'], function(values) {
 		let equipment_text = parse_textarea(values.equipment_carry);
 		const array = equipment_text.split(',');
-		console.log('equipment: ' + array);
+		logg(_log_gear, 'equipment: ' + array);
 
 		let count         = 0;
 		let mult          = 1;
@@ -8473,7 +8502,7 @@ function set_carry_count() {
 		let has_backpack  = false;
 		let has_haversack = false;
 
-		console.log('set_carry_count');
+		logg(_log_gear, 'set_carry_count');
 		for(let i in array) {
 			let item = array[i];
 			const match = array[i].match(/(.+)x(\d+)/);
@@ -8482,9 +8511,9 @@ function set_carry_count() {
 				item = match[1];
 				mult = 1 * match[2];
 			}
-			console.log(`line ${i}: ${item}, mult = ${mult}`);
+			logg(_log_gear, `line ${i}: ${item}, mult = ${mult}`);
 			if (is_armor(item)) {
-				console.log('found armor');
+				logg(_log_gear, 'found armor');
 				let armor_object = parse_armor(item);
 				count += mult * armor_object.carry;
 			}
@@ -9704,9 +9733,9 @@ on('change:sheet_is_initialized', function() {
 		if (get_bool(values.sheet_is_initialized)) {
 			console.log('Sheet has been initialized');
 			let set_object = {
-				'attack_advantage':     'Novantage',
-				'defend_advantage':     'Novantage',
-				'mr_advantage':         'Novantage'
+				'attack_advantage': 'Novantage',
+				'defend_advantage': 'Novantage',
+				'mr_advantage':     'Novantage'
 			};
 			setAttrs(set_object);
 		}
@@ -9761,7 +9790,7 @@ on("clicked:recovery", function() {
 
 			finishRoll(results.rollId);
 
-			console.log("recovery_successes: " + successes + ", recovery_failures:" + failures);
+			logg(_log_vital, `recovery_successes: ${successes}; recovery_failures: ${failures}`);
 			
 			setAttrs({
 				"recovery_successes": successes,
@@ -9778,7 +9807,7 @@ on("clicked:resetrecovery", function() {
 		"recovery_failures": 0
 	});
 
-	console.log("recovery tally cleared");
+	logg(_log_vital, "recovery tally cleared");
 });
 
 const healing_potion_type_array = [
@@ -9812,6 +9841,7 @@ healing_potion_type_array.forEach( function (potion) {
 						'hit_points': Math.min(hp + results.results.HP.result, hp_max),
 						[potion.type + '_healing_potion_count']: (count - 1)
 					});
+					logg(_log_pots, `use ${potion.type} healing potions to heal ${results.results.HP.result} hp; ${(count - 1)} remaining`);
 					finishRoll(results.rollId);
 				});
 			}
@@ -10121,7 +10151,7 @@ on("change:gm_rolls", function() {
 	getAttrs(["gm_rolls"], function(values) {
 		let gm_rolls = values.gm_rolls;
 		let gm_rolls_text = (gm_rolls == 'on' ? '/w gm ' : '');
-		console.log("gm_rolls: " + gm_rolls + ", gm_rolls_text: " + gm_rolls_text);
+		console.log(`gm_rolls: ${gm_rolls}, gm_rolls_text: ${gm_rolls_text}`);
 		setAttrs({
 			"gm_rolls_text": gm_rolls_text,
 		});
@@ -10136,9 +10166,8 @@ on("change:perception_total change:agility_modifier change:bb_quick_reflexes cha
 		let slow          = get_bool(values.bb_slow_reflexes);
 		let boon_bane_mod = (quick ? 2 : (slow ? -2 : 0));
 		let reflex        = total + mod + boon_bane_mod;
-		setAttrs({
-			"reflex_total": reflex
-		});
+		logg(_log_skills, `reflex_total: ${reflex}`);
+		setAttrs({ "reflex_total": reflex });
 	});	
 });
 
@@ -10146,8 +10175,9 @@ on('change:attack_tier change:ps_combat_expertise', function() {
 	getAttrs(['attack_tier', 'ps_combat_expertise'], function(values) {
 		let tier = get_int_or_zero(values.attack_tier);
 		let has_combat_expertise = get_bool(values.ps_combat_expertise);
-
-		setAttrs({ 'combat_expertise_modifier': (has_combat_expertise ? Math.floor(tier / 2) : 0) });
+		let combat_expertise_modifier = (has_combat_expertise ? Math.floor(tier / 2) : 0);
+		logg(_log_ps, `combat_expertise_modifier: ${combat_expertise_modifier}`);
+		setAttrs({ 'combat_expertise_modifier': combat_expertise_modifier });
 	});	
 });
 
@@ -10155,8 +10185,9 @@ on('change:ps_deadly_precision change:perception_tier', function() {
 	getAttrs(['ps_deadly_precision', 'perception_tier'], function(values) {
 		let has_deadly_precision = get_bool(values.ps_deadly_precision);
 		let perception_tier      = get_int_or_zero(values.perception_tier);
-
-		setAttrs({ 'deadly_precision_modifier': (has_deadly_precision ? perception_tier : 0) });
+		let deadly_precision_modifier = (has_deadly_precision ? perception_tier : 0);
+		logg(_log_ps, `deadly_precision_modifier: ${deadly_precision_modifier}`);
+		setAttrs({ 'deadly_precision_modifier': deadly_precision_modifier });
 	});
 });
 
@@ -10164,8 +10195,9 @@ on('change:ps_sneak_attack change:sneak_tier', function() {
 	getAttrs(['ps_sneak_attack', 'sneak_tier'], function(values) {
 		let has_sneak_attack = get_bool(values.ps_sneak_attack);
 		let sneak_tier       = get_int_or_zero(values.sneak_tier);
-
-		setAttrs({ 'sneak_attack_modifier': (has_sneak_attack ? sneak_tier : 0) });
+		let sneak_attack_modifier = (has_sneak_attack ? sneak_tier : 0);
+		logg(_log_ps, `sneak_attack_modifier: ${sneak_attack_modifier}`);
+		setAttrs({ 'sneak_attack_modifier': sneak_attack_modifier });
 	});
 });
 
@@ -10173,8 +10205,9 @@ on('change:ps_rage change:pr_tier', function() {
 	getAttrs(['ps_rage', 'pr_tier'], function(values) {
 		let has_rage = get_bool(values.ps_rage);
 		let pr_tier  = get_int_or_zero(values.pr_tier);
-
-		setAttrs({ 'rage_modifier': (has_rage ? pr_tier : 0) });
+		let rage_modifier = (has_rage ? pr_tier : 0);
+		logg(_log_ps, `rage_modifier: ${rage_modifier}`);
+		setAttrs({ 'rage_modifier': rage_modifier });
 	});
 });
 
@@ -10193,11 +10226,9 @@ ps_damage_array.forEach( function(ps) {
 			if (display >= 0) {
 				display = '+' + display;
 			}
-			
-			setAttrs({
-				[ps.damage_name]:  ps_damage,
-				[ps.display_name]: display
-			});
+			let set_object = { [ps.damage_name]: ps_damage, [ps.display_name]: display };
+			logg(_log_ps, set_object);
+			setAttrs(set_object);
 		});
 	});
 });
@@ -10206,7 +10237,7 @@ on('change:ps_mob', function() {
 	getAttrs(['ps_mob'], function(values) {
 		if (values.ps_mob == '0') {
 		
-			console.log('Turn off Mob');
+			logg(_log_ps, 'Turn off Mob');
 		
 			setAttrs({ 'mob_member_count': 0 });
 		}
@@ -10224,7 +10255,7 @@ on('change:mob_member_count change:hit_points_max', function() {
 		
 		let mob_hp_max = hp_max * mob_count;
 
-		console.log(`mob count: ${mob_count}; max hp: ${hp_max}; mob max hp: ${mob_hp_max}`);
+		logg(_log_ps, `mob count: ${mob_count}; max hp: ${hp_max}; mob max hp: ${mob_hp_max}`);
 		
 		setAttrs({
 			'mob_member_count':   mob_count,
@@ -10240,7 +10271,7 @@ on('change:mob_member_count', function() {
 		let skill_bonus  = (mob_count > 0 ? (mob_count - 1) * 2 : 0);
 		let damage_bonus = Math.floor(mob_count / 2);
 
-		console.log(`change:mob_member_count - mob_skill_bonus: ${skill_bonus}`);
+		logg(_log_ps, `change:mob_member_count - mob_skill_bonus: ${skill_bonus}`);
 		
 		setAttrs({ 'mob_skill_bonus': skill_bonus, 'mob_damage_bonus': damage_bonus });
 	});
@@ -10326,11 +10357,14 @@ vital_stats_array.forEach( function(stat) {
 				(Math.floor(secondary_attribute * secondary_skill_tier) + secondary_skill_total) +
 				extra_stat + modifier;
 			
-			setAttrs({
+			let set_object = {
 				[stat_max_name]:                         stat_value,
 				[stat.name]:                             stat_current + (stat_value - stat_max),
 				[`long_rest_${stat.abbreviation}_roll`]: stat_value
-			});
+			};
+			
+			logg(_log_vital, set_object);
+			setAttrs(set_object);
 		});
 	});
 	
@@ -10349,7 +10383,7 @@ vital_stats_array.forEach( function(stat) {
 			let dice                 = primary_skill_tier * (has_passive_skill ? 2 : 1) + secondary_skill_tier;
 			let roll                 = '{1d1, ' + dice + 'd6 + ' + attribute_mod + '}k1';
 			
-			//console.log(`short_rest_${stat.abbreviation}_roll = '${roll}'`);
+			logg(_log_vital, `short_rest_${stat.abbreviation}_roll = '${roll}'`);
 			setAttrs({ [`short_rest_${stat.abbreviation}_roll`]: roll });
 		});
 	});
@@ -10361,7 +10395,7 @@ on('change:hit_points_extra change:essence_points_extra', function() {
 		let ep_extra = get_int_or_zero(values.essence_points_extra);
 		
 		let cp_vital_stats = (hp_extra + ep_extra) / 2;
-		console.log(`cp_vital_stats: ${cp_vital_stats}`);
+		logg(_log_vital, `cp_vital_stats: ${cp_vital_stats}`);
 		setAttrs({ 'cp_vital_stats': cp_vital_stats });
 	});
 });
@@ -10376,6 +10410,7 @@ on('change:' + speed_get_array.join(' change:'), function() {
 		let temp     = get_int_or_zero(values.speed_temporary_modifier);
 		
 		let total = 4 + agi_mod + size_mod + bonus - penalty + temp;
+		logg(_log_vital, `speed_total: ${total}`);
 		setAttrs({ 'speed_total': total });
 	});
 });
@@ -10446,7 +10481,7 @@ function turn_off_combat_actions_except(exception_array) {
 on('change:use_charge', function() {
 	getAttrs(['use_charge', 'attack_advantage', 'attack_advantage_index_modifier', 'defend_advantage', 'defend_advantage_index_modifier'], function(values) {
 		let charge_on = (values.use_charge == 'on');
-		console.log(`turn charge ${(charge_on ? 'on' : 'off')}`);
+		logg(_log_combat, `turn charge ${(charge_on ? 'on' : 'off')}`);
 		let attack_object = apply_advantage(values.attack_advantage, get_int_or_zero(values.attack_advantage_index_modifier), !charge_on);
 		let defend_object = apply_advantage(values.defend_advantage, get_int_or_zero(values.defend_advantage_index_modifier),  charge_on);
 		let set_object = {
@@ -10465,7 +10500,7 @@ on('change:use_charge', function() {
 on('change:use_fight_recklessly', function() {
 	getAttrs(['use_fight_recklessly', 'use_rage', 'attack_advantage', 'attack_advantage_index_modifier', 'defend_advantage', 'defend_advantage_index_modifier'], function(values) {
 		let fight_recklessly_on = (values.use_fight_recklessly == 'on');
-		console.log(`turn fight recklessly ${(fight_recklessly_on ? 'on' : 'off')}`);
+		logg(_log_combat, `turn fight recklessly ${(fight_recklessly_on ? 'on' : 'off')}`);
 		let attack_object = apply_advantage(values.attack_advantage, get_int_or_zero(values.attack_advantage_index_modifier), !fight_recklessly_on);
 		let defend_object = apply_advantage(values.defend_advantage, get_int_or_zero(values.defend_advantage_index_modifier),  fight_recklessly_on);
 		let set_object = {
@@ -10485,7 +10520,7 @@ on('change:use_fight_recklessly', function() {
 on('change:use_rage', function() {
 	getAttrs(['use_rage', 'use_wild_rage', 'mr_advantage', 'mr_advantage_index_modifier'], function(values) {
 		let rage_on = (values.use_rage == 'on');
-		console.log(`turn rage ${(rage_on ? 'on' : 'off')}`);
+		logg(_log_combat, `turn rage ${(rage_on ? 'on' : 'off')}`);
 		let mr_object = apply_advantage(values.mr_advantage, get_int_or_zero(values.mr_advantage_index_modifier), !rage_on);
 		let set_object = {
 			'use_fight_recklessly':        values.use_rage,
@@ -10500,7 +10535,7 @@ on('change:use_rage', function() {
 on('change:use_wild_rage', function() {
 	getAttrs(['use_rage', 'use_wild_rage'], function(values) {
 		let wild_rage_on = (values.use_wild_rage == 'on');
-		console.log(`turn wild rage ${(wild_rage_on ? 'on' : 'off')}`);
+		logg(_log_combat, `turn wild rage ${(wild_rage_on ? 'on' : 'off')}`);
 		let set_object = { 'use_rage': (wild_rage_on ? 'on' : values.use_rage) };
 		setAttrs(set_object);
 	});
@@ -10509,7 +10544,7 @@ on('change:use_wild_rage', function() {
 on('change:use_precise_strike', function() {
 	getAttrs(['use_precise_strike', 'use_sneak_attack', 'attack_advantage', 'attack_advantage_index_modifier'], function(values) {
 		let precise_strike_on = (values.use_precise_strike == 'on');
-		console.log(`turn precise strike ${(precise_strike_on ? 'on' : 'off')}`);
+		logg(_log_combat, `turn precise strike ${(precise_strike_on ? 'on' : 'off')}`);
 		let attack_object = apply_advantage(values.attack_advantage, get_int_or_zero(values.attack_advantage_index_modifier), precise_strike_on);
 		let set_object = {
 			'use_sneak_attack':                (precise_strike_on ? values.use_sneak_attack : '0'),
@@ -10526,7 +10561,7 @@ on('change:use_precise_strike', function() {
 on('change:use_sneak_attack', function() {
 	getAttrs(['use_sneak_attack', 'use_precise_strike'], function(values) {
 		let sneak_attack_on = (values.use_sneak_attack == 'on');
-		console.log(`turn sneak attack ${(sneak_attack_on ? 'on' : 'off')}`);
+		logg(_log_combat, `turn sneak attack ${(sneak_attack_on ? 'on' : 'off')}`);
 		let set_object = { 'use_precise_strike': (sneak_attack_on ? 'on' : values.use_precise_strike) };
 		setAttrs(set_object);
 	});
@@ -10536,7 +10571,7 @@ on('change:use_fight_defensively', function() {
 	getAttrs(['use_fight_defensively', 'use_guard', 'guard_just_turned_on', 'ps_defensive_stance', 'use_defensive_stance', 'attack_advantage', 'attack_advantage_index_modifier', 'defend_advantage', 'defend_advantage_index_modifier'], function(values) {
 		let fight_defensively_on = (values.use_fight_defensively == 'on');
 		let guard_on             = (values.use_guard == 'on');
-		console.log(`turn fight defensively ${(fight_defensively_on ? 'on' : 'off')}`);
+		logg(_log_combat, `turn fight defensively ${(fight_defensively_on ? 'on' : 'off')}`);
 		let attack_object = apply_advantage(values.attack_advantage, get_int_or_zero(values.attack_advantage_index_modifier),  fight_defensively_on);
 		let defend_object = apply_advantage(values.defend_advantage, get_int_or_zero(values.defend_advantage_index_modifier), !fight_defensively_on);
 		let set_object = {
@@ -10562,7 +10597,7 @@ on('change:use_fight_defensively', function() {
 			}
 			set_object = {...set_object, ...turn_off_combat_actions_except(exception_array)};
 		}
-		console.log(set_object);
+		logg(_log_combat, set_object);
 		setAttrs(set_object);
 	});
 });
@@ -10571,7 +10606,7 @@ on('change:use_guard', function() {
 	getAttrs(['use_fight_defensively', 'use_guard', 'fight_defensively_just_turned_on', 'ps_defensive_stance', 'use_defensive_stance', 'defend_advantage', 'defend_advantage_index_modifier'], function(values) {
 		let fight_defensively_on = (values.use_fight_defensively == 'on');
 		let guard_on             = (values.use_guard == 'on');
-		console.log(`turn guard ${(guard_on ? 'on' : 'off')}`);
+		logg(_log_combat, `turn guard ${(guard_on ? 'on' : 'off')}`);
 		let defend_object = apply_advantage(values.defend_advantage, get_int_or_zero(values.defend_advantage_index_modifier), !guard_on);
 		defend_object     = apply_advantage(defend_object.advantage, defend_object.index_modifier, !guard_on);
 		let set_object = {
@@ -10595,7 +10630,7 @@ on('change:use_guard', function() {
 			}
 			set_object = {...set_object, ...turn_off_combat_actions_except(exception_array)};
 		}
-		console.log(set_object);
+		logg(_log_combat, set_object);
 		setAttrs(set_object);
 	});
 });
@@ -10603,7 +10638,7 @@ on('change:use_guard', function() {
 on('change:use_defensive_stance', function() {
 	getAttrs(['use_defensive_stance', 'defend_tier'], function(values) {
 		let defensive_stance_on = (values.use_defensive_stance == 'on');
-		console.log(`turn defensive stance ${(defensive_stance_on ? 'on' : 'off')}`);
+		logg(_log_combat, `turn defensive stance ${(defensive_stance_on ? 'on' : 'off')}`);
 		let physical_dr_bonus   = get_int_or_zero(values.defend_tier) * (defensive_stance_on ? 4 : 0);
 		let set_object = { 'defensive_stance_dr_bonus': physical_dr_bonus };
 		setAttrs(set_object);
@@ -10613,7 +10648,7 @@ on('change:use_defensive_stance', function() {
 on('change:use_protect', function() {
 	getAttrs(['use_protect', 'defend_advantage', 'defend_advantage_index_modifier'], function(values) {
 		let protect_on = (values.use_protect == 'on');
-		console.log(`turn protect ${(protect_on ? 'on' : 'off')}`);
+		logg(_log_combat, `turn protect ${(protect_on ? 'on' : 'off')}`);
 		let defend_object = apply_advantage(values.defend_advantage, get_int_or_zero(values.defend_advantage_index_modifier), protect_on);
 		let set_object = {
 			'defend_advantage':                defend_object.advantage,
@@ -11517,8 +11552,8 @@ active_skill_array.forEach( function(skill) {
 						recharge_roll = `${base_roll}cs<${tier}cf>${(tier + 1)}`;
 					}
 					
-					console.log(`inner_magic: ${get_bool(values.bb_inner_magic)}, advantage_name: ${values[advantage_name]}`);
-					console.log(`${natural_boon_name}: set recharge roll to ${recharge_roll}`);
+					logg(_log_magic, `inner_magic: ${get_bool(values.bb_inner_magic)}, advantage_name: ${values[advantage_name]}`);
+					logg(_log_magic, `${natural_boon_name}: set recharge roll to ${recharge_roll}`);
 
 					setAttrs({ [`natural_magic_${skill.name}_recharge_roll`]: recharge_roll });
 				});	
@@ -11531,14 +11566,14 @@ active_skill_array.forEach( function(skill) {
 					let tier             = get_int_or_zero(values[tier_name]);
 					let has_training     = (values[training] == 'on');
 					let has_natural_boon = get_bool(values[natural_boon_name]);
-//					console.log(`has ${natural_boon_name}: ${has_natural_boon}`);
+					logg(_log_magic, `has ${natural_boon_name}: ${has_natural_boon}`);
 
 					if (has_natural_boon) {
 						let all_ep_costs = [];
 						application.tier_ep_costs.forEach( function(tier_ep_cost) {
 							all_ep_costs = all_ep_costs.concat(tier_ep_cost.ep_costs);
 						});
-//						console.log(`all_ep_costs: ${all_ep_costs}`);
+						logg(_log_magic, `all_ep_costs: ${all_ep_costs}`);
 						let spells_by_ep = (all_ep_costs[0] == 15 ? natural_magic_spells_by_ep_15 : natural_magic_spells_by_ep_10);
 						spells_by_ep.forEach( function(spell) {
 							if (all_ep_costs.includes(spell.ep_cost)) {
@@ -11548,12 +11583,12 @@ active_skill_array.forEach( function(skill) {
 									tier >= spell.tier && 
 									(spell.ps === null || (get_bool(values[`ps_${spell.ps}_natural_magic_${skill.name}`])))
 								);
-//								let ps_nat_name = `ps_${spell.ps}_natural_magic_${skill.name}`;
-//								let log_msg = `has_training: ${has_training}; tier: ${tier}; `;
-//								if (spell.ps === null) { log_msg += 'tier 1, no ps needed'; }
-//								else { log_msg += `${ps_nat_name}: ${values[ps_nat_name]}`; }
-//								console.log(log_msg);
-//								console.log(`show_${skill.name}_${application.name}_${spell.ep_cost}_ep: ${show_spell}`)
+								let ps_nat_name = `ps_${spell.ps}_natural_magic_${skill.name}`;
+								let log_msg = `has_training: ${has_training}; tier: ${tier}; `;
+								if (spell.ps === null) { log_msg += 'tier 1, no ps needed'; }
+								else { log_msg += `${ps_nat_name}: ${values[ps_nat_name]}`; }
+								logg(_log_magic, log_msg);
+								logg(_log_magic, `show_${skill.name}_${application.name}_${spell.ep_cost}_ep: ${show_spell}`)
 								setAttrs({ [`show_${skill.name}_${application.name}_${spell.ep_cost}_ep`]: show_spell });
 							}
 						});
@@ -11561,7 +11596,7 @@ active_skill_array.forEach( function(skill) {
 					else {
 						application.tier_ep_costs.forEach( function(tier_ep_cost) {
 							tier_ep_cost.ep_costs.forEach( function(ep_cost) {
-//								console.log(`show_${skill.name}_${application.name}_${ep_cost}_ep: ${(has_training && tier >= tier_ep_cost.tier)}`);
+								logg(_log_magic, `show_${skill.name}_${application.name}_${ep_cost}_ep: ${(has_training && tier >= tier_ep_cost.tier)}`);
 								setAttrs({
 									[`show_${skill.name}_${application.name}_${ep_cost}_ep`]: (has_training && tier >= tier_ep_cost.tier)
 								});
@@ -11578,7 +11613,7 @@ active_skill_array.forEach( function(skill) {
 	on('change:' + training_array.join(' change:'), function() {
 		getAttrs(training_array, function(values) {
 			let app_count = training_array.filter(app => values[app] == 'on').length;
-			console.log(`${skill.name}_application_count = ${app_count}`);
+			logg(_log_skills, `${skill.name}_application_count = ${app_count}`);
 			setAttrs({
 				[`${skill.name}_application_count`]: app_count,
 				[cp_apps]:                           cp_calc_skill_applications(app_count)
@@ -11593,7 +11628,7 @@ active_skill_array.forEach( function(skill) {
 			let apps_val   = get_int_or_zero(values[cp_apps]  );
 			let pool_val   = get_int_or_zero(values[cp_pool]  );
 			let cp_total = (points_val + apps_val + pool_val);
-			console.log(`${skill.name} points CP: ${points_val}, apps CP: ${apps_val}, pool CP: ${pool_val}; total = ${cp_total}`);
+			logg(_log_cp, `${skill.name} points CP: ${points_val}, apps CP: ${apps_val}, pool CP: ${pool_val}; total = ${cp_total}`);
 			setAttrs({ [`cp_${skill.name}`]: cp_total });
 		});
 	});
@@ -11607,7 +11642,7 @@ on('change:' + all_skill_tiers.join(' change:'), function() {
 		for (let tier of all_skill_tiers) {
 			tier_counts[get_int_or_zero(values[tier])]++;
 		}
-		//console.log(`tier_counts (actual): ${tier_counts}`);
+		logg(_log_cp, `tier_counts (actual): ${tier_counts}`);
 		for (let i = 3; i >= 1; i--) {
 			tier_counts[i] += tier_counts[i + 1];
 		}
@@ -11618,8 +11653,8 @@ on('change:' + all_skill_tiers.join(' change:'), function() {
 				break;
 			}
 		}
-		//console.log(`tier_counts (effective): ${tier_counts}`);
-		//console.log(`character_tier: ${character_tier}`);
+		logg(_log_cp, `tier_counts (effective): ${tier_counts}`);
+		logg(_log_cp, `character_tier: ${character_tier}`);
 		setAttrs({ 'character_tier': character_tier });
 	});
 });
@@ -11635,7 +11670,7 @@ on('change:' + combat_score_skill_array.join(' change:'), function() {
 		for (let cp_skill of combat_score_skill_array) {
 			cp_total += get_int_or_zero(values[cp_skill]);
 		}
-		console.log(`cp_combat_skills: ${cp_total}`);
+		logg(_log_cp, `cp_combat_skills: ${cp_total}`);
 		setAttrs({ 'cp_combat_skills': cp_total });
 	});
 });
@@ -11651,7 +11686,7 @@ on('change:' + non_combat_score_skill_array.join(' change:'), function() {
 		for (let cp_skill of non_combat_score_skill_array) {
 			cp_total += get_int_or_zero(values[cp_skill]);
 		}
-		console.log(`cp_non_combat_skills: ${cp_total}`);
+		logg(_log_cp, `cp_non_combat_skills: ${cp_total}`);
 		setAttrs({ 'cp_non_combat_skills': cp_total });
 	});
 });
@@ -11681,7 +11716,7 @@ combat_style_array.forEach( function(style) {
 	);
 
 	on('change:' + getAttrs_array.join(' change:'), function() {
-		//console.log(`${style.name} weapon changed`);
+		logg(_log_gear, `${style.name} weapon changed`);
 		getAttrs(getAttrs_array, function(values) {
 			let tier                      = get_int_or_zero(values.attack_tier);
 			let size_modifier             = get_int_or_zero(values.size_modifier_damage);
@@ -11734,19 +11769,19 @@ combat_style_array.forEach( function(style) {
 					weapon_name, style.name, style.friendly_name, i, style.extra_damage, damage_static_modifier, (magic_damage > 0)
 				);
 
-				/*console.log(`${'_'.repeat(80)}\nWEAPON: ${weapon_name}\nsize_modifier: ${size_modifier}, style.damage_bonus: ${style.damage_bonus(tier)}, mob_damage_bonus: ${mob_damage_bonus}, ` +
+				logg(_log_gear, `${'_'.repeat(80)}\nWEAPON: ${weapon_name}\nsize_modifier: ${size_modifier}, style.damage_bonus: ${style.damage_bonus(tier)}, mob_damage_bonus: ${mob_damage_bonus}, ` +
 				`charge_modifier: ${charge_modifier}, precise_strike_modifier: ${precise_strike_modifier}, rage_modifier: ${rage_modifier}, ` +
-				`combat_expertise_modifier: ${combat_expertise_modifier}, damage_dice_modifier: ${damage_dice_modifier}; TOTAL: ${modifier} (original: ${original_mod_value}, after charge: ${modifier_after_charge})` +
-				`\nphysical_damage: ${physical_damage}, magic_damage: ${magic_damage}`);*/
+				`combat_expertise_modifier: ${combat_expertise_modifier}, damage_dice_modifier: ${damage_dice_modifier}; TOTAL: ${modifier}` +
+				`\nphysical_damage: ${physical_damage}, magic_damage: ${magic_damage}`);
 
 				set_object[`${style.name}_weapon${i}_physical_damage`] = physical_damage;
 				set_object[`${style.name}_weapon${i}_magic_damage`]    = magic_damage;
 				set_object[`${style.name}_weapon${i}_damage`]          = (physical_damage + magic_damage > 0 ? physical_damage + magic_damage : '');
 				set_object[`${style.name}_weapon${i}_roll_text`]       = roll_text;
-				//console.log(`roll_text = ${roll_text}`);
+				logg(_log_gear, `roll_text = ${roll_text}`);
 			}
 			
-			//console.log(`set_object = ${JSON.stringify(set_object)}`);
+			logg(_log_gear, `set_object = ${JSON.stringify(set_object)}`);
 			setAttrs(set_object);
 		});
 	});
@@ -11825,7 +11860,7 @@ on("clicked:togglecombatstyles", function() {
 		for (let i = 0; i < show_array.length; i++) {
 			set_object[show_array[i]] = (any_hidden ? true : (values[training_array[i]] == 'on'));
 		}
-		//console.log(`set_object = ${JSON.stringify(set_object)}`);
+		logg(_log_skills, `set_object = ${JSON.stringify(set_object)}`);
 		
 		setAttrs(set_object);
 	});
@@ -11872,7 +11907,7 @@ proficiency_skill_array.forEach( function(skill) {
 			let attribute_mod  = get_int_or_zero(values[attribute_mod_name]);
 			let total          = skill_points + attribute_mod;
 			
-			//console.log(`${cp_points}: ${(skill_points / 2)}`);
+			logg(_log_cp, `${cp_points}: ${(skill_points / 2)}`);
 			setAttrs({
 				[`${skill.name}_attribute_name`]:     capitalize_first_letter(attribute_name),
 				[`${skill.name}_attribute_modifier`]: attribute_mod,
@@ -11930,7 +11965,7 @@ proficiency_names.forEach( function(skill) {
 			});
 			let tier = get_tier(max_points);
 			let pool = tier + get_int_or_zero(values[skill_extra_pool_name]);
-			console.log(`${skill}_tier: ${tier}; ${skill}_pool_total: ${pool}`);
+			logg(_log_profs, `${skill}_tier: ${tier}; ${skill}_pool_total: ${pool}`);
 			setAttrs({ [`${skill}_tier`]: tier, [`${skill}_pool_total`]: pool });
 		});
 	});
@@ -11947,7 +11982,7 @@ proficiency_names.forEach( function(skill) {
 				}
 				cp_total += item_value;
 			});
-			console.log(`cp_${skill}: ${cp_total}`);
+			logg(_log_profs, `cp_${skill}: ${cp_total}`);
 			setAttrs({ [`cp_${skill}`]: cp_total });
 		});
 	});
@@ -11962,10 +11997,10 @@ on('change:' + proficiency_skill_cp_names.join(' change:'), function() {
 		let cp = 0.0;
 		for (let cp_skill of proficiency_skill_cp_names) {
 			cp = get_float_or_zero(values[cp_skill]);
-			console.log(`${cp_skill}: ${cp}`);
+			logg(_log_cp, `${cp_skill}: ${cp}`);
 			cp_total += cp;
 		}
-		console.log(`cp_proficiencies: ${cp_total}`);
+		logg(_log_cp, `cp_proficiencies: ${cp_total}`);
 		setAttrs({ 'cp_proficiencies': cp_total });
 	});
 });
@@ -12184,7 +12219,7 @@ on('change: ' + damage_type_and_secondary_attrs.join(' change:'), function() {
 		for (let type of damage_type_and_secondary_attrs) {
 			cp_damage_types += (values[type] == 'on' ? 3 : 0);
 		}
-		console.log(`cp_damage_types: ${cp_damage_types}`);
+		logg(_log_cp, `cp_damage_types: ${cp_damage_types}`);
 		setAttrs({ 'cp_damage_types': cp_damage_types });
 	});
 })
@@ -12219,7 +12254,7 @@ on('change:' + area_type_array.join(' change:'), function() {
 			cp_area_types += (values[type] == 'on' ? 3 : 0);
 		}
 
-		console.log(`area type CP: ${cp_area_types}`);
+		logg(_log_cp, `area type CP: ${cp_area_types}`);
 		setAttrs({ 'cp_area_types': cp_area_types });
 	});
 });
@@ -12393,7 +12428,7 @@ function set_passive_skills(eventInfo) {
 		new_ps_object[key] = '';
 	}
 
-	console.log(new_ps_object);
+	logg(_log_ps, new_ps_object);
 	setAttrs(new_ps_object);
 }
 
@@ -12889,23 +12924,21 @@ function get_boons_and_banes_object(bb_array) {
 }
 
 function set_boons_and_banes(eventInfo) {
-	console.log('set_boons_and_banes');
-	console.log(eventInfo);
+	logg(_log_bb, 'set_boons_and_banes');
+	logg(_log_bb, eventInfo);
 
 	let old_bb_text = (eventInfo.previousValue ? parse_textarea(eventInfo.previousValue) : '');
 	let new_bb_text = (eventInfo.newValue      ? parse_textarea(eventInfo.newValue)      : '');
-	console.log(`old_bb_text: ${old_bb_text}`);
-	console.log(`new_bb_text: ${new_bb_text}`);
+	logg(_log_bb, `old_bb_text: ${old_bb_text}`);
+	logg(_log_bb, `new_bb_text: ${new_bb_text}`);
 
 	let old_bb_array = parse_boons_and_banes_text(old_bb_text);
 	let new_bb_array = parse_boons_and_banes_text(new_bb_text);
-	console.log(old_bb_array);
-	console.log(new_bb_array);
+	logg(_log_bb, old_bb_array);
+	logg(_log_bb, new_bb_array);
 
 	let old_bb_object = get_boons_and_banes_object(old_bb_array);
 	let new_bb_object = get_boons_and_banes_object(new_bb_array);
-	//console.log(old_bb_object);
-	//console.log(new_bb_object);
 
 	let keys_to_blank_out = Object.keys(old_bb_object).filter(b => !Object.keys(new_bb_object).includes(b));
 
@@ -12913,7 +12946,7 @@ function set_boons_and_banes(eventInfo) {
 		new_bb_object[key] = '';
 	}
 
-	console.log(new_bb_object);
+	logg(_log_bb, new_bb_object);
 	setAttrs(new_bb_object);
 }
 
@@ -12924,7 +12957,7 @@ damage_type_list.forEach( function(type) {
 	let get_aura_of_damage_array = [ aura_of_damage_name, 'size_modifier_aura', 'mr_tier' ];
 	on('change:' + get_aura_of_damage_array.join(' change:'), function() {
 		getAttrs(get_aura_of_damage_array, function(values) {
-			console.log(values);
+			logg(_log_bb, values);
 			let has_aura_of_damage = get_bool(values[aura_of_damage_name]);
 			let tier               = get_int_or_zero(values.mr_tier);
 			let size_mod           = get_int_or_zero(values.size_modifier_aura);
@@ -12956,6 +12989,7 @@ damage_type_list.forEach( function(type) {
 			if (get_bool(values[ndr_name])) {
 				ndr_value = get_int_or_zero(values[ndr_raw_name].split(type)[1]);
 			}
+			logg(_log_bb, `dr_${type}_natural: ${ndr_value}`);
 			setAttrs({ [`dr_${type}_natural`]: ndr_value });
 		});
 	});
@@ -13064,7 +13098,7 @@ minor_major_array.forEach( function(type) {
 					if (has_breath_weapon) {
 						let regex   = /m(in|aj)orbreathweapon(blast|line),(\w+)/;
 						let matches = breath_weapon_raw_text.match(regex);
-						//console.log(matches);
+						logg(_log_bb, matches);
 						if (matches) {
 							damage_type = matches[3];
 						}
@@ -13202,7 +13236,7 @@ if (disease_attack_boon) {
 				if (has_disease_attack) {
 					let regex   = /diseaseattack(\w+),tier(\d+),(\w+)/;
 					let matches = parse_textarea(boon_raw_text).match(regex);
-					//console.log(matches);
+					logg(_log_bb, matches);
 					name           = matches[3];
 					tier           = get_int_or_zero(matches[2]);
 					successes      = (tier < 3 ? tier : tier - 1);
@@ -13282,7 +13316,7 @@ if (gaze_attack_boon) {
 				if (has_gaze_attack) {
 					let regex   = /gazeattack(\w+),(\d+)ep/;
 					let matches = values[boon_raw_name].match(regex);
-					//console.log(matches);
+					logg(_log_bb, matches);
 
 					area_size = 7 + size_mod;
 					spell     = matches[1];
@@ -13409,7 +13443,7 @@ if (lair_action_boon) {
 				if (get_bool(values[boon_name])) {
 					let regex = /lairaction([a-z]+),([a-z]+),([\w]+)/;
 					let matches = values[boon_raw_name].match(regex);
-					console.log(matches);
+					logg(_log_bb, matches);
 
 					description = matches[1];
 					range       = pr_total;
@@ -13508,7 +13542,7 @@ if (poison_attack_boon) {
 				if (has_poison_attack) {
 					let regex   = /poisonattack(\w+),tier(\d+)(\w+)/;
 					let matches = values[boon_raw_name].match(regex);
-					//console.log(matches);
+					logg(_log_bb, matches);
 					
 					natural_weapon = matches[1];
 					tier           = get_int_or_zero(matches[2]);
@@ -13597,14 +13631,14 @@ if (poison_attack_boon) {
 on("change:bb_regenerate", function() {
 	getAttrs(['bb_regenerate', 'bb_regenerate_raw'], function(values) {
 		let has_regenerate = get_bool(values.bb_regenerate);
-		//console.log(`bb_regenerate: ${values.bb_regenerate}; has_regenerate: ${has_regenerate}`);
+		logg(_log_bb, `bb_regenerate: ${values.bb_regenerate}; has_regenerate: ${has_regenerate}`);
 		let healing = '0';
 		let vulnerability = '';
 
 		if (has_regenerate) {
 			let regex = /regenerate(\d+?d6),(\w+)/;
 			let matches = values.bb_regenerate_raw.match(regex);
-			//console.log(matches);
+			logg(_log_bb, matches);
 			healing = matches[1];
 			vulnerability = matches[2];
 			vulnerability = vulnerability.replace('and', ' and ').replace('or', ' or ').replace('coldiron', 'cold iron');
@@ -13722,7 +13756,7 @@ on('change:' + cp_calc_attr_array.join(' change:'), function() {
 		let cp_total = cp_cs_atts + cp_ncs_atts + cp_cs_skills + cp_ncs_skills + cp_vital_stats + cp_cs_pass + cp_ncs_pass + cp_cs_bb + cp_ncs_bb +
 					   cp_damage + cp_area_types + cp_spell_stats + cp_profs;
 		
-		console.log(`CP: ${cp_total}; CS: ${combat_score}; NCS: ${non_combat_score}`);
+		logg(_log_cp, `CP: ${cp_total}; CS: ${combat_score}; NCS: ${non_combat_score}`);
 		
 		setAttrs({
 			'cp_total':         cp_total,
@@ -13797,7 +13831,7 @@ function get_attack_combat_style_info(combat_style, combat_style_info) {
 }
 
 function get_1h_missile_range_descripiton(tier, mod, trained, attribute_name) {
-	console.log("missle range description: tier: " + tier + "; mod: " + mod + "; trained: " + trained);
+	logg(_log_gear, "missle range description: tier: " + tier + "; mod: " + mod + "; trained: " + trained);
 	let desc = tier_effect_combat_range(trained, tier, 10, 2, 'triggered') + tier_effect_combat_range(trained, tier, 1, 1, 'thrown', attribute_name, mod)
 	return desc;
 }
@@ -14721,7 +14755,7 @@ on('change:cp_spell_range change:cp_spell_area_size', function() {
 	getAttrs(['cp_spell_range', 'cp_spell_area_size'], function(values) {
 		let cp_spell_range     = get_int_or_zero(values.cp_spell_range    );
 		let cp_spell_area_size = get_int_or_zero(values.cp_spell_area_size);
-		console.log(`cp_spell_statistics: ${(cp_spell_range + cp_spell_area_size)}`);
+		logg(_log_magic, `cp_spell_statistics: ${(cp_spell_range + cp_spell_area_size)}`);
 		setAttrs({ 'cp_spell_statistics': (cp_spell_range + cp_spell_area_size) });
 	});
 });
