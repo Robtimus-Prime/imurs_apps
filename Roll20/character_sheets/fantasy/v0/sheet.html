@@ -7631,6 +7631,43 @@
 				</div>
 
 				<div>
+					<input name="attr_show_neuromancy_equilibrium" type="hidden" class="show-ability" value="true" />
+					<span class="ability">
+						<div class="top-line">
+							<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Neuromancy}} {{Neuromancy (equilibrium) @{neuromancy_advantage_text}=[[@{neuromancy_equilibrium_roll} + @{neuromancy_total} + @{mob_skill_bonus}]]}}'" />
+							<button type="action" name="act_neuromancyequilibriuminfo" class="info-button" />
+							<label class="skillapp"> Equilibrium </label>
+							<label class="skill-tem-container">
+								<input name="attr_neuromancy_equilibrium_training" type="checkbox" />
+								<span class="skill-tem skill-training"> Training </span>
+							</label>
+							<input name="attr_neuromancy_equilibrium_roll" type="hidden" value="2d6" />
+							<div>
+								<input name="attr_show_neuromancy_equilibrium_10_ep" type="hidden" class="show-ep-10" value="false" />
+								<input name="attr_show_neuromancy_equilibrium_20_ep" type="hidden" class="show-ep-20" value="false" />
+								<input name="attr_show_neuromancy_equilibrium_30_ep" type="hidden" class="show-ep-30" value="false" />
+								<input name="attr_show_neuromancy_equilibrium_40_ep" type="hidden" class="show-ep-40" value="false" />
+								<span class="ep-10">
+									<button type="action" name="act_neuromancyequilibrium10ep" /> 10
+								</span>
+								<span class="ep-20">
+									&nbsp;
+									<button type="action" name="act_neuromancyequilibrium20ep" /> 20
+								</span>
+								<span class="ep-30">
+									&nbsp;
+									<button type="action" name="act_neuromancyequilibrium30ep" /> 30
+								</span>
+								<span class="ep-40">
+									&nbsp;
+									<button type="action" name="act_neuromancyequilibrium40ep" /> 40
+								</span>
+							</div>
+						</div>
+					</span>
+				</div>
+
+				<div>
 					<input name="attr_show_neuromancy_fear" type="hidden" class="show-ability" value="true" />
 					<span class="ability">
 						<div class="top-line">
@@ -9560,6 +9597,21 @@ function cast_charm(ep_cost) {
 	cast_spell('neuromancy', 'charm', ep_cost, base_duration, false, null, effect);
 }
 
+function cast_equilibrium(ep_cost) {
+	let desc = `**10 EP List**${_bull}Alleviate the scared condition${_bull}Alleviate the sleepy condition${_bull}End rage (Physical Resilience tier 1)`;
+	if (ep_cost == 20) {
+		desc = `**20 EP List**${_bull}Alleviate the scared and sleepy conditions${_bull}End rage (Physical Resilience tier 2)`;
+	}
+	else if (ep_cost == 30) {
+		desc = `**30 EP List**${_bull}Alleviate the asleep condition${_bull}Alleviate the terrified condition${_bull}End rage (Physical Resilience tier 3)`;
+	}
+	else if (ep_cost == 40) {
+		desc = `**40 EP List**${_bull}End rage (Physical Resilience tier 4)`;
+	}
+	
+	cast_spell('neuromancy', 'equilibrium', ep_cost, dur_instantaneous, false, 'One item from the ' + ep_cost + ' EP List', null, desc);
+}
+
 function cast_fear(ep_cost) {
 	cast_turn_undead_fear(ep_cost, false);
 }
@@ -11309,6 +11361,15 @@ const active_skill_array = [
 				] 
 			}, 
 			{
+				name: 'equilibrium', 
+				tier_ep_costs: [ 
+					{ tier: 1, ep_costs: [10] },
+					{ tier: 2, ep_costs: [20] },
+					{ tier: 3, ep_costs: [30] },
+					{ tier: 4, ep_costs: [40] }
+				] 
+			}, 
+			{
 				name: 'fear', 
 				tier_ep_costs: [ 
 					{ tier: 1, ep_costs: [10] },
@@ -12303,6 +12364,8 @@ const passive_skill_array = [
 	{ name: 'ps_mage_rage',                   search_text: 'magerage',                  cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_mind_stab',                   search_text: 'mindstab',                  cs_cp_cost:  3, ncs_cp_cost:  0 },
 	{ name: 'ps_mob',                         search_text: 'mob',                       cs_cp_cost:  6, ncs_cp_cost:  0 },
+	{ name: 'ps_mounted_archery',             search_text: 'mountedarchery',            cs_cp_cost: 12, ncs_cp_cost:  0 },
+	{ name: 'ps_mounted_combat',              search_text: 'mountedcombat',             cs_cp_cost: 12, ncs_cp_cost:  0 },
 	{ name: 'ps_multiattack',                 search_text: 'multiattack',               cs_cp_cost: 12, ncs_cp_cost:  0 },
 	{ name: 'ps_necromantic_summons',         search_text: 'necromanticsummons',        cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_pinion',                      search_text: 'pinion',                    cs_cp_cost:  6, ncs_cp_cost:  0 },
@@ -17636,6 +17699,55 @@ on("clicked:neuromancycharm30ep", function() {
 
 on("clicked:neuromancycharm40ep", function() {
 	cast_charm(40);
+});
+
+on("clicked:neuromancyequilibriuminfo", function() {
+	getAttrs(["neuromancy_tier", "show_neuromancy_equilibrium_10_ep", "show_neuromancy_equilibrium_20_ep", "show_neuromancy_equilibrium_30_ep", "show_neuromancy_equilibrium_40_ep", "spell_range", "spell_area_size", "area_type_nova"], function(values) {
+		let tier = get_int_or_zero(values.neuromancy_tier);
+		let show_neuromancy_equilibrium_10_ep = get_bool(values.show_neuromancy_equilibrium_10_ep);
+		let show_neuromancy_equilibrium_20_ep = get_bool(values.show_neuromancy_equilibrium_20_ep);
+		let show_neuromancy_equilibrium_30_ep = get_bool(values.show_neuromancy_equilibrium_30_ep);
+		let show_neuromancy_equilibrium_40_ep = get_bool(values.show_neuromancy_equilibrium_40_ep);
+		let range = get_int_or_zero(values.spell_range);
+		let area_size = get_int_or_zero(values.spell_area_size);
+		let nova_area = (values.area_type_nova == 'on' ? `${_n}Nova (${area_size} sq)` : '');
+		let tier1_effect = 								   		'{{10 EP=10 EP list}} ';
+		let tier2_effect = (show_neuromancy_equilibrium_20_ep ? '{{20 EP=20 EP list}} ' : '');
+		let tier3_effect = (show_neuromancy_equilibrium_30_ep ? '{{30 EP=30 EP list}} ' : '');
+		let tier4_effect = (show_neuromancy_equilibrium_40_ep ? '{{40 EP=40 EP list}} ' : '');
+		let tier1_text = 								 	  `${header_text('10 EP List', false)}${_bull}Alleviate the scared condition${_bull}Alleviate the sleepy condition${_bull}End rage (Physical Resilience tier 1)`;
+		let tier2_text = (show_neuromancy_equilibrium_20_ep ? `${header_text('20 EP List', false)}${_bull}Alleviate the scared and sleepy conditions${_bull}End rage (Physical Resilience tier 2)` : '');
+		let tier3_text = (show_neuromancy_equilibrium_30_ep ? `${header_text('30 EP List', false)}${_bull}Alleviate the asleep condition${_bull}Alleviate the terrified condition${_bull}End rage (Physical Resilience tier 3)` : '');
+		let tier4_text = (show_neuromancy_equilibrium_40_ep ? `${header_text('40 EP List', false)}${_bull}End rage (Physical Resilience tier 4)` : '');
+		let desc = "This spell can remove one or more mental conditions from the target, based on the amount of EP spent." + _rn + "Alternatively, it can end " +
+		"rage in a raging target, but only if your tier in Neuromancy is equal to or greater than their tier in Physical Resilience. If attempting to end a " +
+		"wild rage, you suffer disadvantage on your Neuromancy check." + _pow + "When you attempt a second Mental Resilience check to shake off a spell or " +
+		"effect that causes one of the conditions alleviated by this spell, it only costs 2 pool points. In addition, you can attempt two such checks on two " +
+		"successive turns." + tier1_text + tier2_text + tier3_text + tier4_text +
+		_rn + "You can alleviate more than one condition with a single casting of any version of this spell, but you must pay for " +
+		"each separately.";
+		let roll_text = get_spell_info('Neuromancy (equilibrium)', '2 AP', range + ' squares', dur_instantaneous, 0, `Bolt${nova_area}${_n}Touch`,
+		'Creature', 'Mental Resilience', tier1_effect + tier2_effect + tier3_effect, desc);
+		startRoll(roll_text, (results) => {
+			finishRoll(results.rollId);
+		});
+	});
+});
+
+on("clicked:neuromancyequilibrium10ep", function() {
+	cast_equilibrium(10);
+});
+
+on("clicked:neuromancyequilibrium20ep", function() {
+	cast_equilibrium(20);
+});
+
+on("clicked:neuromancyequilibrium30ep", function() {
+	cast_equilibrium(30);
+});
+
+on("clicked:neuromancyequilibrium40ep", function() {
+	cast_equilibrium(40);
 });
 
 on("clicked:neuromancyfearinfo", function() {
