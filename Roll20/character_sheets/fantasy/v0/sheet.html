@@ -10039,7 +10039,8 @@ on("clicked:swarminfo", function() {
 		"effectively kills it. However, the swarm will reform over the course of one round if it rolls less than or equal to " + tier_effect_pr(pr_tier, 1, '') + 
 		" on 1d6. A swarm can only reform itself " + tier_effect_pr(pr_tier, 1, '') + " time(s)." + _rn + "Swarms can occupy spaces with other creatures with no penalty. " +
 		"Each round, the swarm makes a single attack against all creatures with whom it shares a space, which is an Attack (two-handed melee) check that is " +
-		"automatically successful (usually a bite or sting natural attack), and gains a +2d6 damage bonus." + _rn + "The first time each creature takes damage from " +
+		"automatically successful (usually a bite or sting natural attack), and gains a +2d6 damage bonus. Swarm attack damage ignores up to 10 points of DR (physical) " +
+		"from armor, but does not ignore DR from the Natural Damage Resistance boon." + _rn + "The first time each creature takes damage from " +
 		"a swarm, they must make a Physical Resilience (constitution) check. If they fail, they are sickened until they no longer share a space with the swarm." +
 		_rn + "**Sickened:** Disadvantage on all actions; if exposed to anything stomach-upsetting, 10% chance each round to become nauseated until your next " + 
 		"short rest.}}'";
@@ -12673,6 +12674,7 @@ const boons_and_banes_array = [
 			return parse_movement_boon(bb_raw);
 		}
 	},
+	{ name: 'bb_tauric'   ,                           search_text: 'tauric',                    cs_cp_cost:  -6, ncs_cp_cost:   0, increment: 0, max_count:  1 },
 	{ name: 'bb_tiny_size',                           search_text: 'tinysize',                  cs_cp_cost:   6, ncs_cp_cost:   0, increment: 0, max_count:  1 },
 	{ name: 'bb_tireless',                            search_text: 'tireless',                  cs_cp_cost:   6, ncs_cp_cost:   0, increment: 0, max_count:  1 },
 	{ name: 'bb_tomb_rot',                            search_text: 'tombrot',                   cs_cp_cost:  20, ncs_cp_cost:   0, increment: 0, max_count:  1 },
@@ -13372,25 +13374,30 @@ on('clicked:facehuggerinfo', function() {
 	});
 });
 
-on("change:bb_huge_size change:bb_large_size change:bb_small_size change:bb_tiny_size", function() {
-	getAttrs(["bb_huge_size", "bb_large_size", "bb_small_size", "bb_tiny_size"], function(values) {
-		let huge_size  = get_bool(values.bb_huge_size);
-		let large_size = get_bool(values.bb_large_size);
-		let small_size = get_bool(values.bb_small_size);
-		let tiny_size  = get_bool(values.bb_tiny_size);
-		
-		let size_modifier_skill  = (large_size ? -1 : (small_size ? 1 : (huge_size ? -2 : (tiny_size ? 2 : 0))));
-		let size_modifier_damage = size_modifier_skill * -1;
-		let size_modifier_hp     = (large_size ? 10 : (small_size ? -10 : (huge_size ? 30 : (tiny_size ? -20 : 0))));
-		let size_modifier_aura   = (huge_size ? 2 : (large_size ? 1 : 0 ));
-		let size_modifier_speed  = (huge_size ? 1 : 0 );
+const size_array = [
+	{ name: 'tiny',   skill_modifier:  2, damage_modifier: -2, hp_modifier: -20, aura_modifier: 0, speed_modifier: 0 },
+	{ name: 'small',  skill_modifier:  1, damage_modifier: -1, hp_modifier: -10, aura_modifier: 0, speed_modifier: 0 },
+	{ name: 'medium', skill_modifier:  0, damage_modifier:  0, hp_modifier:   0, aura_modifier: 0, speed_modifier: 0 },
+	{ name: 'large',  skill_modifier: -1, damage_modifier:  1, hp_modifier:  10, aura_modifier: 1, speed_modifier: 0 },
+	{ name: 'huge',   skill_modifier: -2, damage_modifier:  2, hp_modifier:  30, aura_modifier: 2, speed_modifier: 1 },
+];
+
+on('change:bb_huge_size change:bb_large_size change:bb_small_size change:bb_tiny_size change:bb_tauric', function() {
+	getAttrs(['bb_huge_size', 'bb_large_size', 'bb_small_size', 'bb_tiny_size', 'bb_tauric'], function(values) {
+		let size_name     = (get_bool(values.bb_huge_size) ? 'huge' : (get_bool(values.bb_large_size) ? 'large' : (get_bool(values.bb_small_size) ? 'small' : (get_bool(values.bb_tiny_size) ? 'tiny' : 'medium'))));
+		let index         = size_array.indexOf(size_array.find(s => s.name == size_name));
+		let size_object   = size_array[index];
+		let damage_object = size_object;
+		if (get_bool(values.bb_tauric)) {
+			damage_object = size_array[Math.max(0, index - 1)];
+		}
 
 		setAttrs({
-			"size_modifier_skill":  size_modifier_skill,
-			"size_modifier_damage": size_modifier_damage,
-			"size_modifier_hp" :    size_modifier_hp,
-			"size_modifier_aura":   size_modifier_aura,
-			"size_modifier_speed":  size_modifier_speed
+			'size_modifier_skill':  size_object.skill_modifier,
+			'size_modifier_damage': damage_object.damage_modifier,
+			'size_modifier_hp' :    size_object.hp_modifier,
+			'size_modifier_aura':   size_object.aura_modifier,
+			'size_modifier_speed':  size_object.speed_modifier
 		});
 	});
 });
