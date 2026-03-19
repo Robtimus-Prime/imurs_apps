@@ -8489,7 +8489,7 @@ attribute_array.forEach( function(attribute) {
 
 function is_armor(armor_text) {
 	let text = parse_textarea(armor_text);
-	return ['armor', 'jerkin', 'fullplate', 'platemail', 'halfplate', 'splintmail', 'bandedmail', 'chainmail', 'scalemail', 'studdedleather', 'chainshirt', 'leather', 'jerkin'].some(a => text.includes(a));
+	return ['armor', 'jerkin', 'fullplate', 'platemail', 'halfplate', 'splintmail', 'bandedmail', 'chainmail', 'scalemail', 'breastplate', 'studdedleather', 'chainshirt', 'leather'].some(a => text.includes(a));
 }
 
 function parse_armor(armor_text) {
@@ -8499,7 +8499,7 @@ function parse_armor(armor_text) {
 	if (['fullplate', 'platemail', 'halfplate', 'splintmail', 'bandedmail', 'heavyarmor'].some(a => text.includes(a))) {
 		armor_object = { tier: 4, type: 'heavy', dr: 16, carry: 3 };
 	}
-	else if (['chainmail', 'scalemail', 'mailarmor', 'mediumarmor'].some(a => text.includes(a))) {
+	else if (['chainmail', 'scalemail', 'breastplate', 'mailarmor', 'mediumarmor'].some(a => text.includes(a))) {
 		armor_object = { tier: 3, type: 'medium', dr: 8, carry: 2 };
 	}
 	else if (['studdedleather', 'chainshirt', 'lightarmor'].some(a => text.includes(a))) {
