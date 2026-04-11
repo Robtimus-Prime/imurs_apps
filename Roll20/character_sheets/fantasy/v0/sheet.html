@@ -8826,7 +8826,7 @@ function cast_detoxify(ep_cost) {
 }
 
 function cast_heal_damage(ep_cost) {
-	getAttrs(["biomancy_heal_damage_toggle", "biomancy_tier", "ps_focused_healing", "use_focused_healing", "biomancy_healing_dice_modifier"], function(values) {
+	getAttrs(["biomancy_heal_damage_toggle", "biomancy_tier", "ps_focused_healing", "use_focused_healing", "biomancy_healing_dice_modifier", "biomancy_healing_static_modifier"], function(values) {
 		let toggle = get_bool(values.biomancy_heal_damage_toggle);
 		let tier = get_int_or_zero(values.biomancy_tier);
 		let multiplier = 0;
@@ -8844,11 +8844,13 @@ function cast_heal_damage(ep_cost) {
 		let use_focus = (values.use_focused_healing == 'on');
 		let damage_tier = (has_focus && use_focus ? tier + 1 : tier);
 		let damage = ((damage_tier + 1 ) * multiplier + get_int_or_zero(values.biomancy_healing_dice_modifier)) + "d" +  size;
+		let static_mod  = get_int_or_zero(values.biomancy_healing_static_modifier);
+		let static_text = (static_mod < 0 ? static_mod : (static_mod > 0 ? '+' + static_mod : '' ));
 
 		setAttrs({
 			"biomancy_heal_damage_toggle":        !toggle,
 			"biomancy_heal_damage_base_duration": dur_instantaneous,
-			"biomancy_heal_damage_effect_text":   "{{Healing=[[" + damage + " + @{biomancy_attribute_modifier} + @{biomancy_healing_static_modifier}]]}}", 
+			"biomancy_heal_damage_effect_text":   `{{Healing=[[${damage} + @{biomancy_attribute_modifier}${static_text}]]}}`, 
 			"biomancy_heal_damage_ep_cost":       ep_cost
 		});
 	});
@@ -9024,7 +9026,7 @@ function cast_fabricate_create(ep_cost) {
 }
 
 function cast_fabricate_repair(ep_cost) {
-	getAttrs(["conjuration_fabricate_toggle", "conjuration_tier", "conjuration_healing_dice_modifier"], function(values) {
+	getAttrs(["conjuration_fabricate_toggle", "conjuration_tier", "conjuration_healing_dice_modifier", "conjuration_healing_static_modifier"], function(values) {
 		let toggle = get_bool(values.conjuration_fabricate_toggle);
 		let tier = get_int_or_zero(values.conjuration_tier);
 
@@ -9039,7 +9041,9 @@ function cast_fabricate_repair(ep_cost) {
 		else {
 			multiplier = 4;
 		}
-		let damage = ((tier + 1 ) * multiplier + get_int_or_zero(values.conjuration_healing_dice_modifier)) + "d" +  size;
+		let damage      = ((tier + 1 ) * multiplier + get_int_or_zero(values.conjuration_healing_dice_modifier)) + "d" +  size;
+		let static_mod  = get_int_or_zero(values.conjuration_healing_static_modifier);
+		let static_text = (static_mod < 0 ? static_mod : (static_mod > 0 ? '+' + static_mod : '' ));
 
 		let restore_text = '';
 		if (ep_cost == 30) {
@@ -9049,7 +9053,7 @@ function cast_fabricate_repair(ep_cost) {
 			restore_text = _or + "Restore [[" + tier + "]] destroyed items" + _or + "Restore [[1]] destroyed magic item";
 		}
 		
-		let effect = "Repair/heal [[" + damage + " + @{conjuration_attribute_modifier} + @{conjuration_healing_static_modifier}]]" + restore_text;
+		let effect = `Repair/heal [[${damage} + @{conjuration_attribute_modifier}${static_text}]]` + restore_text;
 
 		setAttrs({
 			'conjuration_fabricate_toggle':        !toggle,
@@ -9062,18 +9066,20 @@ function cast_fabricate_repair(ep_cost) {
 }
 
 function cast_fabricate_attack(ep_cost) {
-	getAttrs(["conjuration_fabricate_toggle", "conjuration_tier", "conjuration_damage_dice_modifier"], function(values) {
+	getAttrs(["conjuration_fabricate_toggle", "conjuration_tier", "conjuration_damage_dice_modifier", "conjuration_damage_static_modifier"], function(values) {
 		let toggle = get_bool(values.conjuration_fabricate_toggle);
 		let tier = get_int_or_zero(values.conjuration_tier);
 		let dice_mod = get_int_or_zero(values.conjuration_damage_dice_modifier);
 		let damage = (tier + 1) * (ep_cost < 10 ? 1 : (ep_cost / 10) + 1);
 		damage += dice_mod;
+		let static_mod  = get_int_or_zero(values.conjuration_damage_static_modifier);
+		let static_text = (static_mod < 0 ? static_mod : (static_mod > 0 ? '+' + static_mod : '' ));
 
 		setAttrs({
 			"conjuration_fabricate_toggle":        !toggle,
 			"conjuration_fabricate_base_duration": dur_instantaneous,
 			'conjuration_fabricate_effect':        '', 
-			"conjuration_fabricate_effect_text":   "{{Damage=[[" + damage + "d6+@{conjuration_attribute_modifier}+@{conjuration_damage_static_modifier}]]}}", 
+			"conjuration_fabricate_effect_text":   `{{Damage=[[${damage}d6+@{conjuration_attribute_modifier}${static_text}]]}}`, 
 			"conjuration_fabricate_ep_cost":       ep_cost
 		});
 	});
@@ -9309,17 +9315,19 @@ function cast_teleport(ep_cost) {
 }
 
 function cast_teleport_attack(ep_cost) {
-	getAttrs(["displacement_teleport_toggle", "displacement_tier", "displacement_damage_dice_modifier"], function(values) {
+	getAttrs(["displacement_teleport_toggle", "displacement_tier", "displacement_damage_dice_modifier", "displacement_damage_static_modifier"], function(values) {
 		let toggle = get_bool(values.displacement_teleport_toggle);
 		let tier = get_int_or_zero(values.displacement_tier);
 		let dice_mod = get_int_or_zero(values.displacement_damage_dice_modifier);
 		let damage = (tier + 1) * (ep_cost < 10 ? 1 : (ep_cost / 10) + 1);
 		damage += dice_mod;
+		let static_mod  = get_int_or_zero(values.displacement_damage_static_modifier);
+		let static_text = (static_mod < 0 ? static_mod : (static_mod > 0 ? '+' + static_mod : '' ));
 
 		setAttrs({
 			"displacement_teleport_toggle":        !toggle,
 			"displacement_teleport_base_duration": dur_instantaneous,
-			"displacement_teleport_effect_text":   "{{Damage=[[" + damage + "d6+@{displacement_attribute_modifier}+@{displacement_damage_static_modifier}]]}}", 
+			"displacement_teleport_effect_text":   `{{Damage=[[${damage}d6+@{displacement_attribute_modifier}${static_text}]]}}`, 
 			"displacement_teleport_ep_cost":       ep_cost
 		});
 	});
@@ -9383,21 +9391,23 @@ function cast_status(ep_cost) {
 }
 
 function cast_attack(ep_cost) {
-	getAttrs(["dynamancy_attack_toggle", "dynamancy_tier", "ps_focused_blasting", "use_focused_blasting", "use_mage_rage", "pr_tier", "dynamancy_damage_dice_modifier"], function(values) {
-		let toggle = get_bool(values.dynamancy_attack_toggle);
-		let tier = get_int_or_zero(values.dynamancy_tier);
-		let has_focus = get_bool(values.ps_focused_blasting);
-		let use_focus = (values.use_focused_blasting == 'on');
-		let use_rage  = (values.use_mage_rage == 'on');
-		let dice_mod  = get_int_or_zero(values.dynamancy_damage_dice_modifier);
+	getAttrs(["dynamancy_attack_toggle", "dynamancy_tier", "ps_focused_blasting", "use_focused_blasting", "use_mage_rage", "pr_tier", "dynamancy_damage_dice_modifier", "dynamancy_damage_static_modifier"], function(values) {
+		let toggle      = get_bool(values.dynamancy_attack_toggle);
+		let tier        = get_int_or_zero(values.dynamancy_tier);
+		let has_focus   = get_bool(values.ps_focused_blasting);
+		let use_focus   = (values.use_focused_blasting == 'on');
+		let use_rage    = (values.use_mage_rage == 'on');
+		let dice_mod    = get_int_or_zero(values.dynamancy_damage_dice_modifier);
+		let static_mod  = get_int_or_zero(values.dynamancy_damage_static_modifier);
+		let static_text = (static_mod < 0 ? static_mod : (static_mod > 0 ? '+' + static_mod : '' ));
 		let damage_tier = (has_focus && use_focus && ep_cost > 0 ? tier + 1 : tier);
-		let damage = (damage_tier + 1) * (ep_cost < 10 ? 1 : (ep_cost / 10) + 1) + (use_rage ? get_int_or_zero(values.pr_tier) : 0);
+		let damage      = (damage_tier + 1) * (ep_cost < 10 ? 1 : (ep_cost / 10) + 1) + (use_rage ? get_int_or_zero(values.pr_tier) : 0);
 		damage += dice_mod;
 
 		setAttrs({
 			"dynamancy_attack_toggle":        !toggle,
 			"dynamancy_attack_base_duration": dur_instantaneous,
-			"dynamancy_attack_effect_text":   "{{Damage=[[" + damage + "d6+@{dynamancy_attribute_modifier}+@{dynamancy_damage_static_modifier}]]}}", 
+			"dynamancy_attack_effect_text":   `{{Damage=[[${damage}d6+@{dynamancy_attribute_modifier}${static_text}]]}}`, 
 			"dynamancy_attack_ep_cost":       ep_cost
 		});
 	});
@@ -9541,7 +9551,7 @@ function cast_decrepify(ep_cost) {
 }
 
 function cast_shape_corpse(ep_cost) {
-	getAttrs(["necromancy_shape_corpse_toggle", "necromancy_tier", "necromancy_healing_dice_modifier"], function(values) {
+	getAttrs(["necromancy_shape_corpse_toggle", "necromancy_tier", "necromancy_healing_dice_modifier", "necromancy_healing_static_modifier"], function(values) {
 		let toggle = get_bool(values.necromancy_shape_corpse_toggle);
 		let tier = get_int_or_zero(values.necromancy_tier);
 		let multiplier = 0;
@@ -9556,6 +9566,8 @@ function cast_shape_corpse(ep_cost) {
 			multiplier = 4;
 		}
 		let damage = ((tier + 1 ) * multiplier + get_int_or_zero(values.necromancy_healing_dice_modifier)) + 'd' +  size;
+		let static_mod  = get_int_or_zero(values.necromancy_healing_static_modifier);
+		let static_text = (static_mod < 0 ? static_mod : (static_mod > 0 ? '+' + static_mod : '' ));
 		let effect = '';
 		if (ep_cost == 5) {
 			effect = 'Shape';
@@ -9569,7 +9581,7 @@ function cast_shape_corpse(ep_cost) {
 		else if (ep_cost == 30) {
 			effect = 'Assemble Huge';
 		}
-		effect = (effect == '' ? '' : effect + ' corpses' + _or) + `Heal [[${damage} + @{necromancy_attribute_modifier} + @{necromancy_healing_static_modifier}]]`;
+		effect = (effect == '' ? '' : effect + ' corpses' + _or) + `Heal [[${damage} + @{necromancy_attribute_modifier}${static_text}]]`;
 
 		setAttrs({
 			"necromancy_shape_corpse_toggle":        !toggle,
