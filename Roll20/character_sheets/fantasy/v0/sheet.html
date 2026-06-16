@@ -12339,6 +12339,7 @@ const passive_skill_array = [
 	{ name: 'ps_armored_spellcasting',        search_text: 'armoredspellcasting',       cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_beam',                        search_text: 'beam',                      cs_cp_cost:  0, ncs_cp_cost:  6 },
 	{ name: 'ps_blind_fighting',              search_text: 'blindfighting',             cs_cp_cost:  6, ncs_cp_cost:  0 },
+	{ name: 'ps_blur',                        search_text: 'blur',                      cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_brawl',                       search_text: 'brawl',                     cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_improved_breath_weapon',      search_text: 'improvedbreathweapon',      cs_cp_cost: 10, ncs_cp_cost:  0 },
 	{ name: 'ps_greater_breath_weapon',       search_text: 'greaterbreathweapon',       cs_cp_cost: 20, ncs_cp_cost:  0 },
@@ -15850,7 +15851,7 @@ on("clicked:conjurationshelterinfo", function() {
 		"out of wood, has a fireplace and chimney, a single door, and up to " + tier_effect_conjuration(tier, 2, ' windows') + ". " +
 		"It can also have bunk beds, tables, chairs, and other basic furniture that would reasonably fit inside, which you choose when casting the " +
 		"spell."
-		let tier2_text = (show_conjuration_shelter_20_ep ? _rn + "For 20 EP, a house springs up around you, up to double the size of your nova, with an " +
+		let tier2_text = (show_conjuration_shelter_20_ep ? _rn + "For 20 EP, a house springs up around you, up to the size of two of your novas, with an " +
 		"8-foot ceiling. It can also be 2-story (each floor being the size of your nova), with a staircase. The house is made of stone, has up to " +
 		"two doors, and up to " + tier_effect_conjuration(tier, 4, ' windows') + ". Its interior stays at 70° F, unless the " +
 		"outside temperature is below 0° F or above 100° F, in which case the inner temperature is decreased or increased on a 1-for-1 degree " +
@@ -15862,8 +15863,8 @@ on("clicked:conjurationshelterinfo", function() {
 		tier_effect_conjuration(tier, 5, ' cubic feet') + " of items . In addition, you can speak a word and send the chest to an extradimensional " +
 		"space, and speak another word at any time to summon it back to your side from that space. If the spell ends and the chest is still in the " +
 		"extradimensional space, it appears next to you, along with all the items that were inside of it (assuming they wouldn’t have fit in the " +
-		"chest without this spell)." : "");
-		let tier4_text = (show_conjuration_shelter_40_ep ? _rn + "For 40 EP, a mansion springs up around you, up to five times the size of your nova. It " +
+		"chest without this spell). You can only have one such chest active at a time." : "");
+		let tier4_text = (show_conjuration_shelter_40_ep ? _rn + "For 40 EP, a mansion springs up around you, up to the size of five of your novas. It " +
 		"can have any layout or number of floors you want, within the size constraint, and is lavishly furnished and decorated. The mansion is in " +
 		"an extradimensional space, and unaffected by any weather conditions. Only creatures you designate can enter the door(s), and they are " +
 		"invisible to other creatures. The mansion has up to eight 10 EP porter allies, and a fully stocked pantry and larder." : "");
@@ -17091,7 +17092,7 @@ on("clicked:illusiondisguise40ep", function() {
 });
 
 on("clicked:illusionholograminfo", function() {
-	getAttrs(["illusion_total", "illusion_tier", "illusion_attribute_modifier", "illusion_attribute_name", "show_illusion_hologram_10_ep", "show_illusion_hologram_20_ep", "show_illusion_hologram_30_ep", "show_illusion_hologram_40_ep", "spell_range", "spell_duration_bonus", "spell_area_size", "area_type_blast"], function(values) {
+	getAttrs(["illusion_total", "illusion_tier", "illusion_attribute_modifier", "illusion_attribute_name", "show_illusion_hologram_10_ep", "show_illusion_hologram_20_ep", "show_illusion_hologram_30_ep", "show_illusion_hologram_40_ep", "spell_range", "spell_duration_bonus", "spell_area_size", "area_type_blast", "ps_blur"], function(values) {
 		let total = get_int_or_zero(values.illusion_total);
 		let tier = get_int_or_zero(values.illusion_tier);
 		let attribute_mod = get_int_or_zero(values.illusion_attribute_modifier);
@@ -17106,6 +17107,7 @@ on("clicked:illusionholograminfo", function() {
 		let area_size = get_int_or_zero(values.spell_area_size);
 		let blast_area = (values.area_type_blast == 'on' ? `Blast (${area_size} sq)${_n}` : '');
 		let area_types = _bolt_touch;
+		let has_blur = get_bool(values.ps_blur);
 		if (show_illusion_hologram_20_ep) {
 			area_types = [
 				{ name: '10 EP', types: _bolt_touch              },
