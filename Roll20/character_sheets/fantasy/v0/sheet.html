@@ -6982,6 +6982,7 @@
 								<input name="attr_show_illusion_hologram_30_ep" type="hidden" class="show-ep-30" value="false" />
 								<input name="attr_show_illusion_hologram_40_ep" type="hidden" class="show-ep-40" value="false" />
 								<span class="ep-10">
+									<b> Hologram </b> <br />
 									<button type="action" name="act_illusionhologram10ep" /> 10 
 								</span>
 								<span class="ep-20">
@@ -7002,6 +7003,21 @@
 										Roll Hologram Attack
 									</div>
 								</span>
+								<div class="top-space">
+									<input name="attr_ps_blur" type="hidden" class="show-ability" value="false" />
+									<span class="ability">
+										<input name="attr_show_illusion_hologram_10_ep" type="hidden" class="show-ep-10" value="false" />
+										<input name="attr_show_illusion_hologram_30_ep" type="hidden" class="show-ep-30" value="false" />
+										<span class="ep-10">
+											<b> Blur </b> <br />
+											<button type="action" name="act_illusionhologramblur10ep" /> 10 EP
+										</span>
+										<span class="ep-30">
+											&nbsp;
+											<button type="action" name="act_illusionhologramblur30ep" /> 30 EP
+										</span>
+									</span>
+								</div>
 							</div>
 						</div>
 					</span>
@@ -9481,12 +9497,21 @@ function cast_hologram(ep_cost) {
 		effect = `Five senses Large animated hologram${_or}Several sight and sound person-sized animated holograms`;
 	}
 	if (ep_cost >= 30) {
-		base_duration = dur_concentration_w_pool;
 		effect = `Five senses Huge animated hologram that can attack${_or}Several five senses Large animated holograms`;
 	}
 	if (ep_cost >= 40) {
 		base_duration = dur_short_rest_p_linger;
 		effect = 'Several five senses Huge animated holograms that can attack';
+	}
+
+	cast_spell('illusion', 'hologram', ep_cost, base_duration, false, effect);
+}
+
+function cast_hologram_blur(ep_cost) {
+	let base_duration = dur_concentration;
+	let effect = 'Advantage on Defend checks versus sighted creatures';
+	if (ep_cost >= 30) {
+		effect = effect.replace('Advantage', 'Great advantage');
 	}
 
 	cast_spell('illusion', 'hologram', ep_cost, base_duration, false, effect);
@@ -17092,7 +17117,7 @@ on("clicked:illusiondisguise40ep", function() {
 });
 
 on("clicked:illusionholograminfo", function() {
-	getAttrs(["illusion_total", "illusion_tier", "illusion_attribute_modifier", "illusion_attribute_name", "show_illusion_hologram_10_ep", "show_illusion_hologram_20_ep", "show_illusion_hologram_30_ep", "show_illusion_hologram_40_ep", "spell_range", "spell_duration_bonus", "spell_area_size", "area_type_blast", "ps_blur"], function(values) {
+	getAttrs(["illusion_total", "illusion_tier", "illusion_attribute_modifier", "illusion_attribute_name", "show_illusion_hologram_10_ep", "show_illusion_hologram_20_ep", "show_illusion_hologram_30_ep", "show_illusion_hologram_40_ep", "spell_range", "spell_duration_bonus", "spell_area_size", "area_type_blast", "area_type_nova", "ps_blur"], function(values) {
 		let total = get_int_or_zero(values.illusion_total);
 		let tier = get_int_or_zero(values.illusion_tier);
 		let attribute_mod = get_int_or_zero(values.illusion_attribute_modifier);
@@ -17107,6 +17132,7 @@ on("clicked:illusionholograminfo", function() {
 		let area_size = get_int_or_zero(values.spell_area_size);
 		let blast_area = (values.area_type_blast == 'on' ? `Blast (${area_size} sq)${_n}` : '');
 		let area_types = _bolt_touch;
+		let nova_area = (values.area_type_nova == 'on' ? `${_n}Nova (${area_size} sq)` : '');
 		let has_blur = get_bool(values.ps_blur);
 		if (show_illusion_hologram_20_ep) {
 			area_types = [
@@ -17115,25 +17141,35 @@ on("clicked:illusionholograminfo", function() {
 			];
 		}
 		if (show_illusion_hologram_30_ep) {
-			base_duration =[
-				{ name: '10 or 20 EP', duration: dur_concentration        },
-				{ name: '30 EP',       duration: dur_concentration_w_pool }
-			];
 			area_types[1].name = '20 or 30 EP';
 		}
 		if (show_illusion_hologram_40_ep) {
-			base_duration.push({ name: '40 EP', duration: dur_short_rest_p_linger });
+			base_duration = [
+				{ name: '10-30 EP', duration: dur_concentration       },
+				{ name: '40 EP',    duration: dur_short_rest_p_linger }
+			];
 			area_types[1].name = '20-40 EP';
 		}
-		let tier1_effect =								   "{{5 EP=Visual hologram, 3 cubic feet}} {{10 EP=Sight and sound person-sized animated hologram}} ";
+		let blur_10ep = '';
+		let blur_30ep = '';
+		let blur_tier1_text = '';
+		let blur_tier3_text = '';
+		if (has_blur) {
+			area_types.push({ name: 'blur', types: _bolt_touch + nova_area });
+			blur_10ep = `${_or}Advantage on Defend`;
+			blur_30ep = blur_10ep.replace('Advantage', 'Great advantage');
+			blur_tier1_text = `${_rn}Alternatively, you can make the target(s) of this spell appear blurry, granting advantage on Defend checks versus sighted creatures.`;
+			blur_tier3_text = blur_tier1_text.replace(' advantage ', ' great advantage ');
+		}
+		let tier1_effect =								   `{{5 EP=Visual hologram, 3 cubic feet}} {{10 EP=Sight and sound person-sized animated hologram${blur_10ep}}} `;
 		let tier2_effect = (show_illusion_hologram_20_ep ? `{{20 EP=Five senses Large animated hologram${_or}Several sight and sound person-sized animated holograms}} ` : '');
-		let tier3_effect = (show_illusion_hologram_30_ep ? `{{30 EP=Five senses Huge animated hologram that can attack${_or}Several five senses Large animated holograms}} ` : '');
+		let tier3_effect = (show_illusion_hologram_30_ep ? `{{30 EP=Five senses Huge animated hologram that can attack${_or}Several five senses Large animated holograms${blur_30ep}}} ` : '');
 		let tier4_effect = (show_illusion_hologram_40_ep ? '{{40 EP=Several five senses Huge animated holograms that can attack}}' : '');
 		let tier1_text = _rn + "For 5 EP, you can make a hologram of up to 3 cubic feet. The hologram is visual only, and is completely static." + _rn + "For 10 " +
 		"EP, you can create a hologram up to the size of a person. It only has sight and sound, and can make noise as loud as one person yelling. The hologram " +
 		"is animated; you can spend 1 AP to change what it does, which can be whatever you want (subject to GM discretion). When you cast the spell, you choose " +
 		"to anchor the hologram to yourself or a square. The hologram cannot move within a distance from its anchor equal to your range spell statistic. If it " +
-		"does so, it winks out of existence and the spell ends. ";
+		"does so, it winks out of existence and the spell ends. " + blur_tier1_text;
 		let tier2_text = (show_illusion_hologram_20_ep ? _rn + "For 20 EP, you can create a hologram up to the size of a Large creature. It has all five senses, " +
 		"and can make noise as loud as several people yelling. Otherwise this works like the 10 EP version of the spell." + _rn + "Alternatively, you can cast " +
 		"the 10 EP version of this spell with an area type of blast, which can contain up to one separate hologram per square. The holograms can be animated " +
@@ -17144,7 +17180,7 @@ on("clicked:illusionholograminfo", function() {
 		tier_effect_illusion(tier, 1, 'd6') + attribute_mod_effect(attribute_name, attribute_mod) + ". Otherwise this works like the 10 EP version of " +
 		"the spell." + _rn + "Alternatively, you can cast the 20 EP version of this spell with an area type of blast, which can contain up to one separate " +
 		"hologram per square (or fewer, if they are Large). The holograms can be animated separately, but you must choose one anchor point for all of them." + 
-		_rn + "Both of these versions of the spell have a base duration of concentration with pool points. " : "");
+		blur_tier3_text : "");
 		let tier4_text = (show_illusion_hologram_40_ep ? _rn + "For 40 EP, you can cast the 30 EP version of this spell with an area type of blast, which can " +
 		"contain up to one separate hologram per square (or fewer, if they are Large or Huge). The holograms can be animated separately, but you must choose one " +
 		"anchor point for all of them. This version of the spell has a base duration of short rest plus linger. " : "");
@@ -17173,6 +17209,14 @@ on("clicked:illusionhologram30ep", function() {
 
 on("clicked:illusionhologram40ep", function() {
 	cast_hologram(40);
+});
+
+on("clicked:illusionhologramblur10ep", function() {
+	cast_hologram_blur(10);
+});
+
+on("clicked:illusionhologramblur30ep", function() {
+	cast_hologram_blur(30);
 });
 
 on("clicked:illusionmirrorimageinfo", function() {
