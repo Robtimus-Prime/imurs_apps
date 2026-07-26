@@ -9407,7 +9407,7 @@ function cast_status(ep_cost) {
 }
 
 function cast_attack(ep_cost) {
-	getAttrs(["dynamancy_attack_toggle", "dynamancy_tier", "ps_focused_blasting", "use_focused_blasting", "use_mage_rage", "pr_tier", "dynamancy_damage_dice_modifier", "dynamancy_damage_static_modifier"], function(values) {
+	getAttrs(["dynamancy_attack_toggle", "dynamancy_tier", "ps_focused_blasting", "use_focused_blasting", "use_mage_rage", "pr_tier", "dynamancy_damage_dice_modifier", "dynamancy_damage_static_modifier", "mob_damage_bonus"], function(values) {
 		let toggle      = get_bool(values.dynamancy_attack_toggle);
 		let tier        = get_int_or_zero(values.dynamancy_tier);
 		let has_focus   = get_bool(values.ps_focused_blasting);
@@ -9417,8 +9417,9 @@ function cast_attack(ep_cost) {
 		let static_mod  = get_int_or_zero(values.dynamancy_damage_static_modifier);
 		let static_text = (static_mod < 0 ? static_mod : (static_mod > 0 ? '+' + static_mod : '' ));
 		let damage_tier = (has_focus && use_focus && ep_cost > 0 ? tier + 1 : tier);
+		let mob_mod     = get_int_or_zero(values.mob_damage_bonus);
 		let damage      = (damage_tier + 1) * (ep_cost < 10 ? 1 : (ep_cost / 10) + 1) + (use_rage ? get_int_or_zero(values.pr_tier) : 0);
-		damage += dice_mod;
+		damage += dice_mod + mob_mod;
 
 		setAttrs({
 			"dynamancy_attack_toggle":        !toggle,
@@ -11806,8 +11807,8 @@ combat_style_array.forEach( function(style) {
 		'use_precise_strike', 'deadly_precision_modifier', 'use_sneak_attack',
 		'sneak_attack_modifier', 'use_rage', 'rage_modifier', 'use_wild_rage',
 		'use_charge', 'ps_devastating_charge', 'ps_flying_kick', 'athletics_tier',
-		'use_fight_defensively', 'use_guard',
-		'use_fight_recklessly', 'use_protect',  'use_defensive_stance'
+		'use_fight_defensively', 'use_guard', 'use_fight_recklessly', 
+		'use_protect', 'use_defensive_stance', 'mob_damage_bonus'
 	);
 
 	on('change:' + getAttrs_array.join(' change:'), function() {
@@ -13175,7 +13176,7 @@ minor_major_array.forEach( function(type) {
 			let boon_damage_desc_name = `${boon_name}_damage_description`;
 			let boon_area_type_name   = `${boon_name}_area_type`;
 			
-			let get_array = [ boon_name, boon_raw_name, 'pr_total', 'pr_tier', 'ps_improved_breath_weapon', 'ps_greater_breath_weapon', 'ps_epic_breath_weapon', 'ps_legendary_breath_weapon' ];
+			let get_array = [ boon_name, boon_raw_name, 'pr_total', 'pr_tier', 'ps_improved_breath_weapon', 'ps_greater_breath_weapon', 'ps_epic_breath_weapon', 'ps_legendary_breath_weapon', 'mob_damage_bonus' ];
 			on('change:' + get_array.join(' change:'), function() {
 				getAttrs(get_array, function(values) {
 					let has_breath_weapon           = get_bool(values[boon_name]);
@@ -13186,6 +13187,7 @@ minor_major_array.forEach( function(type) {
 					let has_greater_breath_weapon   = get_bool(values.ps_greater_breath_weapon);
 					let has_epic_breath_weapon      = get_bool(values.ps_epic_breath_weapon);
 					let has_legendary_breath_weapon = get_bool(values.ps_legendary_breath_weapon);
+					let mob_damage_bonus            = get_int_or_zero(values.mob_damage_bonus);
 
 					let area_type          = '';
 					let damage_type        = '';
@@ -13228,14 +13230,16 @@ minor_major_array.forEach( function(type) {
 							ps_text       = 'Legendary Breath Weapon';
 						}
 						
-						damage_total = (pr_tier + 1 + ps_tier_bonus) * damage_multiplier;
+						damage_total = (pr_tier + 1 + ps_tier_bonus) * damage_multiplier + mob_damage_bonus;
 						
 						if (ps_text != '') {
 							ps_text = `, plus ${ps_tier_bonus * damage_multiplier}d6 from the ${ps_text} passive skill`;
 						}
 						
+						let mob_description = (mob_damage_bonus > 0 ? ', plus your mob damage bonus' : '');
+						
 						damage_description = `[[${damage_total} : This is ${damage_multiplier}d6, plus ${damage_multiplier}d6 per tier you have in Physical ` +
-						`Resilience${ps_text}]]**d6**`;
+						`Resilience${ps_text}${mob_description}]]**d6**`;
 
 						area_size = Math.max(Math.floor(pr_total / 4), 1);
 						if (area_type.toLowerCase() == 'line') {
