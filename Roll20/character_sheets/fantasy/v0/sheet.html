@@ -12672,7 +12672,7 @@ const boons_and_banes_array = [
 			return cp_costs;
 		}
 	},
-	{ name: 'bb_disease_immunity',                    search_text: 'diseaseimmunity',           cs_cp_cost:  45, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_disease_immunity',                    search_text: 'diseaseimmunity',           cs_cp_cost:  15, ncs_cp_cost:   0, increment: 0, max_count:  1 },
 	{ name: 'bb_energy_drain',                        search_text: 'energydrain',               cs_cp_cost:  30, ncs_cp_cost:   0, increment: 0, max_count:  1 },
 	{ name: 'bb_engulf',                              search_text: 'engulf',                    cs_cp_cost:  60, ncs_cp_cost:   0, increment: 0, max_count:  1 },
 	{ name: 'bb_facehugger',                          search_text: 'facehugger',                cs_cp_cost:  20, ncs_cp_cost:   0, increment: 0, max_count:  1 },
@@ -12688,8 +12688,6 @@ const boons_and_banes_array = [
 			return parse_movement_boon(bb_raw);
 		}
 	},
-//	{ name: 'bb_free_grapple',                        search_text: 'freegrapple',               cs_cp_cost:   8, ncs_cp_cost:   0, increment: 0, max_count:  1 },
-//	{ name: 'bb_free_knockdown',                      search_text: 'freeknockdown',             cs_cp_cost:   8, ncs_cp_cost:   0, increment: 0, max_count:  1 },
 	{ name: 'bb_gaze_attack',                         search_text: 'gazeattack',                cs_cp_cost:   0, ncs_cp_cost:   0, increment: 1, max_count:  3,
 		cp_function: function(bb_raw) {
 			let gaze_parts  = bb_raw.split('gazeattack')[1].split(',');
@@ -12728,7 +12726,7 @@ const boons_and_banes_array = [
 			return cp_costs;
 		}
 	},
-	{ name: 'bb_poison_immunity',                     search_text: 'poisonimmunity',            cs_cp_cost:  45, ncs_cp_cost:   0, increment: 0, max_count:  1 },
+	{ name: 'bb_poison_immunity',                     search_text: 'poisonimmunity',            cs_cp_cost:  15, ncs_cp_cost:   0, increment: 0, max_count:  1 },
 	{ name: 'bb_polyglot',                            search_text: 'polyglot',                  cs_cp_cost:   0, ncs_cp_cost:   8, increment: 0, max_count:  1 },
 	{ name: 'bb_preternatural_cunning',               search_text: 'preternaturalcunning',      cs_cp_cost:  10, ncs_cp_cost:   0, increment: 0, max_count:  1 },
 	{ name: 'bb_quick_reflexes',                      search_text: 'quickreflexes',             cs_cp_cost:   6, ncs_cp_cost:   0, increment: 0, max_count:  1 },
