@@ -6156,6 +6156,38 @@
 				</div>
 
 				<div>
+					<input name="attr_show_displacement_disrupt" type="hidden" class="show-ability" value="true" />
+					<span class="ability">
+						<div class="top-line">
+							<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Displacement}} {{Displacement (disrupt) @{displacement_advantage_text}=[[@{displacement_disrupt_roll} + @{displacement_total} + @{mob_skill_bonus}]]}}'" />
+							<button type="action" name="act_displacementdisruptinfo" class="info-button" />
+							<label class="skillapp"> Disrupt </label>
+							<label class="skill-tem-container">
+								<input name="attr_displacement_disrupt_training" type="checkbox" />
+								<span class="skill-tem skill-training"> Training </span>
+							</label>
+							<input name="attr_displacement_disrupt_roll" type="hidden" value="2d6" />
+							<div>
+								<input name="attr_show_displacement_disrupt_10_ep" type="hidden" class="show-ep-10" value="false" />
+								<input name="attr_show_displacement_disrupt_20_ep" type="hidden" class="show-ep-20" value="false" />
+								<input name="attr_show_displacement_disrupt_30_ep" type="hidden" class="show-ep-30" value="false" />
+								<span class="ep-10">
+									<button type="action" name="act_displacementdisrupt10ep" /> 10 EP
+								</span>
+								<span class="ep-20">
+									&nbsp;
+									<button type="action" name="act_displacementdisrupt20ep" /> 20 EP
+								</span>
+								<span class="ep-30">
+									&nbsp;
+									<button type="action" name="act_displacementdisrupt30ep" /> 30 EP
+								</span>
+							</div>
+						</div>
+					</span>
+				</div>
+
+				<div>
 					<input name="attr_show_displacement_levitate" type="hidden" class="show-ability" value="true" />
 					<span class="ability">
 						<div class="top-line">
@@ -9218,10 +9250,10 @@ function cast_summon_ally(ep_cost, porter = false) {
 function cast_bind(ep_cost) {
 	let base_duration = dur_short_rest_w_checks_1;
 	if (ep_cost == 20) {
-		base_duration = dur_short_rest_p_linger;
+		base_duration = dur_short_rest;
 	}
 	if (ep_cost == 30) {
-		base_duration = dur_one_week;
+		base_duration = dur_short_rest_p_linger;
 	}
 	
 	cast_spell('displacement', 'bind', ep_cost, base_duration, false, "Target(s) can't *teleport*");
@@ -9252,6 +9284,18 @@ function cast_chronofield(ep_cost) {
 	}
 
 	cast_spell('displacement', 'chronofield', ep_cost, base_duration, collapse_high_duration_bonus, effect);
+}
+
+function cast_disrupt(ep_cost) {
+	let effect = 'Target loses AP';
+	if (ep_cost == 20) {
+		effect = 'Target leaves possessed creature';
+	}
+	if (ep_cost == 30) {
+		effect = 'Target is banished to home plane';
+	}
+	
+	cast_spell('displacement', 'disrupt', ep_cost, dur_instantaneous, false, effect);
 }
 
 function cast_levitate(ep_cost) {
@@ -11146,6 +11190,14 @@ const active_skill_array = [
 					{ tier: 4, ep_costs: [40] }
 				] 
 			}, 
+			{
+				name: 'disrupt', 
+				tier_ep_costs: [ 
+					{ tier: 1, ep_costs: [10] },
+					{ tier: 2, ep_costs: [20] },
+					{ tier: 3, ep_costs: [30] }
+				] 
+			},
 			{
 				name: 'levitate', 
 				tier_ep_costs: [ 
@@ -16130,7 +16182,7 @@ on("clicked:displacementbindinfo", function() {
 		let desc = "*Bind* prevents affected targets from using *teleport* or being affected by another creature’s *teleport* spell or any similar " +
 		"effect. This includes even the free power from knowing the *teleport* spell. " + _pow + "You gain advantage on Attack (grapple) checks." + tier2_text;
 		let roll_text = get_spell_info('Displacement (bind)', '2 AP', range + ' squares', base_duration, duration_bonus, area_type_list,
-		'Creature', 'Mental Resilience', "Target(s) can't *teleport*", desc);
+		'Creature', 'Mental Resilience', "{{Effect=Target(s) can't *teleport*}}", desc);
 		startRoll(roll_text, (results) => {
 			finishRoll(results.rollId);
 		});
@@ -16204,6 +16256,44 @@ on("clicked:displacementchronofield30ep", function() {
 
 on("clicked:displacementchronofield40ep", function() {
 	cast_chronofield(40);
+});
+
+on("clicked:displacementdisruptinfo", function() {
+	getAttrs(["displacement_tier", "show_displacement_disrupt_10_ep", "show_displacement_disrupt_20_ep", "show_displacement_disrupt_30_ep", "spell_duration_bonus", "spell_range", "spell_area_size", "area_type_blast", "area_type_burst"], function(values) {
+		let tier = get_int_or_zero(values.displacement_tier);
+		let show_displacement_disrupt_10_ep = get_bool(values.show_displacement_disrupt_10_ep);
+		let show_displacement_disrupt_20_ep = get_bool(values.show_displacement_disrupt_20_ep);
+		let show_displacement_disrupt_30_ep = get_bool(values.show_displacement_disrupt_30_ep);
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
+		let range = get_int_or_zero(values.spell_range);
+		let tier1_effect =   								  "{{10 EP=Target loses AP}} ";
+		let tier2_effect = (show_displacement_disrupt_20_ep ? "{{20 EP=Target leaves possessed creature}} " : "");
+		let tier3_effect = (show_displacement_disrupt_30_ep ? "{{30 EP=Target is banished to home plane}} " : "");
+		let power_text = (show_displacement_disrupt_20_ep ? _pow + "When a creature from another plane fails a Defend, Mental Resilience, or Physical Resilience check against you, it loses its next Action Point. On a critical failure, it loses its next two Action Points. This power can only affect a given creature once per long rest." : "");
+		let tier2_text = (show_displacement_disrupt_20_ep ? _rn + "For 20 EP, you can disrupt a creature who is possessing another creature. If successful, the possessing creature is forced to leave the possessed creature, and it cannot attempt to possess the same creature again until it takes a long rest." : "");
+		let tier3_text = (show_displacement_disrupt_30_ep ? _rn + "For 30 EP, you can banish a creature from another plane back to its home plane." : "");
+		let desc = "This spell disrupts the connection between a creature from another plane and the plane itself. *Disrupt* only affects " +
+		"creatures from other planes or that have the ability to possess other creatures; if cast on any other type of creature, this spell " +
+		"automatically fails." + power_text + _rn + "For 10 EP, you cause the target to lose their next Action Point." + get_crit_text(
+		'the target loses their next two Action Points.', 'you lose your next Action Point.') + tier2_text + tier3_text
+		let roll_text = get_spell_info('Displacement (disrupt)', '2 AP', range + ' squares', dur_instantaneous, 0, _bolt_touch,
+		'Creature', 'Mental Resilience', tier1_effect + tier2_effect + tier3_effect, desc);
+		startRoll(roll_text, (results) => {
+			finishRoll(results.rollId);
+		});
+	});
+});
+
+on("clicked:displacementdisrupt10ep", function() {
+	cast_disrupt(10);
+});
+
+on("clicked:displacementdisrupt20ep", function() {
+	cast_disrupt(20);
+});
+
+on("clicked:displacementdisrupt30ep", function() {
+	cast_disrupt(30);
 });
 
 on("clicked:displacementlevitateinfo", function() {
