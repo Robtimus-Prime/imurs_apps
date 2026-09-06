@@ -1866,6 +1866,16 @@
 			</span>
 		</div>
 	
+		<!-- Split -->
+		<div class="monstrous-boon top-line">
+			<input name="attr_bb_split" type="hidden" class="show-ability" value="false" />
+			<span class="ability">
+				<div class="skillname">
+					<label> Split <button type="action" name="act_splitinfo" class="info-button generic-skill" /> </label>
+				</div>
+			</span>
+		</div>
+	
 		<!-- Swallow Whole -->
 		<div class="monstrous-boon top-line">
 			<input name="attr_bb_swallow_whole" type="hidden" class="show-ability" value="false" />
@@ -10147,6 +10157,34 @@ on("clicked:shatterweaponsinfo", function() {
 	
 	startRoll(roll_text, (results) => {
 		finishRoll(results.rollId);
+	});
+});
+
+on('change:bb_split', function() {
+	getAttrs(['bb_split', 'bb_split_raw'], function (values) {
+		if (get_bool(values.bb_split)) {
+			let boon_parts = values.bb_split_raw.split('split');
+			if (boon_parts.length > 0 && boon_parts[1].length > 0) {
+				setAttrs({ 'bb_split_extra_damage_type': boon_parts[1] });
+			}
+		}
+	});
+})
+
+on("clicked:splitinfo", function() {
+	getAttrs(['bb_split_extra_damage_type'], function (values) {
+		let damage_type_text = '';
+		if (values.bb_split_extra_damage_type) {
+			damage_type_text = ' or ' + values.bb_split_extra_damage_type;
+		}
+		let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: Split}}" +
+		"{{desc=The monster splits in two when it takes **physical" + damage_type_text + " damage**. It can be split up to three times. The monster does not have its " +
+		"size or anything else changed, but gains 1 AP that can only be used for Attack checks each time it splits. When the monster is bloodied, it loses one of " +
+		"those extra AP.}}'";
+		
+		startRoll(roll_text, (results) => {
+			finishRoll(results.rollId);
+		});
 	});
 });
 
