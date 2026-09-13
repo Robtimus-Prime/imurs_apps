@@ -1790,9 +1790,9 @@
 					Total Members <input name="attr_mob_member_count" type="text" />
 				</div>
 				<div class="top-space">
-					Mob Hit Points <input name="attr_mob_hit_points_max" type="text" readonly />
+					Mob Hit Points <input name="attr_mob_hit_points_max" type="text" class="longnumber" readonly />
 					&nbsp;
-					Current <input name="attr_mob_hit_points" type="text" />
+					Current <input name="attr_mob_hit_points" type="text" class="longnumber" />
 				</div>
 				<div class="top-space">
 					Skill Bonus +<input name="attr_mob_skill_bonus" type="text" readonly />
@@ -9895,20 +9895,31 @@ on('change:sheet_is_initialized', function() {
 const rest_type_array = ['short', 'long'];
 rest_type_array.forEach( function (rest_type) {
 	on(`clicked:${rest_type}rest`, function() {
-		getAttrs(["hit_points", "hit_points_max", "essence_points", "essence_points_max", "essence_points_in_use"], function(values) {
-			let hp        = get_int_or_zero(values.hit_points);
-			let hp_max    = get_int_or_zero(values.hit_points_max);
-			let ep        = get_int_or_zero(values.essence_points);
-			let ep_max    = get_int_or_zero(values.essence_points_max);
-			let ep_in_use = get_int_or_zero(values.essence_points_in_use);
+		getAttrs(["hit_points", "hit_points_max", "essence_points", "essence_points_max", "essence_points_in_use", "ps_mob", "mob_member_count", "mob_hit_points", "mob_hit_points_max"], function(values) {
+			let hp         = get_int_or_zero(values.hit_points);
+			let hp_max     = get_int_or_zero(values.hit_points_max);
+			let ep         = get_int_or_zero(values.essence_points);
+			let ep_max     = get_int_or_zero(values.essence_points_max);
+			let ep_in_use  = get_int_or_zero(values.essence_points_in_use);
+			let has_mob    = get_bool(values.ps_mob);
+			let mob_count  = get_int_or_zero(values.mob_member_count);
+			let mob_hp     = get_int_or_zero(values.mob_hit_points);
+			let mob_hp_max = get_int_or_zero(values.mob_hit_points_max);
 			
 			let capitalized_type = capitalize_first_letter(rest_type);
-
+			
 			startRoll("@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: " + capitalized_type + " Rest}} {{HP=[[@{" + rest_type + "_rest_hp_roll}]]}} {{EP=[[@{" + rest_type + "_rest_ep_roll}]]}}'", (results) => {
-				setAttrs({
-					"hit_points": Math.min(hp + results.results.HP.result, hp_max),
-					"essence_points": Math.min(ep + results.results.EP.result, (ep_max - ep_in_use))
-				});
+				let set_object = {
+					'hit_points':     Math.min(hp + results.results.HP.result, hp_max),
+					'essence_points': Math.min(ep + results.results.EP.result, (ep_max - ep_in_use))
+				};
+				logg(_log_vital, `Mob passive skill: ${has_mob}; mob count: ${mob_count}`);
+				if (has_mob && mob_count > 0) {
+					set_object['mob_hit_points'] = Math.min(mob_hp + results.results.HP.result * mob_count, mob_hp_max);
+				}
+				logg(_log_vital, `Rolling ${rest_type} rest`);
+				logg(_log_vital, set_object);
+				setAttrs(set_object);
 				finishRoll(results.rollId);
 			});
 		});
