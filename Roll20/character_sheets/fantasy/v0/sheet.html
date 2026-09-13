@@ -1918,6 +1918,16 @@
 			</span>
 		</div>
 
+		<!-- Trample -->
+		<div class="monstrous-boon top-line">
+			<input name="attr_ps_trample" type="hidden" class="show-ability" value="false" />
+			<span class="ability">
+				<div class="skillname">
+					<label> Trample <button type="action" name="act_trampleinfo" class="info-button generic-skill" /> </label>
+				</div>
+			</span>
+		</div>
+
 	</div>
 
 	<div class="sheet-col">
@@ -10261,6 +10271,20 @@ on("clicked:tombrotinfo", function() {
 	});
 });
 
+on("clicked:trampleinfo", function() {
+	getAttrs(["mr_total"], function(values) {
+		let mr_total = get_int_or_zero(values.mr_total);
+		
+		let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: Trample}} " +
+		"{{desc=You can knock over smaller creatures and trample them. When you make a successful Attack (reposition) check to bull rush a creature smaller than you, " +
+		"they are knocked prone and take damage as if hit by one of your natural attacks (GM’s discretion, usually a two-handed melee attack).}}'";
+		
+		startRoll(roll_text, (results) => {
+			finishRoll(results.rollId);
+		});
+	});
+});
+
 on("clicked:totalmagicimmunityinfo", function() {
 	let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: Total Magic Immunity}} " +
 	"{{desc=The monster is completely immune to spells from every magic skill. It has no control over this ability, and can never be affected by magic. Monsters with " +
@@ -12547,6 +12571,7 @@ const passive_skill_array = [
 	{ name: 'ps_stoic_defense',               search_text: 'stoicdefense',              cs_cp_cost:  3, ncs_cp_cost:  0 },
 	{ name: 'ps_supernatural_aspect',         search_text: 'supernaturalaspect',        cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_sweeping_attack',             search_text: 'sweepingattack',            cs_cp_cost:  6, ncs_cp_cost:  0 },
+	{ name: 'ps_trample',                     search_text: 'trample',                   cs_cp_cost: 12, ncs_cp_cost:  0 },
 	{ name: 'ps_tunnel_fighting',             search_text: 'tunnelfighting',            cs_cp_cost:  3, ncs_cp_cost:  0 },
 	{ name: 'ps_vitality',                    search_text: 'vitality',                  cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_wand_expertise',              search_text: 'wandexpertise',             cs_cp_cost:  3, ncs_cp_cost:  3 },
