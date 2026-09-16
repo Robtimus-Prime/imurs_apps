@@ -11921,6 +11921,21 @@ active_skill_array.forEach( function(skill) {
 	});
 });
 
+// Exception for Conjuration (summon ally) because it needs the skill attribute value, not just the Modifier
+let conjuration_attribute_get_array = ['conjuration_points', 'intelligence', 'wit', 'ps_intuitive_magic_versatility_conjuration'];
+on('change:' + conjuration_attribute_get_array.join(' change:'), function() {
+	getAttrs(conjuration_attribute_get_array, function(values) {
+		if (get_int_or_zero(values.conjuration_points) > 0) {
+			let conjuration_attribute = get_int_or_zero(values.intelligence);
+			if (get_bool(values.ps_intuitive_magic_versatility_conjuration)) {
+				conjuration_attribute = get_int_or_zero(values.wit);
+			}
+			logg(_log_magic, `conjuration_attribute: ${conjuration_attribute}`);
+			setAttrs({ 'conjuration_attribute': conjuration_attribute });
+		}
+	});
+});
+
 // Update character tier when any skill tier changes
 let all_skill_tiers = active_skill_array.map(s => `${s.name}_tier`);
 on('change:' + all_skill_tiers.join(' change:'), function() {
