@@ -5940,7 +5940,6 @@
 					<span class="ability">
 						<div class="top-line">
 							<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Conjuration}} {{Conjuration (summon ally) @{conjuration_advantage_text}=[[@{conjuration_summon_ally_roll} + @{conjuration_total} + @{mob_skill_bonus}]]}}'" />
-							<button type="action" name="act_conjurationsummonallyinfo" class="info-button" />
 							<label class="skillapp"> Summon Ally </label>
 							<label class="skill-tem-container">
 								<input name="attr_conjuration_summon_ally_training" type="checkbox" />
@@ -5948,9 +5947,18 @@
 							</label>
 							<input name="attr_conjuration_summon_ally_roll" type="hidden" value="2d6" />
 							<div>
+								<button type="action" name="act_conjurationsummonallycombatantinfo" class="info-button" />
+								<label class="skillapp"> Combatant </label>
+							</div>
+							<div>
+								<button type="action" name="act_conjurationsummonallyporterinfo" class="info-button" />
+								<label class="skillapp"> Porter </label>
+							</div>
+							<div>
 								<input name="attr_show_conjuration_summon_ally_10_ep" type="hidden" class="show-ep-10" value="false" />
 								<input name="attr_show_conjuration_summon_ally_20_ep" type="hidden" class="show-ep-20" value="false" />
 								<input name="attr_show_conjuration_summon_ally_30_ep" type="hidden" class="show-ep-30" value="false" />
+								<input name="attr_show_conjuration_summon_ally_40_ep" type="hidden" class="show-ep-40" value="false" />
 								<span class="ep-10">
 									<button type="action" name="act_familiarinfo" class="info-button" />
 									<label class="skillapp"> Familiar </label>
@@ -5970,6 +5978,12 @@
 									<button type="action" name="act_conjurationsummonallycombatant30ep" /> Combatant 30 EP
 									&nbsp;
 									<button type="action" name="act_conjurationsummonallyporter30ep" /> Porter 30 EP
+								</span>
+								<span class="ep-40">
+									<br />
+									<button type="action" name="act_conjurationsummonallycombatant40ep" /> Combatant 40 EP
+									&nbsp;
+									<button type="action" name="act_conjurationsummonallyporter40ep" /> Porter 40 EP
 								</span>
 							</div>
 						</div>
@@ -6006,8 +6020,23 @@
 							<label class="col2"> Modifier </label>
 							<input name="attr_summon_ally_physique_modifier" type="text" value="0" readonly />
 
+							<label class="col2"> Agility </label>
+							<input name="attr_summon_ally_agility" type="text" value="0" readonly />
+							
+							<label class="col2"> Modifier </label>
+							<input name="attr_summon_ally_agility_modifier" type="text" value="0" readonly />
+
 							<label class="col2"> Hit Points </label>
 							<input name="attr_summon_ally_hit_points" type="text" value="0" readonly />
+
+							<label class="col2"> Speed </label>
+							<input name="attr_summon_ally_speed" type="text" value="0" readonly />
+
+							<span class="porter-ally">
+								<br />
+								<label class="col2"> Move </label>
+								<input name="attr_summon_ally_speed_extra" type="text" class="custom" readonly />
+							</span>
 
 							<label class="col2"> Untrained </label>
 							<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{summon_ally_type} Ally: Untrained skill check}} {{Skill (untrained) @{conjuration_advantage_text}=[[@{summon_ally_untrained_dice}+@{conjuration_attribute_modifier}]]}}" />
@@ -6031,6 +6060,7 @@
 							</span>
 
 							<span class="porter-ally">
+								<br />
 								<label class="col2"> Carry </label>
 								<input name="attr_summon_ally_carry" type="text" value="0" readonly />
 
@@ -6040,10 +6070,26 @@
 							
 							<div class="top-line">
 								<label class="longlabel"> Trained Skills </label>
-								<textarea name="attr_summon_ally_trained_skills" class="skillappcombat"></textarea>
+								<input type="hidden" name="attr_show_porter_ally" class="show-porter-ally" value="false" />
+								<span class="combatant-ally">
+									<dir>
+										<br />
+										Attack (any one combat style) <br />
+										Defend (dodge) <br />
+										Mental Resilience (willpower) <br />
+										Physical Resilience (fortitude) <br />
+									</dir>
+									<br />
+									<textarea name="attr_summon_ally_trained_skills" class="skillappcombat"></textarea>
+								</span>
+								<span class="porter-ally">
+									<br />
+									Athletics (climb, feat, gymnastics, jump, and swim)
+								</span>
 							</div>
 						</div>
 						
+						<br />
 						<button type="action" name="act_endsummonally" class="end-spell" text="End Spell" />
 					</span>
 				</div>
@@ -9190,49 +9236,51 @@ function cast_shield(ep_cost, skill) {
 	cast_spell('conjuration', 'shield', ep_cost, dur_concentration_w_pool, false, effect);
 }
 
+const ally_stats_array = [
+	{ ep_cost: 10, hp_plus:  2, dr_plus: 2, skill: 0, damage: 0, ps_cp:  6, speed: 3, carry_x: 0, move: []                       },
+	{ ep_cost: 20, hp_plus:  4, dr_plus: 4, skill: 0, damage: 1, ps_cp: 15, speed: 4, carry_x: 1, move: ['climb', 'swim']        },
+	{ ep_cost: 30, hp_plus:  7, dr_plus: 6, skill: 2, damage: 2, ps_cp: 24, speed: 5, carry_x: 2, move: ['climb', 'fly', 'swim'] },
+	{ ep_cost: 40, hp_plus: 11, dr_plus: 8, skill: 4, damage: 3, ps_cp: 36, speed: 6, carry_x: 4, move: ['climb', 'fly', 'swim'] }
+];
+
 function cast_summon_ally(ep_cost, porter = false) {
 	getAttrs(["conjuration_summon_ally_toggle", "conjuration_tier", "conjuration_attribute", "conjuration_attribute_modifier", "conjuration_advantage", "conjuration_explode", "summon_ally_damage_dice_modifier", "summon_ally_damage_static_modifier"], function(values) {
 		let toggle                 = get_bool(values.conjuration_summon_ally_toggle);
 		let tier                   = get_int_or_zero(values.conjuration_tier);
 		let attribute              = get_int_or_zero(values.conjuration_attribute);
 		let attribute_modifier     = get_int_or_zero(values.conjuration_attribute_modifier);
+		let attribute_speed_mod    = Math.floor((attribute_modifier / 2) + (attribute_modifier < 0 ? 0.5 : 0));
 		let explode                = get_int_or_zero(values.conjuration_explode);
 		let damage_dice_modifier   = get_int_or_zero(values.summon_ally_damage_dice_modifier);
 		let damage_static_modifier = get_int_or_zero(values.summon_ally_damage_static_modifier);
 		let ally_type              = (porter ? "Porter" : "Combatant");
-		let ally_hp                = attribute * (tier + 2);
-		if (!porter && ep_cost == 20) {
-			ally_hp += attribute * 3;
-		}
-		else if (!porter && ep_cost == 30) {
-			ally_hp += attribute * 6;
-		}
-		let ally_speed = 4;
-		let ally_speed_extra = "";
+		let ally_stats             = ally_stats_array.find(x => x.ep_cost == ep_cost);
+		let ally_hp                = attribute * (tier + ally_stats.hp_plus);
+		let ally_speed             = 4 + attribute_speed_mod;
+		let ally_speed_extra       = '';
+		let ally_speed_extra_text  = '';
 		if (porter) {
-			ally_speed += tier;
-			if (ep_cost == 20) {
-				ally_speed_extra = "," + _n + "fly or swim [[" + ally_speed + "]] sq";
-			}
-			if (ep_cost == 30) {
-				ally_speed += 2;
-				ally_speed_extra = "," + _n + "fly and swim [[" + ally_speed + "]] sq," + _n + "burrow [[" + tier + "]] sq";
+			ally_speed            = ally_stats.speed + tier + attribute_speed_mod;
+			ally_speed_extra      = _n + ally_stats.move.join(` [[${ally_speed}]] sq${_n}`) + ` [[${ally_speed}]] sq`;
+			ally_speed_extra_text = ally_stats.move.join(', ');
+			if (ep_cost == 40) {
+				ally_speed_extra      += _n + "burrow [[" + (tier + attribute_speed_mod) + "]] sq";
+				ally_speed_extra_text += `, burrow ${tier} sq`;
 			}
 		}
 		let mod_sign = (attribute_modifier >= 0 ? "+" : "");
 		let untrained_skill_roll = "2d6" + mod_sign + attribute_modifier;
-		let phy_with_mod = attribute + " (" + mod_sign + attribute_modifier + ")";
-		let ally_damage = tier + (ep_cost == 20 ? 1 : (ep_cost == 30 ? 2 : 0));
-		let ally_carry = attribute * (ep_cost == 20 ? tier : (ep_cost == 30 ? tier + 2 : 2));
+		let phy_agi_with_mod = attribute + " (" + mod_sign + attribute_modifier + ")";
+		let ally_damage = tier + ally_stats.damage;
+		let ally_carry = attribute * (tier + ally_stats.carry_x);
 
-		let extra_skills = (ep_cost == 30 ? 6 : 4);
-		let ally_skills = "Any [[" + (extra_skills + tier) + "]] skill applications";
-		if (ep_cost < 20) {
-			if (porter) {
-				ally_skills = "Athletics (climb, jump, swim)";
-			}
-			else {
-				ally_skills = "Attack (one melee combat style)" + _n + "Defend (dodge)" + _n + "Mental Resilience (willpower)" + _n + "Physical Resilience (fortitude)";
+		if (porter) {
+			ally_skills = "Athletics (climb, feat, gymnastics, jump, swim)";
+		}
+		else {
+			ally_skills = "Attack (one melee combat style)" + _n + "Defend (dodge)" + _n + "Mental Resilience (willpower)" + _n + "Physical Resilience (fortitude)";
+			if (ep_cost > 10) {
+				ally_skills += _n + "[[" + (ally_stats.skill + tier) + "]] additional skill applications";;
 			}
 		}
 		
@@ -9240,8 +9288,7 @@ function cast_summon_ally(ep_cost, porter = false) {
 		let dr_physical = 0;
 		if (!porter) {
 			ally_damage_text = "{{Damage=" + ally_damage + "d6" + mod_sign + attribute_modifier + "}} ";
-			let dr_mult = (ep_cost == 20 ? 5 : (ep_cost == 30 ? 8 : 2));
-			dr_physical = (tier * dr_mult);
+			dr_physical = (tier * ally_stats.dr_plus);
 			ally_damage_text += "{{DR (physical)=[[" + dr_physical + "]]}} ";
 		}
 		let ally_carry_text = "";
@@ -9249,9 +9296,12 @@ function cast_summon_ally(ep_cost, porter = false) {
 			ally_carry_text = "{{Carry=[[" + ally_carry + "]] items}} {{Max Carry=[[" + (ally_carry * 2) + "]] items}}";
 		}
 		
-		let effect_text = "{{Ally type=" + ally_type + "}} {{Physique (modifier)=" + phy_with_mod + "}} {{HP=[[" + ally_hp + "]]}} {{Speed=[[" + 
-		ally_speed + "]] squares" + ally_speed_extra + "}} {{Trained skill list=" + ally_skills + "}} {{Trained skill check=Conjuration check}} " +
-		"{{Untrained skill check=" + untrained_skill_roll + "}} " + ally_damage_text + ally_carry_text;
+		let ally_ps_text = (porter ? '' : ` {{Passive Skills=Up to [[${ally_stats.ps_cp}]] CP}}`);
+		
+		let effect_text = "{{Ally type=" + ally_type + "}} {{Physique (modifier)=" + phy_agi_with_mod + "}} {{Agility (modifier)=" + 
+		phy_agi_with_mod + "}} {{HP=[[" + ally_hp + "]]}} {{Speed=[[" + 
+		ally_speed + "]] sq" + ally_speed_extra + "}} {{Trained skill list=" + ally_skills + "}} {{Trained skill check=Conjuration check}} " +
+		"{{Untrained skill check=" + untrained_skill_roll + "}} " + ally_damage_text + ally_carry_text + ally_ps_text;
 
 		let desc = "You can spend 1 AP to give your ally a command.";
 
@@ -9266,13 +9316,18 @@ function cast_summon_ally(ep_cost, porter = false) {
 			"summon_ally_type": ally_type,
 			"summon_ally_physique": attribute,
 			"summon_ally_physique_modifier": attribute_modifier,
+			"summon_ally_agility": attribute,
+			"summon_ally_agility_modifier": attribute_modifier,
 			"summon_ally_hit_points": ally_hp,
+			"summon_ally_speed": ally_speed,
+			"summon_ally_speed_extra": ally_speed_extra_text,
 			"summon_ally_untrained_dice": get_roll('0', values.conjuration_advantage, explode),
 			"summon_ally_damage_dice": ally_damage + damage_dice_modifier,
 			"summon_ally_damage_modifier": attribute_modifier + damage_static_modifier,
 			"summon_ally_dr_physical": dr_physical,
 			"summon_ally_carry": ally_carry,
-			"summon_ally_carry_max": (ally_carry * 2)
+			"summon_ally_carry_max": (ally_carry * 2),
+			"summon_ally_ps_cp": ally_stats.ps_cp
 		});
 	});
 }
@@ -11239,7 +11294,8 @@ const active_skill_array = [
 				tier_ep_costs: [ 
 					{ tier: 1, ep_costs: [10] },
 					{ tier: 2, ep_costs: [20] },
-					{ tier: 3, ep_costs: [30] }
+					{ tier: 3, ep_costs: [30] },
+					{ tier: 4, ep_costs: [40] }
 				] 
 			}
 		],
@@ -16175,54 +16231,100 @@ on('change:conjuration_attribute_name', function() {
 	});
 });
 
-on("clicked:conjurationsummonallyinfo", function() {
-	getAttrs(["conjuration_tier", "conjuration_attribute_name", "conjuration_attribute", "conjuration_attribute_modifier", "show_conjuration_summon_ally_10_ep", "show_conjuration_summon_ally_20_ep", "show_conjuration_summon_ally_30_ep", "spell_duration_bonus", "spell_range"], function(values) {
+function get_ally_speed_roll(base, tier, speed_mod, use_tier = true) {
+	let base_roll = '';
+	let base_text = '';
+	if (base > 0) {
+	    base_roll = `${base} + `;
+	    base_text = `${base}, plus `;
+	}
+	let tier_roll = '';
+	let tier_text = '';
+	if (use_tier) {
+		tier_roll = `${tier} + `;
+		tier_text = `your tier in Conjuration, plus `;
+	}
+	return `[[${base_roll}${tier_roll}${speed_mod} : This is ${base_text}${tier_text}the ally's Agility speed modifier]] **squares**`;
+}
+
+function show_conjuration_summon_ally_info(ally_type) {
+	getAttrs(["conjuration_tier", "conjuration_attribute_name", "conjuration_attribute", "conjuration_attribute_modifier", "show_conjuration_summon_ally_10_ep", "show_conjuration_summon_ally_20_ep", "show_conjuration_summon_ally_30_ep", "show_conjuration_summon_ally_40_ep", "spell_duration_bonus", "spell_range"], function(values) {
 		let tier = get_int_or_zero(values.conjuration_tier);
 		let attribute_name = values.conjuration_attribute_name;
 		let attribute = get_int_or_zero(values.conjuration_attribute);
 		let attribute_mod = get_int_or_zero(values.conjuration_attribute_modifier);
 		let attribute_mod_text = attribute_mod_effect(attribute_name, attribute_mod);
+		let attribute_speed_mod = Math.floor((attribute_mod / 2) + (attribute_mod < 0 ? 0.5 : 0));
 		let show_conjuration_summon_ally_10_ep = get_bool(values.show_conjuration_summon_ally_10_ep);
 		let show_conjuration_summon_ally_20_ep = get_bool(values.show_conjuration_summon_ally_20_ep);
 		let show_conjuration_summon_ally_30_ep = get_bool(values.show_conjuration_summon_ally_30_ep);
+		let show_conjuration_summon_ally_40_ep = get_bool(values.show_conjuration_summon_ally_40_ep);
 		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
-		let base_duration = [
-			{ name: 'combatant', duration: dur_concentration },
-			{ name: 'porter',    duration: dur_short_rest    }
-		];
+		let base_duration = (ally_type == 'combatant' ? dur_concentration : dur_short_rest);
 		let range = get_int_or_zero(values.spell_range);
 		let effect_tier_plus_4 = tier_effect_conjuration(tier, 1, '', '', 4);
 		let effect_tier_plus_6 = tier_effect_conjuration(tier, 1, '', '', 6);
-		let tier1_text = header_text('Combatant') + "For 10 EP, you summon an ally to fight for you. Your ally is trained in the following skill applications: ";
-		let tier1_text_combatant = tier1_text + "Attack (any one melee combat style), Defend (dodge), Mental Resilience (willpower), " +
-		"Physical Resilience (fortitude), and has a speed of 4 squares. Their attacks cause " + tier_effect_conjuration(tier, 1, 'd6') + 
-		attribute_mod_text + " physical damage, and they have NDR (physical) " + tier_effect_conjuration(tier, 2, '') + ". ";
-		let tier1_text_porter = tier1_text.replace('Combatant', 'Porter').replace('fight for you', 'help you with physical tasks, who ' +
-		'appears wearing the equivalent of a backpack') + "Athletics (climb, feat, jump and swim), and has a speed of " + effect_tier_plus_4 + 
-		" squares, and a Carry multiplier of &times;2. They do not make attacks. ";
-		let tier2_text_combatant = "";
-		let tier2_text_porter = "";
-		let tier3_text_combatant = "";
-		let tier3_text_porter = "";
-		if (show_conjuration_summon_ally_20_ep) {
-			tier2_text = _rn + "For 20 EP, you can summon a combatant ally that is trained in " + effect_tier_plus_4 + 
-			" skill applications. The skill applications can be any, for any active skill, with the exception of magic skills. " +
-			"Your ally will appear with whatever gear is relevant to their trained skill applications, subject to GM discretion. ";
-			tier2_text_combatant = tier2_text + "Their attacks cause " + tier_effect_conjuration(tier, 1, 'd6', '', 1) + attribute_mod_text + 
-			" physical damage, and they have DR (physical) " + tier_effect_conjuration(tier, 5, '') + " (either naturally or from armor). " +
-			"The ally has " + value_effect(attribute_name + " &times; (your tier in Conjuration + 5)", (tier + 5) * attribute) + " HP.";
-			tier2_text_porter = tier2_text.replace('combatant', 'porter') + "They have either a fly speed or a swim speed (choose one) equal " +
-			"to their normal movement speed. Your ally has a Carry multiplier of " + tier_effect_conjuration(tier, 1, '', '&times;') + ".";
+		let tier1_text = '';
+		let tier2_text = '';
+		let tier3_text = '';
+		let tier4_text = '';
+		if (ally_type == 'combatant') {
+			tier1_text = _rn + "Combatant allies fight for you. They have a speed of " + get_ally_speed_roll(4, tier, attribute_speed_mod, false) + 
+			". They also gain additional hit points and Damage Resistance. " +
+			"The damage resistance can apply to up to " + tier_effect_conjuration(tier, 1, '') + " damages type you know." + _rn + "All combatant " +
+			"allies are trained in Defend (dodge), Mental Resilience (willpower), Physical Resilience (fortitude), and one Attack combat style. " +
+			"Higher EP versions of this spell can grant them training in additional skill applications. Combatant allies can only be trained in " +
+			"applications from the following skills: Athletics, Attack, Defend, Mental Resilience, Nature, Physical Resilience, and Sneak." + _rn +
+			"In addition, combatant allies are trained in a certain amount of Character Points worth of passive skills that they qualify for. These " +
+			"passive skills must be combat or movement related (GM’s discretion). For prerequisites, use their Physique and Agility, and your points " +
+			"in Conjuration for any skill that they are trained in (they are considered to have zero points in all other skills)." + _rn + "In the " +
+			"absence of a command, a combatant ally will follow you, and attack any creature who attacks itself or you." + _rn +
+			"For 10 EP, you summon a combatant ally. Their attacks cause " + tier_effect_conjuration(tier, 1, 'd6') + attribute_mod_text + 
+			" physical damage, and they have " + tier_effect_conjuration(tier, 2, '') + " Damage Resistance. They are trained in up to [[6]] **CP** " +
+			"worth of passive skills.";
+			if (show_conjuration_summon_ally_20_ep) {
+				tier2_text = _rn + "For 20 EP, you can summon a combatant ally that is trained in " + tier_effect_conjuration(tier, 1, '') + " additional " +
+				"skill applications Your ally will appear with whatever gear is relevant to their trained skill applications, subject to GM discretion. " +
+				"Their attacks cause " + tier_effect_conjuration(tier, 1, 'd6', '', 1) + attribute_mod_text + " physical damage, and they have " + 
+				tier_effect_conjuration(tier, 4, '') + " Damage Resistance. The ally has " + value_effect(attribute_name + " &times; (your tier in " +
+				"Conjuration + 4)", (tier + 4) * attribute) + " HP. They are trained in up to [[15]] **CP** worth of passive skills.";
+			}
+			if (show_conjuration_summon_ally_30_ep) {
+				tier3_text = _rn + "For 30 EP, you can summon a combatant ally like the 20 EP version, with the following exceptions. They are trained in " +
+				tier_effect_conjuration(tier, 1, '', '', 2) + " additional skill applications, their attacks cause " + tier_effect_conjuration(tier, 1, 
+				'd6', '', 2) + attribute_mod_text + " physical damage, and they have " + tier_effect_conjuration(tier, 6, '') + " Damage Resistance. " +
+				"The ally has " + value_effect(attribute_name + " &times; (your tier in Conjuration + 7)", (tier + 7) * attribute) + " HP. They are " +
+				"trained in up to [[24]] **CP** worth of passive skills.";
+			}
+			if (show_conjuration_summon_ally_40_ep) {
+				tier4_text = _rn + "For 40 EP, you can summon a combatant ally like the 20 EP version, with the following exceptions. They are trained in " +
+				tier_effect_conjuration(tier, 1, '', '', 4) + " additional skill applications, their attacks cause " + tier_effect_conjuration(tier, 1, 
+				'd6', '', 3) + attribute_mod_text + " physical damage, and they have " + tier_effect_conjuration(tier, 8, '') + " Damage Resistance. " +
+				"The ally has " + value_effect(attribute_name + " &times; (your tier in Conjuration + 7)", (tier + 11) * attribute) + " HP. They are " +
+				"trained in up to [[36]] **CP** worth of passive skills.";
+			}
 		}
-		if (show_conjuration_summon_ally_30_ep) {
-			tier3_text = _rn + "For 30 EP, you can summon a combatant ally like the 20 EP version, with the following " +
-			"exceptions. They are trained in " + effect_tier_plus_6 + " skill applications, ";
-			tier3_text_combatant = tier3_text + "their attacks cause " + tier_effect_conjuration(tier, 1, 'd6', '', 2) + attribute_mod_text + 
-			" physical damage, and they have DR (physical) " + tier_effect_conjuration(tier, 8, '') + " (either naturally or from armor). " +
-			"The ally has " + value_effect(attribute_name + " &times; (your tier in Conjuration + 8)", (tier + 8) * attribute) + " HP.";
-			tier3_text_porter = tier3_text.replace('combatant', 'porter') + "they have a movement, fly and swim speed of " + effect_tier_plus_6 + 
-			" squares, a burrow speed of " + tier_effect_conjuration(tier, 1, '') + " squares, and a Carry multiplier of " + 
-			tier_effect_conjuration(tier, 1, '', '&times;', 2) + ".";
+		else if (ally_type == 'porter') {
+			tier1_text = _rn + "Porter allies help you with physical tasks, and appear wearing the equivalent of a backpack. All porter allies are trained " +
+			"in Athletics (climb, feat, gymnastics, jump, and swim)." + _rn + "In the absence of a command, a porter ally will follow you. Porter allies " +
+			"do not make attacks, and will attempt to get away from any creature who attacks them." + _rn + 
+			"For 10 EP, you summon a porter ally with a speed of " + get_ally_speed_roll(3, tier, attribute_speed_mod) + ", and a Carry multiplier equal to " + 
+			tier_effect_conjuration(tier, 1, '') + ".";
+			if (show_conjuration_summon_ally_20_ep) {
+				tier2_text = _rn + "For 20 EP, you can summon a porter ally with a speed of " + get_ally_speed_roll(4, tier, attribute_speed_mod) + 
+				", and a Carry multiplier equal to " + tier_effect_conjuration(tier, 1, '', '', 1) + ". They also have a climb speed, and a swim speed " + 
+				"equal to their normal movement speed.";
+			}
+			if (show_conjuration_summon_ally_30_ep) {
+				tier3_text = _rn + "For 30 EP, you can summon a porter ally with a speed of " + get_ally_speed_roll(5, tier, attribute_speed_mod) + 
+				", and a Carry multiplier equal to " + tier_effect_conjuration(tier, 1, '', '', 2) + ". They also have a climb speed, a fly speed and a swim speed " + 
+				"equal to their normal movement speed.";
+			}
+			if (show_conjuration_summon_ally_40_ep) {
+				tier4_text = _rn + "For 40 EP, you can summon a porter ally with a speed of " + get_ally_speed_roll(6, tier, attribute_speed_mod) + 
+				", and a Carry multiplier equal to " + tier_effect_conjuration(tier, 1, '', '', 4) + ". They also have a climb speed, a fly speed and a swim speed " + 
+				"equal to their normal movement speed, as well as a burrow speed of " + get_ally_speed_roll(0, tier, attribute_speed_mod) + ".";
+			}
 		}
 		let desc = "*Summon ally* conjures a creature to aid you for the duration. The creature appears in the target square, which must be in an " +
 		"environment capable of safely supporting it. Your ally is shaped however you wish, subject to GM discretion. " + _pow + 
@@ -16230,16 +16332,26 @@ on("clicked:conjurationsummonallyinfo", function() {
 		"this spell: combatant and porter. You must choose one of them each time you cast it. " +
 		_rn + "Both versions conjure allies that are trained in certain skill applications. Any time an ally makes a skill check for " +
 		"which it is trained, you make a Conjuration (summon ally) check and use that result. For all other skill checks, roll **2d6**" + 
-		attribute_mod_text + ". The ally has a Physique of " + value_effect(attribute_name, attribute) + ", and has " +
+		attribute_mod_text + ". The ally has Physique and Agility values equal to " + value_effect(attribute_name, attribute) + ", and has " +
 		value_effect(attribute_name + " &times; (your tier in Conjuration + 2)", (tier + 2) * attribute) + " HP, unless otherwise specified. " +
-		"You can spend 1 AP to give your ally a command, which they follow to the best of their ability, until they are done or you give a new " +
-		"command. " + tier1_text_combatant + tier2_text_combatant + tier3_text_combatant + tier1_text_porter + tier2_text_porter + tier3_text_porter;
-		let roll_text = get_spell_info('Conjuration (summon ally)', '2 AP', range + ' squares', base_duration, duration_bonus, _bolt_touch,
+		"The ally’s speed is modified by its Agility modifier, if applicable." + _rn + "You can spend 1 AP to give your ally a command, which " +
+		"they follow to the best of their ability, until they are done or you give a new command. The ally is of animal intelligence and cannot " +
+		"understand complex commands, but can understand any command you might be able to teach an animal (GM’s discretion)." + 
+		tier1_text + tier2_text + tier3_text + tier4_text;
+		let roll_text = get_spell_info(`Conjuration (summon ally): ${ally_type}`, '2 AP', range + ' squares', base_duration, duration_bonus, _bolt_touch,
 		'Area', 'N/A', null, desc);
 		startRoll(roll_text, (results) => {
 			finishRoll(results.rollId);
 		});
 	});
+}
+
+on("clicked:conjurationsummonallycombatantinfo", function() {
+	show_conjuration_summon_ally_info('combatant');
+});
+
+on("clicked:conjurationsummonallyporterinfo", function() {
+	show_conjuration_summon_ally_info('porter');
 });
 
 on("clicked:conjurationsummonallycombatant10ep", function() {
@@ -16264,6 +16376,14 @@ on("clicked:conjurationsummonallycombatant30ep", function() {
 
 on("clicked:conjurationsummonallyporter30ep", function() {
 	cast_summon_ally(30, true);
+});
+
+on("clicked:conjurationsummonallycombatant40ep", function() {
+	cast_summon_ally(40);
+});
+
+on("clicked:conjurationsummonallyporter40ep", function() {
+	cast_summon_ally(40, true);
 });
 
 on("clicked:familiarinfo", function() {
