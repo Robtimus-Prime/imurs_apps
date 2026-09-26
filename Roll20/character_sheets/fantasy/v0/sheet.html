@@ -6080,7 +6080,41 @@
 										Physical Resilience (fortitude) <br />
 									</dir>
 									<br />
-									<textarea name="attr_summon_ally_trained_skills" class="skillappcombat"></textarea>
+									<input name="attr_active_ally_10_ep" type="hidden" class="show-ep-10" value="false" />
+									<input name="attr_active_ally_20_ep" type="hidden" class="show-ep-20" value="false" />
+									<input name="attr_active_ally_30_ep" type="hidden" class="show-ep-30" value="false" />
+									<input name="attr_active_ally_40_ep" type="hidden" class="show-ep-40" value="false" />
+									<span class="ep-10">
+										<textarea name="attr_summon_ally_trained_skills_10_ep" class="skillappcombat"></textarea>
+									</span>
+									<span class="ep-20">
+										<textarea name="attr_summon_ally_trained_skills_20_ep" class="skillappcombat"></textarea>
+									</span>
+									<span class="ep-30">
+										<textarea name="attr_summon_ally_trained_skills_30_ep" class="skillappcombat"></textarea>
+									</span>
+									<span class="ep-40">
+										<textarea name="attr_summon_ally_trained_skills_40_ep" class="skillappcombat"></textarea>
+									</span>
+									<br />
+									<label class="longlabel"> Passive Skills </label>
+									<br />
+									<input name="attr_active_ally_10_ep" type="hidden" class="show-ep-10" value="false" />
+									<input name="attr_active_ally_20_ep" type="hidden" class="show-ep-20" value="false" />
+									<input name="attr_active_ally_30_ep" type="hidden" class="show-ep-30" value="false" />
+									<input name="attr_active_ally_40_ep" type="hidden" class="show-ep-40" value="false" />
+									<span class="ep-10">
+										<textarea name="attr_summon_ally_passive_skills_10_ep" class="skillappcombat"></textarea>
+									</span>
+									<span class="ep-20">
+										<textarea name="attr_summon_ally_passive_skills_20_ep" class="skillappcombat"></textarea>
+									</span>
+									<span class="ep-30">
+										<textarea name="attr_summon_ally_passive_skills_30_ep" class="skillappcombat"></textarea>
+									</span>
+									<span class="ep-40">
+										<textarea name="attr_summon_ally_passive_skills_40_ep" class="skillappcombat"></textarea>
+									</span>
 								</span>
 								<span class="porter-ally">
 									<br />
@@ -9245,6 +9279,10 @@ const ally_stats_array = [
 
 function cast_summon_ally(ep_cost, porter = false) {
 	getAttrs(["conjuration_summon_ally_toggle", "conjuration_tier", "conjuration_attribute", "conjuration_attribute_modifier", "conjuration_advantage", "conjuration_explode", "summon_ally_damage_dice_modifier", "summon_ally_damage_static_modifier"], function(values) {
+		let active_ally_10_ep      = (ep_cost == 10);
+		let active_ally_20_ep      = (ep_cost == 20);
+		let active_ally_30_ep      = (ep_cost == 30);
+		let active_ally_40_ep      = (ep_cost == 40);
 		let toggle                 = get_bool(values.conjuration_summon_ally_toggle);
 		let tier                   = get_int_or_zero(values.conjuration_tier);
 		let attribute              = get_int_or_zero(values.conjuration_attribute);
@@ -9306,6 +9344,10 @@ function cast_summon_ally(ep_cost, porter = false) {
 		let desc = "You can spend 1 AP to give your ally a command.";
 
 		setAttrs({
+			"active_ally_10_ep": active_ally_10_ep,
+			"active_ally_20_ep": active_ally_20_ep,
+			"active_ally_30_ep": active_ally_30_ep,
+			"active_ally_40_ep": active_ally_40_ep,
 			"conjuration_summon_ally_toggle": !toggle,
 			"conjuration_summon_ally_base_duration": (porter ? dur_short_rest_p_linger : dur_concentration),
 			"conjuration_summon_ally_effect_text": effect_text,
