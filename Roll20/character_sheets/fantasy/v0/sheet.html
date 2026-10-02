@@ -14995,9 +14995,9 @@ on("clicked:cinemapointsinfo", function() {
 		"one of the following (whether or not it's your turn):" + _n + _bull + "Grant one skill +4 pool points for one round" + _bull + "Gain +1 AP for one round" + 
 		_bull + "Double all your movement speeds for one round" + _bull + "Move to the current spot in Reflex order if you haven’t gone yet this round" + _bull + 
 		"Instantly heal a number of HP equal to your maximum short rest HP roll" + _bull + "Instantly recover a number of EP equal to your maximum short rest " +
-		"EP roll" + _bull + "Convert a success to a critical success" + _bull + "Convert a critical failure to a regular failure" + _bull + "Automatically " +
-		"stabilize if dying" + _rn + "For 2 Cinema Points, you can cheat death (the GM decides how)." + _rn + "You may spend more than one Cinema Point at a " +
-		"time if you wish.}}'";
+		"EP roll" + _bull + "Convert a success to a critical success" + _bull + "Convert a critical failure to a regular failure" + _bull + "End any one active " +
+		"negative effect on you" + _bull + "Automatically stabilize if dying" + _rn + "For 2 Cinema Points, you can cheat death (the GM decides how)." + _rn + 
+		"You may spend more than one Cinema Point at a time if you wish.}}'";
 		startRoll(roll_text, (results) => {
 			finishRoll(results.rollId);
 		});
