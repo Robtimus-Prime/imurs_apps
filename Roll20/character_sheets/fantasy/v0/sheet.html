@@ -14504,9 +14504,13 @@ on("clicked:defenddodgeinfo", function() {
 });
 
 function get_pr_text() {
-	return spend_pool('Physical Resilience', 'reduce the damage caused by a failed Physical Resilience check, granting you DR against the ' +
+	let pr_text = spend_pool('Physical Resilience', 'reduce the damage caused by a failed Physical Resilience check, granting you DR against the ' +
 	'attack. You gain DR 2 for every 1 point spent. This DR counts against any damage type, stacks with other DR you have, and applies to ' +
-	'the total sum of damage dealt by the poison, disease, spell or effect.');
+	'the total sum of damage dealt by the poison, disease, spell or effect.') +
+	_rn + _star + " If you are affected by a spell or effect that lasts more than one round because you failed a Physical Resilience " +
+	"(fortitude) check, you can spend 4 points to grant yourself another check to resist the effect. These can be Action Points or points " +
+	"from your Physical Resilience pool, but each such check requires at least one Action Point." ;
+	return pr_text;
 }
 
 on("clicked:prconstitutioninfo", function() {
@@ -14533,11 +14537,7 @@ on("clicked:prfortitudeinfo", function() {
 		"{{desc=You make a Physical Resilience (fortitude) check to defend against supernatural attacks that affect your body. This includes " +
 		"poisons and diseases if they are supernatural or from a supernatural source. It does not cost any Action Points. The Target Number is " +
 		"set by the spell or effect to be resisted. " + get_crit_text('turns the magic skill check into a critical failure, if applicable.',
-		'turns the magic skill check into a critical success, if applicable.') +
-		_rn + _star + " If you are affected by a spell or effect that lasts more than one round because you failed a Physical " +
-		"Resilience (fortitude) check, you can spend 3 points from your Physical Resilience pool to grant yourself another check at " +
-		"disadvantage to resist the effect. This Physical Resilience (fortitude) check occurs at the end of your turn and does not cost any " +
-		"Action Points." + get_pr_text() + "}}'";
+		'turns the magic skill check into a critical success, if applicable.') + get_pr_text() + "}}'";
 		startRoll(roll_text, (results) => {
 			finishRoll(results.rollId);
 		});
@@ -14576,8 +14576,8 @@ on("clicked:mrwillpowerinfo", function() {
 		get_crit_text('turns the magic skill check into a critical failure, if applicable.',
 		'turns the magic skill check into a critical success, if applicable.') +
 		_rn + _star + " If you are affected by a spell or effect that lasts more than one round because you failed a Mental Resilience " +
-		"(willpower) check, you can spend 3 points from your Mental Resilience pool to grant yourself another check at disadvantage to resist " +
-		"the effect. This Mental Resilience (willpower) check occurs at the end of your turn and does not cost any Action Points.}}'";
+		"(willpower) check, you can spend 4 points to grant yourself another check to resist the effect. These can be Action Points or points " +
+		"from your Mental Resilience pool, but each such check requires at least one Action Point.}}'";
 		startRoll(roll_text, (results) => {
 			finishRoll(results.rollId);
 		});
