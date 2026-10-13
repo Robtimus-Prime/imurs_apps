@@ -12557,7 +12557,7 @@ damage_type_array.forEach( function(damage_type) {
 
 const damage_type_and_secondary_attrs_base = damage_type_list.map(t => `damage_type_${t}`).concat(damage_type_list.map(t => `damage_type_${t}_secondary`));
 const damage_type_and_secondary_attrs = damage_type_and_secondary_attrs_base.filter(t => t != 'damage_type_physical');
-on('change: ' + damage_type_and_secondary_attrs.join(' change:'), function() {
+on('change:' + damage_type_and_secondary_attrs.join(' change:'), function() {
 	getAttrs(damage_type_and_secondary_attrs, function(values) {
 		let cp_damage_types = 0;
 		for (let type of damage_type_and_secondary_attrs) {
