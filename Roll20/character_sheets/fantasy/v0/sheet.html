@@ -7947,18 +7947,23 @@
 								<input name="attr_show_neuromancy_telepathy_10_ep" type="hidden" class="show-ep-10" value="false" />
 								<input name="attr_show_neuromancy_telepathy_20_ep" type="hidden" class="show-ep-20" value="false" />
 								<input name="attr_show_neuromancy_telepathy_30_ep" type="hidden" class="show-ep-30" value="false" />
+								<input name="attr_show_neuromancy_telepathy_40_ep" type="hidden" class="show-ep-40" value="false" />
 								<span class="ep-10">
-									<button type="action" name="act_neuromancytelepathy5ep" /> 5
+									<button type="action" name="act_neuromancytelepathy5ep" /> 5 EP
 									&nbsp;
-									<button type="action" name="act_neuromancytelepathy10ep" /> 10
+									<button type="action" name="act_neuromancytelepathy10ep" /> 10 EP
 								</span>
 								<span class="ep-20">
 									&nbsp;
-									<button type="action" name="act_neuromancytelepathy20ep" /> 20
+									<button type="action" name="act_neuromancytelepathy20ep" /> 20 EP
 								</span>
 								<span class="ep-30">
+									<br />
+									<button type="action" name="act_neuromancytelepathy30ep" /> 30 EP
+								</span>
+								<span class="ep-40">
 									&nbsp;
-									<button type="action" name="act_neuromancytelepathy30ep" /> 30
+									<button type="action" name="act_neuromancytelepathy40ep" /> 40 EP
 								</span>
 							</div>
 						</div>
@@ -9888,7 +9893,7 @@ function cast_telepathy(ep_cost) {
 		effect = 'True telepathy with one willing target'
 		base_duration = dur_concentration_w_pool;
 	}
-	if (ep_cost == 30) {
+	if (ep_cost >= 30) {
 		effect = `Read surface thoughts of many targets${_or}True telepathy with many willing targets${_or}True telepathy with one unwilling target`;
 		base_duration = [
 			{ name: 'read surface thoughts',                 duration: dur_short_rest_w_checks_2 },
@@ -11720,7 +11725,8 @@ const active_skill_array = [
 				tier_ep_costs: [ 
 					{ tier: 1, ep_costs: [5, 10] },
 					{ tier: 2, ep_costs:    [20] },
-					{ tier: 3, ep_costs:    [30] }
+					{ tier: 3, ep_costs:    [30] },
+					{ tier: 4, ep_costs:    [40] }
 				] 
 			}
 		],
@@ -16389,7 +16395,8 @@ function show_conjuration_summon_ally_info(ally_type) {
 			"In addition, combatant allies are trained in a certain amount of Character Points worth of passive skills that they qualify for. These " +
 			"passive skills must be combat or movement related (GM’s discretion). For prerequisites, use their Physique and Agility, and your points " +
 			"in Conjuration for any skill that they are trained in (they are considered to have zero points in all other skills)." + _rn + "In the " +
-			"absence of a command, a combatant ally will follow you, and attack any creature who attacks itself or you." + _rn +
+			"absence of a command, a combatant ally will follow you, and attack any creature who attacks itself or you. A combatant ally must stay " +
+			"within your spell range. If it is outside your spell range, it will take no actions other than to defend itself if attacked." + _rn +
 			"For 10 EP, you summon a combatant ally. Their attacks cause " + tier_effect_conjuration(tier, 1, 'd6') + attribute_mod_text + 
 			" physical damage, and they have " + tier_effect_conjuration(tier, 2, '') + " Damage Resistance. They are trained in up to [[6]] **CP** " +
 			"worth of passive skills.";
@@ -16418,23 +16425,27 @@ function show_conjuration_summon_ally_info(ally_type) {
 		else if (ally_type == 'porter') {
 			tier1_text = _rn + "Porter allies help you with physical tasks, and appear wearing the equivalent of a backpack. All porter allies are trained " +
 			"in Athletics (climb, feat, gymnastics, jump, and swim)." + _rn + "In the absence of a command, a porter ally will follow you. Porter allies " +
-			"do not make attacks, and will attempt to get away from any creature who attacks them." + _rn + 
+			"do not make attacks, and will attempt to get away from any creature who attacks them. Porter allies must stay within your spell range. If outside " +
+			"your spell range, they take no actions other than to flee danger." + _rn + 
 			"For 10 EP, you summon a porter ally with a speed of " + get_ally_speed_roll(3, tier, attribute_speed_mod) + ", and a Carry multiplier equal to " + 
 			tier_effect_conjuration(tier, 1, '') + ".";
 			if (show_conjuration_summon_ally_20_ep) {
 				tier2_text = _rn + "For 20 EP, you can summon a porter ally with a speed of " + get_ally_speed_roll(4, tier, attribute_speed_mod) + 
 				", and a Carry multiplier equal to " + tier_effect_conjuration(tier, 1, '', '', 1) + ". They also have a climb speed, and a swim speed " + 
-				"equal to their normal movement speed.";
+				"equal to their normal movement speed. The porter ally stays active as if within your spell range as long as they are no more than " +
+				tier_effect_conjuration(tier, 100, ' miles') + " away from you.";
 			}
 			if (show_conjuration_summon_ally_30_ep) {
 				tier3_text = _rn + "For 30 EP, you can summon a porter ally with a speed of " + get_ally_speed_roll(5, tier, attribute_speed_mod) + 
 				", and a Carry multiplier equal to " + tier_effect_conjuration(tier, 1, '', '', 2) + ". They also have a climb speed, a fly speed and a swim speed " + 
-				"equal to their normal movement speed.";
+				"equal to their normal movement speed. The porter ally stays active as if within your spell range as long as they are no more than " +
+				tier_effect_conjuration(tier, 500, ' miles') + " away from you.";
 			}
 			if (show_conjuration_summon_ally_40_ep) {
 				tier4_text = _rn + "For 40 EP, you can summon a porter ally with a speed of " + get_ally_speed_roll(6, tier, attribute_speed_mod) + 
 				", and a Carry multiplier equal to " + tier_effect_conjuration(tier, 1, '', '', 4) + ". They also have a climb speed, a fly speed and a swim speed " + 
-				"equal to their normal movement speed, as well as a burrow speed of " + get_ally_speed_roll(0, tier, attribute_speed_mod) + ".";
+				"equal to their normal movement speed, as well as a burrow speed of " + get_ally_speed_roll(0, tier, attribute_speed_mod) + ". The porter ally " +
+				"stays active as if within your spell range as long as they are on the same plane or planet as you.";
 			}
 		}
 		let desc = "*Summon ally* conjures a creature to aid you for the duration. The creature appears in the target square, which must be in an " +
@@ -18407,11 +18418,12 @@ on("clicked:neuromancysleep30ep", function() {
 });
 
 on("clicked:neuromancytelepathyinfo", function() {
-	getAttrs(["neuromancy_tier", "show_neuromancy_telepathy_10_ep", "show_neuromancy_telepathy_20_ep", "show_neuromancy_telepathy_30_ep", "spell_duration_bonus", "spell_range", "spell_area_size", "area_type_blast", "area_type_burst", "area_type_line", "area_type_nova", "area_type_wall"], function(values) {
+	getAttrs(["neuromancy_tier", "show_neuromancy_telepathy_10_ep", "show_neuromancy_telepathy_20_ep", "show_neuromancy_telepathy_30_ep", "show_neuromancy_telepathy_40_ep", "spell_duration_bonus", "spell_range", "spell_area_size", "area_type_blast", "area_type_burst", "area_type_line", "area_type_nova", "area_type_wall"], function(values) {
 		let tier = get_int_or_zero(values.neuromancy_tier);
 		let show_neuromancy_telepathy_10_ep = get_bool(values.show_neuromancy_telepathy_10_ep);
 		let show_neuromancy_telepathy_20_ep = get_bool(values.show_neuromancy_telepathy_20_ep);
 		let show_neuromancy_telepathy_30_ep = get_bool(values.show_neuromancy_telepathy_30_ep);
+		let show_neuromancy_telepathy_40_ep = get_bool(values.show_neuromancy_telepathy_40_ep);
 		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
 		let base_duration = [
 			{ name: 'read surface thoughts', duration: dur_short_rest_w_checks_2 },
@@ -18435,13 +18447,15 @@ on("clicked:neuromancytelepathyinfo", function() {
 															  `{{10 EP=Read surface thoughts of one target${_or}One-sentence message to many targets}} `;
 		let tier2_effect = (show_neuromancy_telepathy_20_ep ? '{{20 EP=True telepathy with one willing target}} ' : '');
 		let tier3_effect = (show_neuromancy_telepathy_30_ep ? `{{30 EP=Read surface thoughts of many targets${_or}True telepathy with many willing targets${_or}True telepathy with one unwilling target}} ` : '');
+		let tier4_effect = (show_neuromancy_telepathy_40_ep ? `{{40 EP=Any version on same plane or planet}} ` : '');
 		let power = '';
 		if (show_neuromancy_telepathy_20_ep) {
 			power = _pow + 'You can establish a shallow two-way telepathic connection with a willing target as per the 10 EP version of this spell. ' +
 			'The base duration of this power is concentration.';
 		}
 		let tier1_text = _rn + "For 5 EP, you can send a single telepathic message to a single target, up to one sentence. This version of the spell has a " +
-		"duration of instantaneous." + _rn + "For 10 EP, you can establish a shallow connection with a single target. If affected, you can read the target’s " +
+		"duration of instantaneous." + _rn + "For 10 EP, you can establish a shallow connection with a single target. This connection ceases if the target is " +
+		"out of range, but resumes once they are again in range. If affected, you can read the target’s " +
 		"surface thoughts for 1 AP, which grants you advantage on Defend and Persuade (intuition) checks against them. In addition, you might gain some useful " +
 		"information, depending on what they are thinking about. This version of the spell has a base duration of short rest with checks (2 successes)." + _rn + "As soon as a target is " +
 		"affected, they can make a TN 24 Perception (notice) check to notice the mental intrusion. If they succeed, you must make a Neuromancy (telepathy) " +
@@ -18450,10 +18464,12 @@ on("clicked:neuromancytelepathyinfo", function() {
 		"on a willing ally. In this case, assuming you have at least one language in common with the target, you can communicate telepathically, but you must " +
 		"each spend 1 AP or 2 Neuromancy pool points each round concentrating on the connection to do so. This version of the spell has a base duration of concentration with pool points." + _rn + 
 		"Alternatively, you can cast the 5 EP version of this spell with any area type.";
-		let tier2_text = (show_neuromancy_telepathy_20_ep ? _rn + "For 20 EP, you can establish a true telepathic connection with a single willing target. You " +
+		let tier2_text = (show_neuromancy_telepathy_20_ep ? _rn + "For 20 EP, you can establish a true telepathic connection with a single willing target within range. Once the connection " +
+		"is established, it works as long as you remain within " + tier_effect_neuromancy(tier, 100, ' miles') + ". You " +
 		"can communicate with the target freely, regardless of whether or not you have a language in common. This version of the spell has a base duration unit of " +
-		"concentration with pool points" : '');
+		"concentration with pool points." : '');
 		let tier3_text = (show_neuromancy_telepathy_30_ep ? _rn + "For 30 EP, you can cast either the 10 or 20 EP version of this spell with any area type." + 
+		"Once the connection is established in either case, it works as long as you remain within " + tier_effect_neuromancy(tier, 500, ' miles') + "." +
 		_rn + "Alternatively, you can attempt to establish a true telepathic connection with a single unwilling target. This version of the spell has a base " +
 		"duration of short rest with checks (1 success). If the target fails their Mental Resilience (willpower) check, you can spend 3 AP to dig through their mind for information." +
 		_rn + "Each time you do, you must make a Neuromancy (telepathy) check versus their Mental Resilience (willpower) check to see if you are successful. " +
@@ -18461,9 +18477,11 @@ on("clicked:neuromancytelepathyinfo", function() {
 		"gain disadvantage or great disadvantage on theirs, as determined by the Game Master." + _rn + "As soon as a target is affected, they can make a TN 24 " +
 		"Perception (notice) check to notice the mental intrusion. If they succeed, you must make opposed skill tests rather than skill checks each time you " +
 		"attempt to read their thoughts for the duration of the spell, at the advantage/disadvantage levels set by the Game Master." : '');
-		let desc = "This spell allows you to establish a telepathic connection with the target." + power + tier1_text + tier2_text + tier3_text;
+		let tier4_text = (show_neuromancy_telepathy_40_ep ? _rn + "For 40 EP, you can cast any other version of this spell. Once the connection is established, it works as " +
+		"long as you remain on the same plane or planet as the target(s)." : '');
+		let desc = "This spell allows you to establish a telepathic connection with the target." + power + tier1_text + tier2_text + tier3_text + tier4_text;
 		let roll_text = get_spell_info('Neuromancy (telepathy)', '2 AP', range + ' squares', base_duration, duration_bonus, area_types, 
-		'Creature', 'Mental Resilience', tier1_effect + tier2_effect + tier3_effect, desc);
+		'Creature', 'Mental Resilience', tier1_effect + tier2_effect + tier3_effect + tier4_effect, desc);
 		startRoll(roll_text, (results) => {
 			finishRoll(results.rollId);
 		});
@@ -18484,6 +18502,10 @@ on("clicked:neuromancytelepathy20ep", function() {
 
 on("clicked:neuromancytelepathy30ep", function() {
 	cast_telepathy(30);
+});
+
+on("clicked:neuromancytelepathy40ep", function() {
+	cast_telepathy(40);
 });
 
 </script>
