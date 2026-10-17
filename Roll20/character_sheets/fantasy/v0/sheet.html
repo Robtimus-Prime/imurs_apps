@@ -1842,6 +1842,16 @@
 			</span>
 		</div>
 
+		<!-- Possess -->
+		<div class="monstrous-boon top-line">
+			<input name="attr_bb_possess" type="hidden" class="show-ability" value="false" />
+			<span class="ability">
+				<div class="skillname">
+					<label> Possess <button type="action" name="act_possessinfo" class="info-button generic-skill" /> </label>
+				</div>
+			</span>
+		</div>
+	
 		<!-- Rend -->
 		<div class="monstrous-boon top-line">
 			<input name="attr_ps_rend" type="hidden" class="show-ability" value="false" />
@@ -1924,6 +1934,16 @@
 			<span class="ability">
 				<div class="skillname">
 					<label> Trample <button type="action" name="act_trampleinfo" class="info-button generic-skill" /> </label>
+				</div>
+			</span>
+		</div>
+
+		<!-- Web -->
+		<div class="monstrous-boon top-line">
+			<input name="attr_bb_web" type="hidden" class="show-ability" value="false" />
+			<span class="ability">
+				<div class="skillname">
+					<label> Web <button type="action" name="act_webinfo" class="info-button generic-skill" /> </label>
 				</div>
 			</span>
 		</div>
@@ -10237,6 +10257,26 @@ on('clicked:lycanthropyinfo', function() {
 	});
 });
 
+on("clicked:possessinfo", function() {
+	let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: Possess}}" +
+	"{{desc=	The monster has the ability to possess other creatures. It can attempt to possess a creature by making an opposed 1-round Mental Resilience " +
+	"(willpower) test versus the target creature. Using this ability is akin to casting a spell, and the same concentration rules apply. If concentration is " +
+	"broken during the test, the possession attempt fails." + _rn + "If it succeeds, its body is incorporated into the target creature’s body, and it gains " +
+	"total control of the creature’s actions. The possessed creature gains the resistances and vulnerabilities of the monster (Natural Damage Resistance/" +
+	"Immunity/Vulnerability, Regeneration, Material Vulnerability, etc.), subject to GM discretion. In addition, the possessed creature gains access to any " +
+	"magic skills the monster has, although their EP total is unchanged." + _rn + "While controlling a possessed creature, if the monster does something " +
+	"unthinkably horrible from the creature’s point of view (GM’s discretion), the creature can initiate another 1-AP Mental Resilience (willpower) test. This " +
+	"cannot be interrupted the way the initial possession attempt can. If the creature is successful, the monster is forced to end the possession and exit the " +
+	"creature. If the creature fails, it suffers disadvantage on Mental Resilience checks on future such attempts." + _rn + "The monster can exit the creature " +
+	"at any time for 1 AP, ending the possession. The possession also ends if the creature dies. When the possession ends, the monster materializes adjacent to " +
+	"the possessed creature." + _rn + "If the monster fails to possess a creature, or exits the creature (willingly or unwillingly), the monster may not attempt " +
+	"to use this ability again until it takes a long rest.}}'";
+	
+	startRoll(roll_text, (results) => {
+		finishRoll(results.rollId);
+	});
+});
+
 on("clicked:regenerateinfo", function() {
 	getAttrs(["regenerate_healing", "regenerate_vulnerability"], function(values) {
 		
@@ -10266,7 +10306,6 @@ on("clicked:rendinfo", function() {
 		});
 	});
 });
-
 
 on("clicked:shatterweaponsinfo", function() {
 	let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: Shatter Weapons}}" +
@@ -10396,6 +10435,20 @@ on("clicked:weaponimmunityinfo", function() {
 	let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: Weapon Immunity}} " +
 	"{{desc=The monster is immune to damage from non-magical weapons (including natural weapons). This can be overcome by **@{weapon_immunity_magic_tier_name} " +
 	"weapons**. Damage from such weapons is still subject to the monster's normal DR.}}'";
+	
+	startRoll(roll_text, (results) => {
+		finishRoll(results.rollId);
+	});
+});
+
+on("clicked:webinfo", function() {
+	let roll_text = "/w @{character_name} '&{template:custom} {{title=@{character_name}: Web}} " +
+	"{{desc=The monster can spin sheets of sticky webbing to trap other creatures. Monsters with this boon can move across their own webs at their climb speed. Other " +
+	"creatures need to make a **TN [[24]] Perception (notice) check** to notice a web without walking into it." + _rn + "Any creature coming into contact with a web must " +
+	"make an Attack (grapple) check versus the monster’s Attack (grapple) check. If the creature fails, it is trapped in the web and considered grappled. This works " +
+	"like a normal grapple, except the web can only make reactive grapple checks to maintain the grapple." + _rn + "In addition, monsters with this boon gain the ability " +
+	"to shoot some webbing as a special natural attack. This works like a thrown weapon and uses the free-hand missile combat style. The attack causes no damage, but " +
+	"creatures hit by the attack are considered grappled as if they had walked into the webbing.}}'";
 	
 	startRoll(roll_text, (results) => {
 		finishRoll(results.rollId);
@@ -12995,6 +13048,7 @@ const boons_and_banes_array = [
 	},
 	{ name: 'bb_poison_immunity',                     search_text: 'poisonimmunity',            cs_cp_cost:  15, ncs_cp_cost:   0, increment: 0, max_count:  1 },
 	{ name: 'bb_polyglot',                            search_text: 'polyglot',                  cs_cp_cost:   0, ncs_cp_cost:   8, increment: 0, max_count:  1 },
+	{ name: 'bb_possess',                             search_text: 'possess',                   cs_cp_cost: 100, ncs_cp_cost:   0, increment: 0, max_count:  1 },
 	{ name: 'bb_preternatural_cunning',               search_text: 'preternaturalcunning',      cs_cp_cost:  10, ncs_cp_cost:   0, increment: 0, max_count:  1 },
 	{ name: 'bb_quick_reflexes',                      search_text: 'quickreflexes',             cs_cp_cost:   6, ncs_cp_cost:   0, increment: 0, max_count:  1 },
 	{ name: 'bb_rake',                                search_text: 'rake',                      cs_cp_cost:  10, ncs_cp_cost:   0, increment: 0, max_count:  1 },
@@ -16584,7 +16638,7 @@ on("clicked:displacementdisruptinfo", function() {
 		let tier1_effect =   								  "{{10 EP=Target loses AP}} ";
 		let tier2_effect = (show_displacement_disrupt_20_ep ? "{{20 EP=Target leaves possessed creature}} " : "");
 		let tier3_effect = (show_displacement_disrupt_30_ep ? "{{30 EP=Target is banished to home plane}} " : "");
-		let power_text = (show_displacement_disrupt_20_ep ? _pow + "When a creature from another plane fails a Defend, Mental Resilience, or Physical Resilience check against you, it loses its next Action Point. On a critical failure, it loses its next two Action Points. This power can only affect a given creature once per long rest." : "");
+		let power_text = (show_displacement_disrupt_20_ep ? _pow + "When a creature from another plane fails a Defend, Mental Resilience, or Physical Resilience check against you, it loses its next Action Point. This power can only affect a given creature once per long rest." : "");
 		let tier2_text = (show_displacement_disrupt_20_ep ? _rn + "For 20 EP, you can disrupt a creature who is possessing another creature. If successful, the possessing creature is forced to leave the possessed creature, and it cannot attempt to possess the same creature again until it takes a long rest." : "");
 		let tier3_text = (show_displacement_disrupt_30_ep ? _rn + "For 30 EP, you can banish a creature from another plane back to its home plane." : "");
 		let desc = "This spell disrupts the connection between a creature from another plane and the plane itself. *Disrupt* only affects " +
