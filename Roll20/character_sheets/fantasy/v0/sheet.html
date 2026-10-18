@@ -9915,7 +9915,7 @@ function cast_dispel_magic(ep_cost) {
 		effect = 'Suppress eldritch item';
 	}
 	else if (ep_cost == 30) {
-		effect = 'Suppress epic item';
+		effect = `Suppress epic item${_or}Create antimagic field`;
 	}
 	else if (ep_cost == 40) {
 		effect = `Suppress legendary item${_or}Disjoin item`;
@@ -12666,6 +12666,7 @@ const passive_skill_array = [
 	{ name: 'ps_absolute_protector',          search_text: 'absoluteprotector',         cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_action_hero',                 search_text: 'actionhero',                cs_cp_cost:  3, ncs_cp_cost:  3 },
 	{ name: 'ps_animate_object',              search_text: 'animateobject',             cs_cp_cost:  6, ncs_cp_cost:  0 },
+	{ name: 'ps_antimagic_field',             search_text: 'antimagicfield',            cs_cp_cost:  0, ncs_cp_cost:  6 },
 	{ name: 'ps_arcane_trapfinding',          search_text: 'arcanetrapfinding',         cs_cp_cost:  0, ncs_cp_cost:  6 },
 	{ name: 'ps_archers_stance',              search_text: 'archersstance',             cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_armor_expertise',             search_text: 'armorexpertise',            cs_cp_cost:  6, ncs_cp_cost:  0 },
@@ -12693,6 +12694,7 @@ const passive_skill_array = [
 	{ name: 'ps_dexterous_strike',            search_text: 'dexterousstrike',           cs_cp_cost:  3, ncs_cp_cost:  0 },
 	{ name: 'ps_die_hard',                    search_text: 'diehard',                   cs_cp_cost:  3, ncs_cp_cost:  0 },
 	{ name: 'ps_displacement_attack',         search_text: 'displacementattack',        cs_cp_cost:  6, ncs_cp_cost:  0 },
+	{ name: 'ps_disjoin',                     search_text: 'disjoin',                   cs_cp_cost:  0, ncs_cp_cost: 12 },
 	{ name: 'ps_dynamancy_opportunist',       search_text: 'dynamancyopportunist',      cs_cp_cost:  3, ncs_cp_cost:  0 },
 	{ name: 'ps_improved_explosive_death',    search_text: 'improvedexplosivedeath',    cs_cp_cost: 10, ncs_cp_cost:  0 },
 	{ name: 'ps_greater_explosive_death',     search_text: 'greaterexplosivedeath',     cs_cp_cost: 20, ncs_cp_cost:  0 },
@@ -12714,6 +12716,7 @@ const passive_skill_array = [
 	{ name: 'ps_mounted_combat',              search_text: 'mountedcombat',             cs_cp_cost: 12, ncs_cp_cost:  0 },
 	{ name: 'ps_multiattack',                 search_text: 'multiattack',               cs_cp_cost: 12, ncs_cp_cost:  0 },
 	{ name: 'ps_necromantic_summons',         search_text: 'necromanticsummons',        cs_cp_cost:  6, ncs_cp_cost:  0 },
+	{ name: 'ps_opportunity_doublestrike',    search_text: 'opportunitydoublestrike',   cs_cp_cost:  3, ncs_cp_cost:  0 },
 	{ name: 'ps_pinion',                      search_text: 'pinion',                    cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_pounce',                      search_text: 'pounce',                    cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_powerful_blow',               search_text: 'powerfulblow',              cs_cp_cost:  6, ncs_cp_cost:  0 },
@@ -14274,6 +14277,13 @@ on("clicked:togglemagicskills", function() {
 	toggle_skills(active_skill_names);
 });
 
+function get_attack_pool_point_actions() {
+	return _rn + "There are also two special cases where you can spend Attack pool points to reduce how long it takes to perform certain actions." +
+	_bull + "Draw or stow an item" + _bull + "Reload a triggered weapon" + _rn + "In each case, you can trade 2 pool points for 1 Action Point, and " +
+	"can combine both pool points and Action Points to complete the task. For example, you can spend 2 pool points plus 2 Action Points to retrieve " +
+	"an item from your backpack or to reload a crossbow, each of which normally take 3 Action Points.";
+}
+
 function get_attack_combat_style_info(combat_style, combat_style_info) {
 	let missile_info = "";
 	if (combat_style.toLowerCase().includes("missile")) {
@@ -14296,10 +14306,10 @@ function get_attack_combat_style_info(combat_style, combat_style_info) {
 	get_crit_text('you cause extra damage, based on how much higher your Attack check is than your opponent’s Defend check.' + _bull + '10 points higher: ' +
 	'double your rolled damage' + _bull + '30 points higher: your maximum damage + your rolled damage' + _bull + '60+ points higher: double your maximum damage', 
 	'[fumble] (you cannot use the same weapon again until you do).') + missile_info +
-	spend_pool_attack('do the following:' + _bull + 'Increase the damage of your attack by +1 damage per 1 pool point spent' + _bull + 
-	'Increase the damage of your attack by +1d6 damage per 2 pool points spent' + _bull + 'Draw or stow one weapon without using an Action Point ' +
-	'per 2 pool points spent' + _bull + 'Reduce the time to reload a triggered weapon by 1 AP per 2 pool points spent' + _bull + 'Make a free attack on ' +
-	'an enemy leaving your threatened area; this costs 1 pool point for the first attack, and increases by +1 pool point per successive free attack') + "}}";
+	spend_pool_attack('do the following:' + _bull + 'Increase the damage of your Attack ([combat style]) check by +1 damage per 1 pool point spent' + 
+	_bull + 'Increase the damage of your Attack ([combat style]) check by +1d6 damage per 2 pool points spent' + _bull + 'Make a free Attack check on an enemy ' +
+	'leaving your threatened area; this costs 1 pool point for the first attack, and increases by +1 pool point per successive free attack') + 
+	get_attack_pool_point_actions() + "}}";
 	return info;
 }
 
@@ -14470,7 +14480,7 @@ on("clicked:attackgrappleinfo", function() {
 		"Attack (grapple) or Defend check, and if you succeed you are grappling." + _rn + "While grappling, you and your foe suffer disadvantage " +
 		"on all Physique and Agility skill checks other than Physical Resilience and those associated with the grapple itself. Neither " +
 		"of you gain the advantage of a shield if you are carrying one." + _rn + "Once you are engaged in a grapple, you and your opponent can " +
-		"spend one Action Point to make any one of the actions listed above. " +
+		"spend one Action Point to make any one of the actions listed above. " + get_attack_pool_point_actions() +
 		_rn + "If you use Attack more than once in a round, any time after the first incurs disadvantage. }}'";
 		startRoll(roll_text, (results) => {
 			finishRoll(results.rollId);
@@ -14495,7 +14505,7 @@ on("clicked:attackrepositioninfo", function() {
 		"{{desc=You can spend one Action Point to push, pull or shove past an adjacent opponent who is no more than one size category larger " +
 		"than you. You make an Attack (reposition) check versus their Attack (reposition) check, and do one of the actions listed above. " +
 		spend_pool_attack("move more squares as part of a reposition at a cost of 1 point per additional square of movement (though you still cannot " +
-		"move more than your normal movement speed).") +
+		"move more than your normal movement speed).") + get_attack_pool_point_actions() +
 		_rn + "If you use Attack more than once in a round, any time after the first incurs disadvantage. }}'";
 		startRoll(roll_text, (results) => {
 			finishRoll(results.rollId);
@@ -14520,7 +14530,7 @@ on("clicked:attacktacticalcombatinfo", function() {
 		"{{Knockdown=You trip or bowl over your opponent, knocking them prone. Your Attack (tactical combat) check is opposed by their Attack " +
 		"(tactical combat) or Defend check." + get_crit_text('your opponent also drops one item they are holding.', '[fumble].') + "}} " +
 		"{{desc=You can spend one Action Point to perform a tactical combat action. You make an Attack (tactical combat) check against your foe, " +
-		"opposed by one or more skills, depending on which action you take. The actions available are listed above.  " +
+		"opposed by one or more skills, depending on which action you take. The actions available are listed above. " + get_attack_pool_point_actions() +
 		_rn + "If you use Attack more than once in a round, any time after the first incurs disadvantage. }}'";
 		startRoll(roll_text, (results) => {
 			finishRoll(results.rollId);
@@ -16639,24 +16649,38 @@ on("clicked:displacementchronofield40ep", function() {
 });
 
 on("clicked:displacementdisruptinfo", function() {
-	getAttrs(["displacement_tier", "show_displacement_disrupt_10_ep", "show_displacement_disrupt_20_ep", "show_displacement_disrupt_30_ep", "spell_duration_bonus", "spell_range", "spell_area_size", "area_type_blast", "area_type_burst"], function(values) {
+	getAttrs(["displacement_tier", "show_displacement_disrupt_10_ep", "show_displacement_disrupt_20_ep", "show_displacement_disrupt_30_ep", "spell_duration_bonus", "spell_range", "spell_area_size", "area_type_blast", "area_type_burst", "area_type_line", "area_type_nova", "area_type_wall"], function(values) {
 		let tier = get_int_or_zero(values.displacement_tier);
 		let show_displacement_disrupt_10_ep = get_bool(values.show_displacement_disrupt_10_ep);
 		let show_displacement_disrupt_20_ep = get_bool(values.show_displacement_disrupt_20_ep);
 		let show_displacement_disrupt_30_ep = get_bool(values.show_displacement_disrupt_30_ep);
 		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
 		let range = get_int_or_zero(values.spell_range);
+		let area_size = get_int_or_zero(values.spell_area_size);
+		let area_type_list = get_area_type_list(area_size, values.area_type_blast, values.area_type_burst, values.area_type_line, values.area_type_nova, values.area_type_wall);
+		let area_types = _bolt_touch;
+		if (show_displacement_disrupt_20_ep) {
+			area_types = [
+				{ name: 'normal',   types: _bolt_touch    },
+				{ name: 'lower EP', types: area_type_list }
+			];
+		}
 		let tier1_effect =   								  "{{10 EP=Target loses AP}} ";
-		let tier2_effect = (show_displacement_disrupt_20_ep ? "{{20 EP=Target leaves possessed creature}} " : "");
+		let tier2_effect = (show_displacement_disrupt_20_ep ? `{{20 EP=Target leaves possessed creature${_or}Many targets lose AP}} ` : "");
 		let tier3_effect = (show_displacement_disrupt_30_ep ? "{{30 EP=Target is banished to home plane}} " : "");
-		let power_text = (show_displacement_disrupt_20_ep ? _pow + "When a creature from another plane fails a Defend, Mental Resilience, or Physical Resilience check against you, it loses its next Action Point. This power can only affect a given creature once per long rest." : "");
-		let tier2_text = (show_displacement_disrupt_20_ep ? _rn + "For 20 EP, you can disrupt a creature who is possessing another creature. If successful, the possessing creature is forced to leave the possessed creature, and it cannot attempt to possess the same creature again until it takes a long rest." : "");
-		let tier3_text = (show_displacement_disrupt_30_ep ? _rn + "For 30 EP, you can banish a creature from another plane back to its home plane." : "");
+		let power_text = (show_displacement_disrupt_20_ep ? _pow + "When a creature from another plane fails a Defend, Mental Resilience, or Physical Resilience " +
+		"check against you, it loses its next Action Point. This power can only affect a given creature once per long rest." : "");
+		let tier2_text = (show_displacement_disrupt_20_ep ? _rn + "For 20 EP, you can disrupt a creature who is possessing another creature. If successful, the " +
+		"possessing creature is forced to leave the possessed creature, and it cannot attempt to possess the same creature again until it takes a long rest. If " +
+		"you attempt to disrupt a creature of a higher tier than your tier in Displacement, the target gains great advantage on its Mental Resilience check to resist." +
+		_rn + "Alternatively, you can cast the 10 EP version of this spell with any area type." : "");
+		let tier3_text = (show_displacement_disrupt_30_ep ? _rn + "For 30 EP, you can banish a creature from another plane back to its home plane. " +
+		"If you attempt to banish a creature of a higher tier than your tier in Displacement, the target gains great advantage on its Mental Resilience check to resist." : "");
 		let desc = "This spell disrupts the connection between a creature from another plane and the plane itself. *Disrupt* only affects " +
 		"creatures from other planes or that have the ability to possess other creatures; if cast on any other type of creature, this spell " +
 		"automatically fails." + power_text + _rn + "For 10 EP, you cause the target to lose their next Action Point." + get_crit_text(
 		'the target loses their next two Action Points.', 'you lose your next Action Point.') + tier2_text + tier3_text
-		let roll_text = get_spell_info('Displacement (disrupt)', '2 AP', range + ' squares', dur_instantaneous, 0, _bolt_touch,
+		let roll_text = get_spell_info('Displacement (disrupt)', '2 AP', range + ' squares', dur_instantaneous, 0, area_types,
 		'Creature', 'Mental Resilience', tier1_effect + tier2_effect + tier3_effect, desc);
 		startRoll(roll_text, (results) => {
 			finishRoll(results.rollId);
@@ -16902,8 +16926,8 @@ on("clicked:displacementteleportinfo", function() {
 		"plane or planet, and arrive at your intended destination." : "");
 		let desc = "This spell instantly transports a creature from one location to another, although it can be risky if you are not familiar with " +
 		"the destination. " + free_effect + tier1_text + tier2_text + tier3_text + tier4_text + attack_text + 
-		spend_pool_displacement('to increase the distance you can teleport when casting the tier 2 or 3 version of this spell at a cost of 1 point per ' +
-		'additional 50 miles.') + attack_pool;
+		spend_pool_displacement('to increase the distance you can teleport when casting the tier 2 or 3 version of this spell at a cost of 2 points ' +
+		'per additional increment (100 or 500 miles, respectively.') + attack_pool;
 		let roll_text = get_spell_info('Displacement (teleport)', '2 AP', range + ' squares', dur_instantaneous, 0, `Bolt${nova_area}${_n}Touch`,
 		'Creature', 'Auto (willing)', tier1_effect + tier2_effect + tier3_effect + tier4_effect, desc);
 		startRoll(roll_text, (results) => {
@@ -17832,13 +17856,13 @@ on("clicked:necromancycontrolundeadinfo", function() {
 });
 
 on("clicked:metamancydispelmagicinfo", function() {
-	getAttrs(["metamancy_tier", "show_metamancy_dispel_magic_10_ep", "show_metamancy_dispel_magic_20_ep", "show_metamancy_dispel_magic_30_ep", "show_metamancy_dispel_magic_40_ep", "spell_duration_bonus", "spell_range"], function(values) {
-		let tier = get_int_or_zero(values.metamancy_tier);
+	getAttrs(["metamancy_tier", "show_metamancy_dispel_magic_10_ep", "show_metamancy_dispel_magic_20_ep", "show_metamancy_dispel_magic_30_ep", "show_metamancy_dispel_magic_40_ep", "spell_duration_bonus", "spell_range", "spell_area_size", "area_type_blast", "area_type_burst", "area_type_line", "area_type_nova", "area_type_wall", "ps_antimagic_field", "ps_disjoin"], function(values) {
+		let tier                              = get_int_or_zero(values.metamancy_tier);
 		let show_metamancy_dispel_magic_10_ep = get_bool(values.show_metamancy_dispel_magic_10_ep);
 		let show_metamancy_dispel_magic_20_ep = get_bool(values.show_metamancy_dispel_magic_20_ep);
 		let show_metamancy_dispel_magic_30_ep = get_bool(values.show_metamancy_dispel_magic_30_ep);
 		let show_metamancy_dispel_magic_40_ep = get_bool(values.show_metamancy_dispel_magic_40_ep);
-		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
+		let duration_bonus                    = get_int_or_zero(values.spell_duration_bonus);
 		let base_duration = [
 			{ name: 'dispel',   duration: dur_instantaneous         },
 			{ name: 'suppress', duration: dur_short_rest_w_checks_1 }
@@ -17846,36 +17870,52 @@ on("clicked:metamancydispelmagicinfo", function() {
 		if (show_metamancy_dispel_magic_40_ep) {
 			base_duration.push({ name: 'disjoin', duration: dur_instantaneous });
 		}
-		let range = get_int_or_zero(values.spell_range);
-		let tier1_effect = 										`{{10 EP=Dispel tier 1 effect${_or}Suppress magic item}} `;
-		let tier2_effect = (show_metamancy_dispel_magic_20_ep ? `{{20 EP=Dispel tier 2 effect${_or}Suppress eldritch item}} ` : '');
-		let tier3_effect = (show_metamancy_dispel_magic_30_ep ? `{{30 EP=Dispel tier 3 effect${_or}Suppress epic item}} ` : '');
-		let tier4_effect = (show_metamancy_dispel_magic_40_ep ? `{{40 EP=Dispel tier 4 effect${_or}Suppress legendary item${_or}Disjoin item}} ` : '');
-		let tier1_text = _rn + "Alternatively, for 10 EP, you can suppress the powers of a magic item; this version of the spell has a base duration of short rest with checks (1 success). " +
-		"Unattended magic items have a TN of 20 to suppress, and if the item is carried by a creature, the creature can make a Mental Resilience (willpower) " +
-		"check to resist. If successful, the item ceases to be magic or have any magic properties for the duration.";
-		let tier2_text = (show_metamancy_dispel_magic_20_ep ? _rn + "For 20 EP, you can suppress the powers of an eldritch item. This works like suppressing a " +
-		"magic item, but it applies to eldritch items and the TN for an unattended item is 30." : '');
-		let tier3_text = (show_metamancy_dispel_magic_30_ep ? _rn + "For 30 EP, you can suppress the powers of an epic item. This works like suppressing " +
-		"a magic item, but it applies to epic items and the TN for an unattended item is 40." : '');
-		let tier4_text = (show_metamancy_dispel_magic_40_ep ? _rn + "For 40 EP, you can suppress the powers of a legendary item. This works like " +
-		"suppressing a magic item, but it applies to legendary items and the TN for an unattended item is 50." +
-		_rn + "Alternatively, you can attempt to completely disjoin a magic, eldritch, epic, or legendary item. " +
+		let range          = get_int_or_zero(values.spell_range);
+		let area_size      = get_int_or_zero(values.spell_area_size);
+		let area_type_list = get_area_type_list(area_size, values.area_type_blast, values.area_type_burst, values.area_type_line, values.area_type_nova, values.area_type_wall);
+		let area_types     = _bolt_touch;
+		if (show_metamancy_dispel_magic_20_ep) {
+			area_types = [
+				{ name: 'normal',   types: _bolt_touch    },
+				{ name: 'lower EP', types: area_type_list }
+			];
+		}
+		let has_antimagic_field = get_bool(values.ps_antimagic_field);
+		let has_disjoin         = get_bool(values.ps_disjoin);
+		let tier1_effect = 										`{{10 EP=Dispel tier 1 effect${_or}Suppress magic item (unattended TN 20)}} `;
+		let tier2_effect = (show_metamancy_dispel_magic_20_ep ? `{{20 EP=Dispel tier 2 effect${_or}Suppress eldritch item (unattended TN 30)${_or}10 EP version any area type}} ` : '');
+		let tier3_effect = (show_metamancy_dispel_magic_30_ep ? `{{30 EP=Dispel tier 3 effect${_or}Suppress epic item (unattended TN 40)${_or}20 EP version any area type}} ` : '');
+		let tier4_effect = (show_metamancy_dispel_magic_40_ep ? `{{40 EP=Dispel tier 4 effect${_or}Suppress legendary item (unattended TN 50)${_or}30 EP version any area type}} ` : '');
+		if (show_metamancy_dispel_magic_30_ep && has_antimagic_field) {
+			tier3_effect = tier3_effect.replace('}} ', `${_or}Create antimagic field}} `);
+		}
+		if (show_metamancy_dispel_magic_40_ep && has_disjoin) {
+			tier4_effect = tier4_effect.replace('}} ', `${_or}Disjoin item}} `);
+		}
+		let tier3_text = (show_metamancy_dispel_magic_30_ep && has_antimagic_field ? _rn + "For 30 EP, you can create an antimagic field. " +
+		"This effect has an area type of blast and a base duration of concentration. All magic effects are nullified while inside the area, though they " +
+		"resume once outside of it. You can spend 1 AP to turn the blast while this effect is active." : '');
+		let tier4_text = (show_metamancy_dispel_magic_40_ep && has_disjoin ? _rn + "For 40 EP, you can attempt to completely disjoin a magic, " +
+		"eldritch, epic, or legendary item. " +
 		"This destroys the magic in the item and renders it mundane, though it has no effect on the physical item itself. This version of the spell has a " +
 		"casting time of one hour and a duration of instantaneous." + _rn + "Only unattended items can be disjoined, and each type has a specific TN you " +
 		"must meet with your Metamancy (dispel magic) check. In addition, this version of the spell requires expensive materials that are consumed in the " +
 		"casting of the spell, equal to 30% of the item’s value. If you fail, the materials are wasted and nothing happens to the item." + _rn +
 		"Below are the TNs and typical costs to disjoin each type of item." + _bull + "Magic: TN 30; 300gc" + _bull + "Eldritch: TN 40; 900gc" + _bull + 
 		"Epic: TN 50; 3,000gc" + _bull + "Legendary: TN 60; 9,000gc" : '');
-		let desc = "This power allows you to end an ongoing magical effect (i.e. a magic trap or an active spell with a duration other than instantaneous)." +
-		_rn + "You must first have identified the effect with the Arcana skill, then you can spend 10 EP per tier of the effect and make a " +
-		"Metamancy check to see if you can end it. The TN of the check is equal to the magic skill check used to create the effect (or " +
-		"the TN of the magical trap, if applicable). If your Metamancy check is successful, the magic effect ceases altogether. " + 
-		_rn + "*Dispel magic* only works on effects up to tier " + tier_effect_metamancy(tier, 1, '') + ", and you can choose to attempt to dispel an " +
-		"effect one tier higher than that by taking great disadvantage on your Metamancy (dispel magic) check. This spell automatically fails if used " +
-		"on a magic effect with a tier two or more higher than you have in Metamancy." + tier1_text + tier2_text + tier3_text + tier4_text + 
-		_rn + "This spell can also be used to replace any other spell when counterspelling.";
-		let roll_text = get_spell_info('Metamancy (dispel magic)', '2 AP', range + ' squares', base_duration, duration_bonus, _bolt_touch, 
+		let desc = "This spell allows you to end an ongoing magical effect (i.e. a magic trap or an active spell with a duration other than instantaneous). " +
+		"You can target a creature, a perceivable magic effect, or even a single square on the map, then you can spend EP and attempt a Metamancy check. " +
+		"The TN of the check is equal to the magic skill check used to create the effect (or the TN of the magical trap, if applicable). If your Metamancy " +
+		"check is successful, the magic effect ceases altogether." +
+		_rn + "If a targeted creature or square has more than one active spell on it, make a Metamancy check against each one until you successfully dispel " +
+		"one or you fail to dispel all of them. You can only use this spell on magical effects of a certain tier; attempting to do so on a higher tier " +
+		"effect incurs great disadvantage on your Metamancy (dispel magic) check." + 
+		_rn + "Alternatively, you can suppress the powers of a magic item. Unattended magic items have a static TN to suppress, and if the item is carried " +
+		"by a creature, the creature can make a Mental Resilience (willpower) check to resist. If successful, the item ceases to be magic or have any magic " +
+		"properties for the duration." + _rn + "At higher tiers, you can cast lower tier versions of this spell with any area type. In such cases, you can " +
+		"only target ongoing magical effects, not magic items. Treat this as if you were casting the spell on each square in the area individually." + 
+		tier3_text + tier4_text + _rn + "This spell can also be used to replace any other spell when counterspelling.";
+		let roll_text = get_spell_info('Metamancy (dispel magic)', '2 AP', range + ' squares', base_duration, duration_bonus, area_types, 
 		'Effect', 'Special', tier1_effect + tier2_effect + tier3_effect + tier4_effect, desc);
 		startRoll(roll_text, (results) => {
 			finishRoll(results.rollId);
@@ -18479,7 +18519,13 @@ on("clicked:neuromancytelepathyinfo", function() {
 		"attempt to read their thoughts for the duration of the spell, at the advantage/disadvantage levels set by the Game Master." : '');
 		let tier4_text = (show_neuromancy_telepathy_40_ep ? _rn + "For 40 EP, you can cast any other version of this spell. Once the connection is established, it works as " +
 		"long as you remain on the same plane or planet as the target(s)." : '');
-		let desc = "This spell allows you to establish a telepathic connection with the target." + power + tier1_text + tier2_text + tier3_text + tier4_text;
+		let spend_pool_text = (show_neuromancy_telepathy_20_ep ? spend_pool_neuromancy(" increase the range at which an active telepathy spell continues to work, in " +
+		"cases where the range is normally greater than your spell range, at the cost of 2 pool points per unit of increase (100 miles, 500 miles, etc.). ") : '');
+		if (show_neuromancy_telepathy_40_ep) {
+			spend_pool_text += _rn + "You can also spend 4 pool points on a 40 EP telepathy spell to allow the connection to work when the target(s) are on one specific other " +
+			"plane or planet that you choose when casting the spell.";
+		}
+		let desc = "This spell allows you to establish a telepathic connection with the target." + power + tier1_text + tier2_text + tier3_text + tier4_text + spend_pool_text;
 		let roll_text = get_spell_info('Neuromancy (telepathy)', '2 AP', range + ' squares', base_duration, duration_bonus, area_types, 
 		'Creature', 'Mental Resilience', tier1_effect + tier2_effect + tier3_effect + tier4_effect, desc);
 		startRoll(roll_text, (results) => {
