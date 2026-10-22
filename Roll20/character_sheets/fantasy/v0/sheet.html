@@ -8436,6 +8436,10 @@ function spend_pool_security(description) {
 	return spend_pool('Security', description);
 }
 
+function spend_pool_sneak(description) {
+	return spend_pool('Sneak', description);
+}
+
 function spend_pool_nature(description) {
 	return spend_pool('Nature', description);
 }
@@ -9115,9 +9119,12 @@ function cast_turn_undead(ep_cost) {
 }
 
 function cast_armor(ep_cost) {
-	getAttrs(["conjuration_armor_toggle", "conjuration_tier"], function(values) {
-		let toggle = get_bool(values.conjuration_armor_toggle);
-		let tier   = get_int_or_zero(values.conjuration_tier);
+	getAttrs(["conjuration_armor_toggle", "conjuration_tier", "ps_focused_armor", "ps_greater_focused_armor"], function(values) {
+		let toggle                    = get_bool(values.conjuration_armor_toggle);
+		let tier                      = get_int_or_zero(values.conjuration_tier);
+		let has_focused_armor         = get_bool(values.ps_focused_armor);
+		let has_greater_focused_armor = get_bool(values.ps_greater_focused_armor);
+		let focused_armor_bonus       = (has_greater_focused_armor ? 6 : (has_focused_armor ? 4 : 0));
 		let armor_dr_array = [
 			{ ep_cost:  5, base_dr:  4, dr_per_tier: 3 },
 			{ ep_cost: 10, base_dr:  6, dr_per_tier: 4 },
@@ -9127,7 +9134,18 @@ function cast_armor(ep_cost) {
 		];
 		let dr_object   = armor_dr_array.find(a => a.ep_cost == ep_cost);
 		let dr_bonus    = dr_object.base_dr + (dr_object.dr_per_tier * tier);
-		let effect_text = `{{DR bonus=[[${dr_bonus}]]}} {{Damage Types=Up to [[${tier}]]}} `;
+		let effect_array = [ { dr: dr_bonus, types: tier } ];
+		if (tier >= 4 && has_greater_focused_armor) {
+			effect_array.push( { dr: (dr_bonus + (focused_armor_bonus * (tier - 3))), types: 3 } );
+		}
+		if (tier >= 3 && has_greater_focused_armor) {
+			effect_array.push( { dr: (dr_bonus + (focused_armor_bonus * (tier - 2))), types: 2 } );
+		}
+		if (tier >= 2 && has_focused_armor) {
+			effect_array.push( { dr: (dr_bonus + (focused_armor_bonus * (tier - 1))), types: 1 } );
+		}
+		let effect_text = '{{Effect=' + effect_array.map(a => `**DR** [[${a.dr}]] vs [[${a.types}]] type(s)`).join(_or) + '}}';
+		logg(_log_magic, effect_text);
 		setAttrs({ 
 			'conjuration_armor_toggle':        !toggle,
 			'conjuration_armor_effect_text':   effect_text, 
@@ -12627,14 +12645,15 @@ on('change:' + damage_type_and_secondary_attrs.join(' change:'), function() {
 	});
 })
 
-on('change:armor_name change:defend_tier change:defensive_stance_dr_bonus', function() {
-	getAttrs(['armor_name', 'defend_tier', 'defensive_stance_dr_bonus'], function(values) {
+on('change:armor_name change:defend_tier change:defensive_stance_dr_bonus change:ps_iron_skin', function() {
+	getAttrs(['armor_name', 'defend_tier', 'defensive_stance_dr_bonus', 'ps_iron_skin'], function(values) {
 		let defensive_stance_dr_bonus = get_int_or_zero(values.defensive_stance_dr_bonus);
+		let iron_skin_dr_bonus = (get_bool(values.ps_iron_skin) ? 4 : 0);
 		if (!is_armor(values.armor_name)) {
 			if (values.armor_name != '') {
 				console.error(`"${values.armor_name}" is not recognized as armor`);
 			}
-			setAttrs({ 'dr_physical_item': defensive_stance_dr_bonus });
+			setAttrs({ 'dr_physical_item': iron_skin_dr_bonus + defensive_stance_dr_bonus });
 			return;
 		}
 		let armor_object = parse_armor(values.armor_name);
@@ -12642,7 +12661,9 @@ on('change:armor_name change:defend_tier change:defensive_stance_dr_bonus', func
 		if (armor_object.magic_bonus_by_tier) {
 			dr_value += armor_object.magic_bonus_by_tier[get_int_or_zero(values.defend_tier)];
 		}
-		dr_value += armor_object.material_bonus + defensive_stance_dr_bonus;
+		dr_value += armor_object.material_bonus;
+		dr_value  = Math.max(dr_value, iron_skin_dr_bonus) + defensive_stance_dr_bonus;
+		logg(_log_gear, `armor DR: ${dr_value}, iron skin DR: ${iron_skin_dr_bonus}`);
 		setAttrs({ 'dr_physical_item': dr_value });
 	});
 });
@@ -12668,7 +12689,6 @@ const passive_skill_array = [
 	{ name: 'ps_animate_object',              search_text: 'animateobject',             cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_antimagic_field',             search_text: 'antimagicfield',            cs_cp_cost:  0, ncs_cp_cost:  6 },
 	{ name: 'ps_arcane_trapfinding',          search_text: 'arcanetrapfinding',         cs_cp_cost:  0, ncs_cp_cost:  6 },
-	{ name: 'ps_archers_stance',              search_text: 'archersstance',             cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_armor_expertise',             search_text: 'armorexpertise',            cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_armored_spellcasting',        search_text: 'armoredspellcasting',       cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_beam',                        search_text: 'beam',                      cs_cp_cost:  0, ncs_cp_cost:  6 },
@@ -12702,6 +12722,8 @@ const passive_skill_array = [
 	{ name: 'ps_legendary_explosive_death',   search_text: 'legendaryexplosivedeath',   cs_cp_cost: 40, ncs_cp_cost:  0 },
 	{ name: 'ps_far_shot',                    search_text: 'farshot',                   cs_cp_cost:  3, ncs_cp_cost:  0 },
 	{ name: 'ps_flying_kick',                 search_text: 'flyingkick',                cs_cp_cost:  3, ncs_cp_cost:  0 },
+	{ name: 'ps_focused_armor',               search_text: 'focusedarmor',              cs_cp_cost:  6, ncs_cp_cost:  0 },
+	{ name: 'ps_greater_focused_armor',       search_text: 'greaterfocusedarmor',       cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_focused_blasting',            search_text: 'focusedblasting',           cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_greater_focused_blasting',    search_text: 'greaterfocusedblasting',    cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_focused_healing',             search_text: 'focusedhealing',            cs_cp_cost:  4, ncs_cp_cost:  0 },
@@ -12726,6 +12748,8 @@ const passive_skill_array = [
 	{ name: 'ps_rage',                        search_text: 'rage',                      cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_ranged_legerdemain',          search_text: 'rangedlegerdemain',         cs_cp_cost:  0, ncs_cp_cost:  6 },
 	{ name: 'ps_rapid_reload',                search_text: 'rapidreload',               cs_cp_cost:  6, ncs_cp_cost:  0 },
+	{ name: 'ps_rapid_shot',                  search_text: 'rapidshot',                 cs_cp_cost:  6, ncs_cp_cost:  0 },
+	{ name: 'ps_greater_rapid_shot',          search_text: 'greaterrapidshot',          cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_rend',                        search_text: 'rend',                      cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_ride_by_attack',              search_text: 'ridebyattack',              cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_shield_bash',                 search_text: 'shieldbash',                cs_cp_cost:  6, ncs_cp_cost:  0 },
@@ -14542,7 +14566,8 @@ function get_defend_text() {
 	return get_crit_text('turns the Attack check into a critical failure, if applicable.', 
 	'turns the Attack check into a critical success, if applicable.') +
 	spend_pool('Defend', 'turn a failed Defend check into a glancing blow, granting you DR against the attack. You gain DR 2 for every 1 point ' +
-	'spent. This DR counts against any damage type, stacks with other DR you have, and applies to the total sum of damage dealt by the attack.');
+	'spent. This DR counts against any damage type, stacks with other DR you have, and applies to the total sum of damage dealt by the attack. ' +
+	'You can also spend 2 Defend pool points to reduce the withdraw action to 1 AP.');
 }
 
 on("clicked:defendblockinfo", function() {
@@ -14963,7 +14988,8 @@ on("clicked:sneakescapologyinfo", function() {
 		let roll_text = "/w @{character_name} '&{template:custom} {{title=Sneak (escapology) info}} " +
 		"{{Escape grapple=Attack (grapple) check}} {{Escape bonds=TN per GM}} " +
 		"{{desc=You can spend one Action Point to attempt to escape a grapple, hold or bonds, like ropes or manacles. " +
-		"The Target Number is either your opponent’s Attack (grapple) check or based on the item binding you.}}'";
+		"The Target Number is either your opponent’s Attack (grapple) check or based on the item binding you." +
+		spend_pool_sneak('You can spend 2 Sneak pool points to reduce the withdraw action to 1 AP.') + "}}'";
 		startRoll(roll_text, (results) => {
 			finishRoll(results.rollId);
 		});
@@ -14993,7 +15019,7 @@ on("clicked:sneakstealthinfo", function() {
 		"{{Avoid detection=Perception check}}" +
 		"{{desc=You can spend one Action Point to attempt to avoid being seen or heard. You make a Sneak (stealth) check, and can move " +
 		"up to half your speed. Your Sneak (stealth) check sets the Target Number for any opposing party’s Perception check to notice you. " +
-		spend_pool('Sneak', 'move more squares while moving unseen at a cost of 1 point per additional square of movement for that AP, ' +
+		spend_pool_sneak('move more squares while moving unseen at a cost of 1 point per additional square of movement for that AP, ' +
 		'up to a maximum of your speed.') + "}}'";		
 		startRoll(roll_text, (results) => {
 			finishRoll(results.rollId);
@@ -15385,7 +15411,8 @@ on("clicked:alterationalterarmorinfo", function() {
 		let tier2_effect = (show_alteration_alter_armor_20_ep ? `{{20 EP=Add/remove eldritch${_or}Greater energy armor}} ` : '');
 		let tier3_effect = (show_alteration_alter_armor_30_ep ? '{{30 EP=Add/remove epic}} ' : '');
 		let tier4_effect = (show_alteration_alter_armor_40_ep ? '{{40 EP=Add/remove legendary}} ' : '');
-		let power_text   = (show_alteration_alter_armor_20_ep ? _pow + 'Any armor you wear becomes magic for as long as you’re wearing it.' : '');
+		let type_power   = (show_alteration_alter_armor_40_ep ? 'eldritch' : 'magic');
+		let power_text   = (show_alteration_alter_armor_20_ep ? _pow + `Any armor you wear becomes ${type_power} armor for as long as you’re wearing it.` : '');
 		let tier2_text   = (show_alteration_alter_armor_20_ep ? _rn + 'Alternatively, for 20 EP, you can make energy armor into greater energy armor (for ' +
 		'all damage types the armor protects against). You can add this version of the spell to a typical version of this spell in a single casting, ' +
 		'but you must pay the totalled EP cost for both versions.' : '');
@@ -15442,7 +15469,8 @@ on("clicked:alterationalterweaponinfo", function() {
 		let tier2_effect = (show_alteration_alter_weapon_20_ep ? `{{20 EP=Add/remove eldritch${_or}Energy weapon}} ` : '');
 		let tier3_effect = (show_alteration_alter_weapon_30_ep ? `{{30 EP=Add/remove epic${_or}Greater energy weapon}} ` : '');
 		let tier4_effect = (show_alteration_alter_weapon_40_ep ? '{{40 EP=Add/remove legendary}} ' : '');
-		let power_text   = (show_alteration_alter_weapon_20_ep ? _pow + 'Any weapon you wield becomes a magic weapon for as long as you’re wielding it.' : '');
+		let type_power   = (show_alteration_alter_armor_40_ep ? 'an eldritch' : 'a magic');
+		let power_text   = (show_alteration_alter_weapon_20_ep ? _pow + 'Any weapon you wield becomes ${type_power} weapon for as long as you’re wielding it.' : '');
 		let tier2_text   = (show_alteration_alter_weapon_20_ep ? _rn + 'Alternatively, for 20 EP, you can change a magic weapon into an energy weapon. You ' +
 		'can add this version of the spell to a typical version of this spell in a single casting, but you must pay the totalled EP cost for both versions.' : '');
 		let tier3_text   = (show_alteration_alter_weapon_30_ep ? _rn + 'Alternatively, for 30 EP, you can change a magic weapon into a greater energy weapon. ' +
@@ -15922,16 +15950,31 @@ on("clicked:biomancyturnundead30ep", function() {
 });
 
 on("clicked:conjurationarmorinfo", function() {
-	getAttrs(["conjuration_tier", "show_conjuration_armor_10_ep", "show_conjuration_armor_20_ep", "show_conjuration_armor_30_ep", "show_conjuration_armor_40_ep", "spell_duration_bonus", "spell_range", "spell_area_size", "area_type_blast", "area_type_burst", "area_type_line", "area_type_nova", "area_type_wall"], function(values) {
-		let tier = get_int_or_zero(values.conjuration_tier);
-		let show_conjuration_armor_10_ep = get_bool(values.show_conjuration_armor_10_ep );
-		let show_conjuration_armor_20_ep = get_bool(values.show_conjuration_armor_20_ep );
-		let show_conjuration_armor_30_ep = get_bool(values.show_conjuration_armor_30_ep );
-		let show_conjuration_armor_40_ep = get_bool(values.show_conjuration_armor_40_ep );
-		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
-		let range = get_int_or_zero(values.spell_range);
-		let area_size = get_int_or_zero(values.spell_area_size);
-		let area_type_list = get_area_type_list(area_size, values.area_type_blast, values.area_type_burst, values.area_type_line, values.area_type_nova, values.area_type_wall);
+	getAttrs(["conjuration_tier", "show_conjuration_armor_10_ep", "show_conjuration_armor_20_ep", "show_conjuration_armor_30_ep", "show_conjuration_armor_40_ep", "spell_duration_bonus", "spell_range", "spell_area_size", "area_type_blast", "area_type_burst", "area_type_line", "area_type_nova", "area_type_wall", "ps_focused_armor", "ps_greater_focused_armor"], function(values) {
+		let tier                         = get_int_or_zero(values.conjuration_tier);
+		let show_conjuration_armor_10_ep = get_bool(values.show_conjuration_armor_10_ep);
+		let show_conjuration_armor_20_ep = get_bool(values.show_conjuration_armor_20_ep);
+		let show_conjuration_armor_30_ep = get_bool(values.show_conjuration_armor_30_ep);
+		let show_conjuration_armor_40_ep = get_bool(values.show_conjuration_armor_40_ep);
+		let has_focused_armor            = get_bool(values.ps_focused_armor);
+		let has_greater_focused_armor    = get_bool(values.ps_greater_focused_armor);
+		let duration_bonus               = get_int_or_zero(values.spell_duration_bonus);
+		let range                        = get_int_or_zero(values.spell_range);
+		let area_size                    = get_int_or_zero(values.spell_area_size);
+		let area_type_list               = get_area_type_list(area_size, values.area_type_blast, values.area_type_burst, values.area_type_line, values.area_type_nova, values.area_type_wall);
+		let focused_armor_bonus          = (has_greater_focused_armor ? 6 : (has_focused_armor ? 4 : 0));
+		let focused_armor_text           = (show_conjuration_armor_20_ep && has_focused_armor ? _rn + "Alternatively, you can provide armor against [[1]] damage " +
+		`type with a **+**[[${((tier - 1) * focused_armor_bonus)} : This is ${focused_armor_bonus} DR per sacrificed damage type]] DR bonus.` : '');
+		if (show_conjuration_armor_30_ep && has_focused_armor && has_greater_focused_armor) {
+			if (show_conjuration_armor_40_ep) {
+				focused_armor_text = focused_armor_text.replace('.', `, against [[2]] damage types with a **+**[[${((tier - 2) * focused_armor_bonus)} : ` +
+				`This is ${focused_armor_bonus} DR per sacrificed damage type]] bonus, or against [[3]] damage types with a **+**[[${((tier - 3) * focused_armor_bonus)} : This is ${focused_armor_bonus} DR per sacrificed damage type]] bonus.`);
+			}
+			else {
+				focused_armor_text = focused_armor_text.replace('.', ` or against [[2]] damage types with a **+**[[${((tier - 2) * focused_armor_bonus)} : ` +
+				`This is ${focused_armor_bonus} DR per sacrificed damage type]] bonus.`);
+			}
+		}
 		let tier1_effect = 								   '{{5 EP='  + tier_effect_conjuration(tier, 3, '', 'DR ',  4/3) + '}} ' +
 														   '{{10 EP=' + tier_effect_conjuration(tier, 4, '', 'DR ',  6/4) + '}} ';
 		let tier2_effect = (show_conjuration_armor_20_ep ? '{{20 EP=' + tier_effect_conjuration(tier, 5, '', 'DR ',  8/5) + '}} ' : '');
@@ -15939,10 +15982,10 @@ on("clicked:conjurationarmorinfo", function() {
 		let tier4_effect = (show_conjuration_armor_40_ep ? '{{40 EP=' + tier_effect_conjuration(tier, 7, '', 'DR ', 12/7) + '}} ' : '');
 		let desc = "With this spell, you envelop a target in magical armor, protecting them from harm. " + _pow + 
 		"You gain " + tier_effect_conjuration(tier, 3, '', 'DR ') + ", which applies to every damage type you know." +
-		_rn + "You can give a target of this spell DR for up to " + tier_effect_conjuration(tier, 1, '') + " damages type you know, based on the " +
+		_rn + "You can give a target of this spell DR for up to " + tier_effect_conjuration(tier, 1, '') + " damages types you know, based on the " +
 		"amount of EP you spend. You can grant DR against " +
 		"more than one set of damage types with a single casting of *armor*, but you must pay the EP cost for each separately." + _rn + "The DR granted by " +
-		"this spell does not stack with DR from any armor worn." +
+		"this spell does not stack with DR from any armor worn." + focused_armor_text +
 		spend_pool_conjuration('increase the DR further, at a cost of 1 point per additional 2 DR. You can also add protection against damage types you know ' +
 		'at a cost of 1 point per additional type.' + _rn + _star + ' If you know the secondary effect for a damage type this spell protects against, you can ' +
 		'make the spell negate the secondary effect of that damage type for up to '  + tier_effect_conjuration(tier, 1, ' successful attacks') + '.');
