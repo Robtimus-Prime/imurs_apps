@@ -10534,10 +10534,11 @@ on("change:conjuration_attribute_modifier change:conjuration_tier change:summon_
 	});
 });
 
-on("change:gm_rolls", function() {
-	getAttrs(["gm_rolls"], function(values) {
+on("change:gm_rolls change:character_type", function() {
+	getAttrs(["gm_rolls", "character_type"], function(values) {
 		let gm_rolls = values.gm_rolls;
-		let gm_rolls_text = (gm_rolls == 'on' ? '/w gm ' : '');
+		let gm_sheet = values.character_type.includes('/g');
+		let gm_rolls_text = (gm_rolls == 'on' ? (gm_sheet ? '/w gm ' : '/s ') : '');
 		console.log(`gm_rolls: ${gm_rolls}, gm_rolls_text: ${gm_rolls_text}`);
 		setAttrs({
 			"gm_rolls_text": gm_rolls_text,
