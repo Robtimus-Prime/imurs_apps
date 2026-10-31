@@ -7145,19 +7145,21 @@
 								<input name="attr_show_illusion_hologram_40_ep" type="hidden" class="show-ep-40" value="false" />
 								<span class="ep-10">
 									<b> Hologram </b> <br />
-									<button type="action" name="act_illusionhologram10ep" /> 10 
+									<button type="action" name="act_illusionhologram5ep" /> 5 EP
+									&nbsp;
+									<button type="action" name="act_illusionhologram10ep" /> 10 EP 
 								</span>
 								<span class="ep-20">
 									&nbsp;
-									<button type="action" name="act_illusionhologram20ep" /> 20 
+									<button type="action" name="act_illusionhologram20ep" /> 20 EP
 								</span>
 								<span class="ep-30">
-									&nbsp;
-									<button type="action" name="act_illusionhologram30ep" /> 30 
+									<br />
+									<button type="action" name="act_illusionhologram30ep" /> 30 EP
 								</span>
 								<span class="ep-40">
 									&nbsp;
-									<button type="action" name="act_illusionhologram40ep" /> 40 
+									<button type="action" name="act_illusionhologram40ep" /> 40 EP
 								</span>
 								<span class="ep-30">
 									<div class="top-space">
@@ -17734,6 +17736,10 @@ on("clicked:illusionholograminfo", function() {
 			finishRoll(results.rollId);
 		});
 	});
+});
+
+on("clicked:illusionhologram5ep", function() {
+	cast_hologram(5);
 });
 
 on("clicked:illusionhologram10ep", function() {
