@@ -5212,6 +5212,45 @@
 				</div>
 								
 				<div>
+					<input name="attr_show_alteration_control_weather" type="hidden" class="show-ability" value="true" />
+					<span class="ability">
+						<div class="top-line">
+							<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Alteration}} {{Alteration (control weather) @{alteration_advantage_text}=[[@{alteration_control_weather_roll} + @{alteration_total} + @{mob_skill_bonus}]]}}'" />
+							<button type="action" name="act_alterationcontrolweatherinfo" class="info-button" />
+							<label class="skillapp"> Control Weather </label>
+							<label class="skill-tem-container">
+								<input name="attr_alteration_control_weather_training" type="checkbox" />
+								<span class="skill-tem skill-training"> Training </span>
+							</label>
+							<input name="attr_alteration_control_weather_roll" type="hidden" value="2d6" />
+							<div>
+								<input name="attr_show_alteration_control_weather_10_ep" type="hidden" class="show-ep-10" value="false" />
+								<input name="attr_show_alteration_control_weather_20_ep" type="hidden" class="show-ep-20" value="false" />
+								<input name="attr_show_alteration_control_weather_30_ep" type="hidden" class="show-ep-30" value="false" />
+								<input name="attr_show_alteration_control_weather_40_ep" type="hidden" class="show-ep-40" value="false" />
+								<span class="ep-10">
+									<button type="action" name="act_alterationcontrolweather5ep" /> 5 EP
+									&nbsp;
+									<button type="action" name="act_alterationcontrolweather10ep" /> 10 EP
+								</span>
+								<span class="ep-20">
+									&nbsp;
+									<button type="action" name="act_alterationcontrolweather20ep" /> 20 EP
+								</span>
+								<span class="ep-30">
+									<br />
+									<button type="action" name="act_alterationcontrolweather30ep" /> 30 EP
+								</span>
+								<span class="ep-40">
+									&nbsp;
+									<button type="action" name="act_alterationcontrolweather40ep" /> 40 EP
+								</span>
+							</div>
+						</div>
+					</span>
+				</div>
+								
+				<div>
 					<input name="attr_show_alteration_illuminate" type="hidden" class="show-ability" value="true" />
 					<span class="ability">
 						<div class="top-line">
@@ -8513,10 +8552,27 @@ function get_info_text(subject, template_items, description) {
 	return "/w @{character_name} '&{template:custom} {{title=" + subject + " info}} " + template_items + " {{desc=" + description + "}}'";
 }
 
+function parse_spell_template_item(name, item) {
+	let item_text = '';
+
+	if (typeof item ==='string' || item instanceof String) {
+		item_text = `{{${name}=${item}}} `;
+	}
+	else {
+		item.forEach( function(part) {
+			let space = (part.name.length > 10 ? _n : ' ');
+			item_text += `{{${name}${space}(${part.name})=${part.desc}}} `;
+		});
+	}
+	
+	return item_text;
+}
+
 function get_spell_info(spell, casting_time, range, base_duration, duration_bonus, area_types, target, resist, effects, description, collapse_high_duration_bonus = false) {
 	let template_items = '';
 	if (casting_time) {
-		template_items += `{{Casting Time=${casting_time}}} `;
+		template_items += parse_spell_template_item('Casting Time', casting_time);
+//		template_items += `{{Casting Time=${casting_time}}} `;
 	}
 	if (range) {
 		template_items += `{{Range=${range}}} `;
@@ -8525,7 +8581,8 @@ function get_spell_info(spell, casting_time, range, base_duration, duration_bonu
 		template_items += get_duration_text(base_duration, duration_bonus, collapse_high_duration_bonus);
 	}
 	if (area_types) {
-		if (typeof area_types ==='string' || area_types instanceof String) {
+		template_items += parse_spell_template_item('Area Types', area_types);
+/*		if (typeof area_types ==='string' || area_types instanceof String) {
 			template_items += `{{Area Types=${area_types}}} `;
 		}
 		else {
@@ -8533,7 +8590,7 @@ function get_spell_info(spell, casting_time, range, base_duration, duration_bonu
 				let space = (area.name.length > 10 ? _n : ' ');
 				template_items += `{{Area Types${space}(${area.name})=${area.types}}} `;
 			});
-		}
+		}*/
 	}
 	if (target) {
 		template_items += `{{Target=${target}}} `;
@@ -8546,32 +8603,38 @@ function get_spell_info(spell, casting_time, range, base_duration, duration_bonu
 	return get_info_text(spell, template_items, description);
 }
 
-function get_area_type_list(spell_area_size, area_type_blast, area_type_burst, area_type_line, area_type_nova, area_type_wall) {
-	let area_type_list = "Bolt";
+function get_area_type_list(spell_area_size, area_type_blast, area_type_burst, area_type_line, area_type_nova, area_type_wall, include_bolt = true, include_touch = true) {
+	let area_type_list = [];
+
+	if (include_bolt) {
+		area_type_list.push("Bolt");
+	}
 	
 	if (area_type_blast == "on") {
-		area_type_list += _n + "Blast (" + spell_area_size + " sq)";
+		area_type_list.push(`Blast (${spell_area_size} sq)`);
 	}
 	
 	if (area_type_burst == "on") {
-		area_type_list += _n + "Burst (" + spell_area_size + " sq)";
+		area_type_list.push(`Burst (${spell_area_size} sq)`);
 	}
 	
 	if (area_type_line == "on") {
-		area_type_list += _n + "Line (" + (spell_area_size * 2) + " sq)";
+		area_type_list.push(`Line (${(spell_area_size * 2)} sq)`);
 	}
 	
 	if (area_type_nova == "on") {
-		area_type_list += _n + "Nova (" + spell_area_size + " sq)";
+		area_type_list.push(`Nova (${spell_area_size} sq)`);
 	}
 	
-	area_type_list += _n + "Touch";
+	if (include_touch) {
+		area_type_list.push("Touch");
+	}
 	
 	if (area_type_wall == "on") {
-		area_type_list += _n + "Wall (" + spell_area_size + " sq)";
+		area_type_list.push(`Wall (${spell_area_size} sq)`);
 	}
 	
-	return area_type_list;
+	return area_type_list.join(_n);
 }
 
 function get_area(area_type, area_size) {
@@ -8979,6 +9042,22 @@ function cast_change_size(ep_cost) {
 	}
 
 	cast_spell('alteration', 'change_size', ep_cost, dur_concentration, false, boon);
+}
+
+function cast_control_weather(ep_cost) {
+	let effect ='Fog cloud';
+	if (ep_cost == 20) {
+		effect = 'Wind';
+	}
+	else if (ep_cost == 30) {
+		effect = 'Weather';
+	}
+	else if (ep_cost == 40) {
+		effect = 'Cyclone';
+	}
+	let base_duration = (ep_cost == 30 ? dur_concentration_w_pool : dur_concentration);
+
+	cast_spell('alteration', 'control_weather', ep_cost, base_duration, false, effect);
 }
 
 function cast_illuminate(ep_cost) {
@@ -11263,6 +11342,15 @@ const active_skill_array = [
 					{ tier: 1, ep_costs: [10] },
 					{ tier: 2, ep_costs: [20] },
 					{ tier: 3, ep_costs: [30] }
+				] 
+			}, 
+			{
+				name: 'control_weather', 
+				tier_ep_costs: [ 
+					{ tier: 1, ep_costs: [5, 10] },
+					{ tier: 2, ep_costs:    [20] },
+					{ tier: 3, ep_costs:    [30] },
+					{ tier: 4, ep_costs:    [40] }
 				] 
 			}, 
 			{
@@ -15524,8 +15612,8 @@ on("clicked:alterationchangesizeinfo", function() {
 		let area_types = _bolt_touch;
 		if (show_alteration_change_size_30_ep) {
 			area_types = [
-				{ name: '10 or 20 EP', types: _bolt_touch    },
-				{ name: '30 EP',       types: area_type_list }
+				{ name: '10 or 20 EP', desc: _bolt_touch    },
+				{ name: '30 EP',       desc: area_type_list }
 			];
 		}
 		let boon_10ep = `Large Size${_or}Small Size`;
@@ -15556,6 +15644,82 @@ on("clicked:alterationchangesize20ep", function() {
 
 on("clicked:alterationchangesize30ep", function() {
 	cast_change_size(30);
+});
+
+on("clicked:alterationcontrolweatherinfo", function() {
+	getAttrs(["alteration_tier", "show_alteration_control_weather_10_ep", "show_alteration_control_weather_20_ep", "show_alteration_control_weather_30_ep", "show_alteration_control_weather_40_ep", "spell_duration_bonus", "spell_range", "spell_area_size", "area_type_blast", "area_type_burst", "area_type_nova"], function(values) {
+		let tier = get_int_or_zero(values.alteration_tier);
+		let show_alteration_control_weather_10_ep = get_bool(values.show_alteration_control_weather_10_ep);
+		let show_alteration_control_weather_20_ep = get_bool(values.show_alteration_control_weather_20_ep);
+		let show_alteration_control_weather_30_ep = get_bool(values.show_alteration_control_weather_30_ep);
+		let show_alteration_control_weather_40_ep = get_bool(values.show_alteration_control_weather_40_ep);
+		let casting_time   = '2 AP';
+		let base_duration  = dur_concentration;
+		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
+		let range          = get_int_or_zero(values.spell_range);
+		let area_size      = get_int_or_zero(values.spell_area_size);
+		let area_types = [
+				{ name: 'normal', desc: get_area_type_list(area_size * 2, '0',                    '0',                    '0', values.area_type_nova, '0', false, false) },
+				{ name: '10 EP',  desc: get_area_type_list(area_size * 2, values.area_type_blast, values.area_type_burst, '0', values.area_type_nova, '0', false, false) }
+			];
+		if (show_alteration_control_weather_30_ep) {
+			casting_time = [
+				{ name: 'normal', desc: '2 AP'       },
+				{ name: '30 EP',  desc: '10 minutes' }
+			];
+			base_duration = [
+				{ name: 'normal', duration: dur_concentration        },
+				{ name: '30 EP',  duration: dur_concentration_w_pool }
+			];
+		}
+		if (show_alteration_control_weather_40_ep) {
+			area_types.push({ name: '40 EP', desc: get_area_type_list(area_size, '0', values.area_type_burst, '0', '0', '0', false, false) });
+		}
+		let tier1_effect =                                          `{{5 or 10 EP=Fog cloud}} `;
+		let tier2_effect = (show_alteration_control_weather_20_ep ? `{{20 EP=Wind}} `    : '');
+		let tier3_effect = (show_alteration_control_weather_30_ep ? `{{30 EP=Weather}} ` : '');
+		let tier4_effect = (show_alteration_control_weather_40_ep ? `{{40 EP=Cyclone}} ` : '');
+		let tier2_text   = (show_alteration_control_weather_20_ep ? _rn + "For 20 EP, you can manipulate air pressure to create up to a tier " + 
+		tier_effect_alteration(tier, 1, '') + " wind. The wind can go in any direction you choose, including in a circle, but once the spell is cast, you cannot " +
+		"change the wind direction. You can choose to create an “eye” of calm in the center of the spell’s area equal to half your normal area size. Inside this " +
+		"area, there is no wind." : '');
+		let tier3_text   = (show_alteration_control_weather_30_ep ? _rn + "For 30 EP, you can change the general weather in the area. This version of the spell has a " +
+		"casting time of 10 minutes and a base duration of concentration with pool points. You can create any weather conditions within the spell’s area that " +
+		"are possible given the local climate and season." : '');
+		let tier4_text   = (show_alteration_control_weather_40_ep ? _rn + "For 40 EP, you can manipulate air pressure to create a cyclone that is under your control. " +
+		"This version of the spell does not use a doubled area size. The base of the cyclone is a 2×2 square, and the top is your normal burst area " +
+		"size, and its height is equal to your normal area size." +_rn + "The cyclone is stationary, but you can spend 1 AP to move it up to 8 squares. It must stay " +
+		"within your spell range, and if it leaves your spell range, it moves in a random direction each round for the next 3 rounds and then dissipates." : '');
+		let desc = "This spell changes the weather in the spell’s area. Unless otherwise specified, your area size is doubled when casting this spell." + 
+		_pow + "You gain advantage on checks made against wind effects." +_rn + "For 5 EP, you can manipulate moisture in the air to create a fog cloud in the " +
+		"spell’s area. The fog makes anything more than one square away effectively invisible. Any tier 1 or higher wind will disperse the fog within one round." + 
+		_rn + "For 10 EP, you can create a fog cloud as per the 5 EP version, and use the blast or burst area types." + tier2_text + tier3_text + tier4_text;
+		let roll_text = get_spell_info('Alteration (control weather)', casting_time, range + ' squares', base_duration, duration_bonus, area_types,
+		'Creature', 'Auto (willing)', tier1_effect + tier2_effect + tier3_effect + tier4_effect, desc);
+		startRoll(roll_text, (results) => {
+			finishRoll(results.rollId);
+		});
+	});
+});
+
+on("clicked:alterationcontrolweather5ep", function() {
+	cast_control_weather(5);
+});
+
+on("clicked:alterationcontrolweather10ep", function() {
+	cast_control_weather(10);
+});
+
+on("clicked:alterationcontrolweather20ep", function() {
+	cast_control_weather(20);
+});
+
+on("clicked:alterationcontrolweather30ep", function() {
+	cast_control_weather(30);
+});
+
+on("clicked:alterationcontrolweather40ep", function() {
+	cast_control_weather(40);
 });
 
 on("clicked:alterationilluminateinfo", function() {
@@ -15721,7 +15885,6 @@ on("clicked:biomancyhealdamageinfo", function() {
 		let show_biomancy_heal_damage_20_ep = get_bool(values.show_biomancy_heal_damage_20_ep);
 		let show_biomancy_heal_damage_30_ep = get_bool(values.show_biomancy_heal_damage_30_ep);
 		let show_biomancy_heal_damage_40_ep = get_bool(values.show_biomancy_heal_damage_40_ep);
-		let duration = get_int_or_zero(values.spell_duration);
 		let range = get_int_or_zero(values.spell_range);
 		let area_size = get_int_or_zero(values.spell_area_size);
 		let area_type_list = get_area_type_list(area_size, values.area_type_blast, values.area_type_burst, values.area_type_line, values.area_type_nova, values.area_type_wall);
@@ -16707,8 +16870,8 @@ on("clicked:displacementdisruptinfo", function() {
 		let area_types = _bolt_touch;
 		if (show_displacement_disrupt_20_ep) {
 			area_types = [
-				{ name: 'normal',   types: _bolt_touch    },
-				{ name: 'lower EP', types: area_type_list }
+				{ name: 'normal',   desc: _bolt_touch    },
+				{ name: 'lower EP', desc: area_type_list }
 			];
 		}
 		let tier1_effect =   								  "{{10 EP=Target loses AP}} ";
@@ -17031,8 +17194,8 @@ on("clicked:divinationanalyzeinfo", function() {
 		let area_types = 'Touch'
 		if (show_divination_analyze_20_ep) {
 			area_types = [
-				{ name: '10 EP', types: 'Touch'     },
-				{ name: '20 EP', types: _bolt_touch }
+				{ name: '10 EP', desc: 'Touch'     },
+				{ name: '20 EP', desc: _bolt_touch }
 			];
 		}
 		let effect_tier_plus_1 = tier_effect_divination(tier, 1, '', '', 1);
@@ -17600,8 +17763,8 @@ on("clicked:illusiondisguiseinfo", function() {
 		let area_types = _bolt_touch;
 		if (show_illusion_disguise_20_ep) {
 			area_types = [
-				{ name: '10 EP', types: _bolt_touch              },
-				{ name: '20 EP', types: blast_area + _bolt_touch }
+				{ name: '10 EP', desc: _bolt_touch              },
+				{ name: '20 EP', desc: blast_area + _bolt_touch }
 			];
 		}
 		let tier1_effect =								   "{{5 EP=Disguise one small part or 1 cubic foot}} {{10 EP=Disguise single target's sight and sound}} ";
@@ -17679,8 +17842,8 @@ on("clicked:illusionholograminfo", function() {
 		let has_blur = get_bool(values.ps_blur);
 		if (show_illusion_hologram_20_ep) {
 			area_types = [
-				{ name: '10 EP', types: _bolt_touch              },
-				{ name: '20 EP', types: blast_area + _bolt_touch }
+				{ name: '10 EP', desc: _bolt_touch              },
+				{ name: '20 EP', desc: blast_area + _bolt_touch }
 			];
 		}
 		if (show_illusion_hologram_30_ep) {
@@ -17698,7 +17861,7 @@ on("clicked:illusionholograminfo", function() {
 		let blur_tier1_text = '';
 		let blur_tier3_text = '';
 		if (has_blur) {
-			area_types.push({ name: 'blur', types: _bolt_touch + nova_area });
+			area_types.push({ name: 'blur', desc: _bolt_touch + nova_area });
 			blur_10ep = `${_or}Advantage on Defend`;
 			blur_30ep = blur_10ep.replace('Advantage', 'Great advantage');
 			blur_tier1_text = `${_rn}Alternatively, you can make the target(s) of this spell appear blurry, granting advantage on Defend checks versus sighted creatures.`;
@@ -17917,17 +18080,14 @@ on("clicked:metamancydispelmagicinfo", function() {
 			{ name: 'dispel',   duration: dur_instantaneous         },
 			{ name: 'suppress', duration: dur_short_rest_w_checks_1 }
 		];
-		if (show_metamancy_dispel_magic_40_ep) {
-			base_duration.push({ name: 'disjoin', duration: dur_instantaneous });
-		}
 		let range          = get_int_or_zero(values.spell_range);
 		let area_size      = get_int_or_zero(values.spell_area_size);
 		let area_type_list = get_area_type_list(area_size, values.area_type_blast, values.area_type_burst, values.area_type_line, values.area_type_nova, values.area_type_wall);
 		let area_types     = _bolt_touch;
 		if (show_metamancy_dispel_magic_20_ep) {
 			area_types = [
-				{ name: 'normal',   types: _bolt_touch    },
-				{ name: 'lower EP', types: area_type_list }
+				{ name: 'normal',   desc: _bolt_touch    },
+				{ name: 'lower EP', desc: area_type_list }
 			];
 		}
 		let has_antimagic_field = get_bool(values.ps_antimagic_field);
@@ -17938,9 +18098,11 @@ on("clicked:metamancydispelmagicinfo", function() {
 		let tier4_effect = (show_metamancy_dispel_magic_40_ep ? `{{40 EP=Dispel tier 4 effect${_or}Suppress legendary item (unattended TN 50)${_or}30 EP version any area type}} ` : '');
 		if (show_metamancy_dispel_magic_30_ep && has_antimagic_field) {
 			tier3_effect = tier3_effect.replace('}} ', `${_or}Create antimagic field}} `);
+			area_types.push({ name: 'antimagic field', desc: get_area_type_list(area_size, values.area_type_blast, '0', '0', '0', '0', false, false) });
 		}
 		if (show_metamancy_dispel_magic_40_ep && has_disjoin) {
 			tier4_effect = tier4_effect.replace('}} ', `${_or}Disjoin item}} `);
+			base_duration.push({ name: 'disjoin', duration: dur_instantaneous });
 		}
 		let tier3_text = (show_metamancy_dispel_magic_30_ep && has_antimagic_field ? _rn + "For 30 EP, you can create an antimagic field. " +
 		"This effect has an area type of blast and a base duration of concentration. All magic effects are nullified while inside the area, though they " +
@@ -18283,8 +18445,8 @@ on("clicked:neuromancycharminfo", function() {
 		if (show_neuromancy_charm_30_ep) {
 			base_duration[1].name = '20 or 30 EP';
 			area_types = [
-				{ name: '10 or 20 EP', types: _bolt_touch    },
-				{ name: '30 EP',       types: area_type_list }
+				{ name: '10 or 20 EP', desc: _bolt_touch    },
+				{ name: '30 EP',       desc: area_type_list }
 			];
 		}
 		if (show_neuromancy_charm_40_ep) {
@@ -18433,8 +18595,8 @@ on("clicked:neuromancyinfluenceinfo", function() {
 				{ name: '30 EP suggest', duration: dur_short_rest_w_checks_2 }
 			);
 			area_types = [
-				{ name: '10 or 20 EP', types: _bolt_touch    },
-				{ name: '30 EP',       types: area_type_list }				
+				{ name: '10 or 20 EP', desc: _bolt_touch    },
+				{ name: '30 EP',       desc: area_type_list }				
 			];
 		}
 		let tier1_text = _rn + "For 10 EP, you can issue a one-word command to the target, chosen from the list below. If the target fails their Mental " +
@@ -18530,8 +18692,8 @@ on("clicked:neuromancytelepathyinfo", function() {
 		let area_size = get_int_or_zero(values.spell_area_size);
 		let area_type_list = get_area_type_list(area_size, values.area_type_blast, values.area_type_burst, values.area_type_line, values.area_type_nova, values.area_type_wall);
 		let area_types = [
-			{ name: 'normal',   types: _bolt_touch    },
-			{ name: 'lower EP', types: area_type_list }
+			{ name: 'normal',   desc: _bolt_touch    },
+			{ name: 'lower EP', desc: area_type_list }
 		];
 		let tier1_effect = 								      '{{5 EP=One-sentence message to one target}} ' +
 															  `{{10 EP=Read surface thoughts of one target${_or}One-sentence message to many targets}} `;
