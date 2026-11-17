@@ -16678,7 +16678,7 @@ function show_conjuration_summon_ally_info(ally_type) {
 		"The ally’s speed is modified by its Agility modifier, if applicable." + _rn + "You can spend 1 AP to give your ally a command, which " +
 		"they follow to the best of their ability, until they are done or you give a new command. The ally is of animal intelligence and cannot " +
 		"understand complex commands, but can understand any command you might be able to teach an animal (GM’s discretion)." + 
-		tier1_text + tier2_text + tier3_text + tier4_text;
+		tier1_text + tier2_text + tier3_text + tier4_text + spend_pool_conjuration('give your ally a command by spending 2 pool points instead of 1 AP.');
 		let roll_text = get_spell_info(`Conjuration (summon ally): ${ally_type}`, '2 AP', range + ' squares', base_duration, duration_bonus, _bolt_touch,
 		'Area', 'N/A', null, desc);
 		startRoll(roll_text, (results) => {
@@ -17891,8 +17891,9 @@ on("clicked:illusionholograminfo", function() {
 		"contain up to one separate hologram per square (or fewer, if they are Large or Huge). The holograms can be animated separately, but you must choose one " +
 		"anchor point for all of them. This version of the spell has a base duration of short rest plus linger. " : "");
 		let desc = "This spell creates an illusory hologram." + _pow + "You can spend 1 AP to create a visual hologram in your hand no larger than a one-foot " +
-		"cube, which has a base duration of concentration. " + 
-		tier1_text + tier2_text + tier3_text + tier4_text + get_interacting_with_illusions_text();;
+		"cube, which has a base duration of concentration. " + tier1_text + tier2_text + tier3_text + tier4_text + spend_pool_illusion('change what your hologram ' +
+		'does by spending 2 pool points instead of 1 AP.') +
+		get_interacting_with_illusions_text();
 		let roll_text = get_spell_info('Illusion (hologram)', '2 AP', range + ' squares', base_duration, duration_bonus, area_types, 
 		'Area, creature or item', 'Mental Resilience', tier1_effect + tier2_effect + tier3_effect + tier4_effect, desc);
 		startRoll(roll_text, (results) => {
