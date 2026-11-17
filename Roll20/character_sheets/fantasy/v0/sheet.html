@@ -18011,7 +18011,7 @@ on("clicked:illusionobscureinfo", function() {
 		let tier3_text = (show_illusion_obscure_30_ep ? _rn + "For 30 EP, you can obscure targets just like the 20 EP version, only targets can " +
 		"see, hear and smell each other normally." : "");
 		let desc = "This spell obscures the target creatures from one or more senses." + _pow + "You gain advantage on Sneak (stealth) checks." + 
-		tier1_text + tier2_text + tier3_text;
+		" This does not stack with advantage gained from obscuring sight or sound." + tier1_text + tier2_text + tier3_text;
 		let roll_text = get_spell_info('Illusion (obscure)', '2 AP', range + ' squares', dur_concentration, duration_bonus, `Bolt${nova_area}${_n}Touch`, 
 		'Creature', 'Auto (willing)', tier1_effect + tier2_effect + tier3_effect, desc);
 		startRoll(roll_text, (results) => {
