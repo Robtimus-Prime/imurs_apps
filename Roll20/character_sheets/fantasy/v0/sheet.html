@@ -5246,6 +5246,14 @@
 									<button type="action" name="act_alterationcontrolweather40ep" /> 40 EP
 								</span>
 							</div>
+							<input name="attr_show_call_lightning" type="hidden" class="show-ability" value="false" />
+							<span class="ability">
+								<div class="top-space">
+									<b> Call Lightning </b> <br />
+									<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Call Lightning}} @{call_lightning_roll_text}'" /> Roll Call Lightning
+									<button type="roll" value="@{gm_rolls_text}'&{template:custom} {{title=@{character_name}: Call Lightning Recharge}} {{Recharge=@{call_lightning_recharge_roll}}}'" /> Roll Recharge
+								</div>
+							</span>
 						</div>
 					</span>
 				</div>
@@ -12790,6 +12798,7 @@ const passive_skill_array = [
 	{ name: 'ps_greater_breath_weapon',       search_text: 'greaterbreathweapon',       cs_cp_cost: 20, ncs_cp_cost:  0 },
 	{ name: 'ps_epic_breath_weapon',          search_text: 'epicbreathweapon',          cs_cp_cost: 30, ncs_cp_cost:  0 },
 	{ name: 'ps_legendary_breath_weapon',     search_text: 'legendarybreathweapon',     cs_cp_cost: 40, ncs_cp_cost:  0 },
+	{ name: 'ps_call_lightning',              search_text: 'calllightning',             cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_combat_awareness',            search_text: 'combatawareness',           cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_combat_expertise',            search_text: 'combatexpertise',           cs_cp_cost:  6, ncs_cp_cost:  0 },
 	{ name: 'ps_combat_reflexes',             search_text: 'combatreflexes',            cs_cp_cost:  6, ncs_cp_cost:  0 },
@@ -12854,6 +12863,7 @@ const passive_skill_array = [
 	{ name: 'ps_spell_synthesis_biomancy',    search_text: 'spellsynthesisbiomancy',    cs_cp_cost: 12, ncs_cp_cost:  0 },
 	{ name: 'ps_spell_synthesis_conjuration', search_text: 'spellsynthesisconjuration', cs_cp_cost: 12, ncs_cp_cost:  0 },
 	{ name: 'ps_spell_synthesis_dynamancy',   search_text: 'spellsynthesisdynamancy',   cs_cp_cost: 12, ncs_cp_cost:  0 },
+	{ name: 'ps_spell_synthesis_phantasm',    search_text: 'spellsynthesisphantasm',    cs_cp_cost:  0, ncs_cp_cost: 12 },
 	{ name: 'ps_spell_synthesis_summoning',   search_text: 'spellsynthesissummoning',   cs_cp_cost: 12, ncs_cp_cost:  0 },
 	{ name: 'ps_spellsong',                   search_text: 'spellsong',                 cs_cp_cost:  3, ncs_cp_cost:  3 },
 	{ name: 'ps_spellstrike',                 search_text: 'spellstrike',               cs_cp_cost:  6, ncs_cp_cost:  0 },
@@ -15621,7 +15631,7 @@ on("clicked:alterationchangesizeinfo", function() {
 		let tier1_effect = 										`{{10 EP=${boon_10ep}}} `;
 		let tier2_effect = (show_alteration_change_size_20_ep ? `{{20 EP=${boon_20ep}}} ` : '');
 		let tier3_effect = (show_alteration_change_size_30_ep ? `{{30 EP=${boon_10ep}${_or}${boon_20ep}}} ` : '');
-		let tier2_text = (show_alteration_change_size_20_ep ? _pow + 'Once per short or long rest, can spend 2 AP to grant yourself either the Large Size or ' +
+		let tier2_text   = (show_alteration_change_size_20_ep ? _pow + 'Once per short or long rest, can spend 2 AP to grant yourself either the Large Size or ' +
 		'Small Size boon for ' + tier_effect(tier, 1, ' rounds', 'Alteration', '', 0, 3) + '.' : '');
 		let desc = "*Change size* increases or decreases the size of the target creature, granting it a size-related monstrous boon for the duration. " +
 		"Equipment carried by the target resizes appropriately. If you try to increase the size of a creature so that it would be too big to fit " +
@@ -15646,13 +15656,49 @@ on("clicked:alterationchangesize30ep", function() {
 	cast_change_size(30);
 });
 
+const call_lighting_attr_attay = ['alteration_tier', 'alteration_attribute_name', 'alteration_attribute_modifier', 'show_alteration_control_weather_20_ep', 'ps_call_lightning']
+on('change:' + call_lighting_attr_attay.join(' change:'), function() {
+	getAttrs(call_lighting_attr_attay, function(values) {
+		let show_call_lightning          = (get_bool(values.show_alteration_control_weather_20_ep) && get_bool(values.ps_call_lightning));
+		let call_lightning_roll_text     = '';
+		let call_lightning_recharge_roll = '';
+		let call_lightning_text          = '';
+		if (show_call_lightning) {
+			let tier      = get_int_or_zero(values.alteration_tier);
+			let die_size  = (tier % 2 == 0 ? '10' : '6');
+			let die_mult  = (tier >= 3 ? 2 : 1);
+			let att_mod   = get_int_or_zero(values.alteration_attribute_modifier);
+			let mod_text  = (att_mod < 0 ? '' : '+') + att_mod;
+			call_lightning_text = _rn + '**Call Lightning**' + _n + "When you cast this spell at 20 EP " +
+			"or higher and create at least windstorm or thunderstorm conditions, you can call down lighting bolts while the spell is active. For 2 AP, you can call down " +
+			tier_effect_alteration(tier, 2, ' lightning bolts') + '.' + _rn + "Each bolt strikes a single target somewhere within the spell’s area, and causes " +
+			tier_effect_alteration(tier, die_mult, `d${die_size}`) + attribute_mod_effect(values.alteration_attribute_name, att_mod) + " **electricity damage**. Each " +
+			"time you do, make an Alteration (control weather) check, which sets the TN for the targets’ Physical Resilience (fortitude) checks to resist it." + _rn + 
+			"You can have multiple bolts strike the same target, but the target can make a check to resist each one separately. You can use this ability once per *control " +
+			"weather* spell, and each round thereafter it will recharge on a 1d6 roll less than or equal to " + tier_effect_alteration(tier, 1, '') + '.';
+			for (let i = 1; i <= tier * 2; i++) {
+				call_lightning_roll_text += `{{Lightning bolt ${i}%NEWLINE%Alteration (control weather) @{alteration_advantage_text}=[[@{alteration_control_weather_roll} + ` +
+				`@{alteration_total} + @{mob_skill_bonus}]]}} {{Lightning bolt ${i}%NEWLINE%Electricity damage=[[${(tier * die_mult)}d${die_size} + ${att_mod}]]}} `;
+			}
+			call_lightning_recharge_roll = `[[1d6cs<${tier}cf>${(tier + 1)}]]`;
+		}
+		setAttrs({
+			'show_call_lightning':          show_call_lightning,
+			'call_lightning_roll_text':     call_lightning_roll_text,
+			'call_lightning_recharge_roll': call_lightning_recharge_roll,
+			'call_lightning_text':          call_lightning_text
+		});
+	});
+});
+
 on("clicked:alterationcontrolweatherinfo", function() {
-	getAttrs(["alteration_tier", "show_alteration_control_weather_10_ep", "show_alteration_control_weather_20_ep", "show_alteration_control_weather_30_ep", "show_alteration_control_weather_40_ep", "spell_duration_bonus", "spell_range", "spell_area_size", "area_type_blast", "area_type_burst", "area_type_nova"], function(values) {
+	getAttrs(["alteration_tier", "show_alteration_control_weather_10_ep", "show_alteration_control_weather_20_ep", "show_alteration_control_weather_30_ep", "show_alteration_control_weather_40_ep", "spell_duration_bonus", "spell_range", "spell_area_size", "area_type_blast", "area_type_burst", "area_type_nova", "call_lightning_text"], function(values) {
 		let tier = get_int_or_zero(values.alteration_tier);
 		let show_alteration_control_weather_10_ep = get_bool(values.show_alteration_control_weather_10_ep);
 		let show_alteration_control_weather_20_ep = get_bool(values.show_alteration_control_weather_20_ep);
 		let show_alteration_control_weather_30_ep = get_bool(values.show_alteration_control_weather_30_ep);
 		let show_alteration_control_weather_40_ep = get_bool(values.show_alteration_control_weather_40_ep);
+		let has_call_lightning                    = get_bool(values.ps_call_lightning);
 		let casting_time   = '2 AP';
 		let base_duration  = dur_concentration;
 		let duration_bonus = get_int_or_zero(values.spell_duration_bonus);
@@ -15693,7 +15739,8 @@ on("clicked:alterationcontrolweatherinfo", function() {
 		let desc = "This spell changes the weather in the spell’s area. Unless otherwise specified, your area size is doubled when casting this spell." + 
 		_pow + "You gain advantage on checks made against wind effects." +_rn + "For 5 EP, you can manipulate moisture in the air to create a fog cloud in the " +
 		"spell’s area. The fog makes anything more than one square away effectively invisible. Any tier 1 or higher wind will disperse the fog within one round." + 
-		_rn + "For 10 EP, you can create a fog cloud as per the 5 EP version, and use the blast or burst area types." + tier2_text + tier3_text + tier4_text;
+		_rn + "For 10 EP, you can create a fog cloud as per the 5 EP version, and use the blast or burst area types." + tier2_text + tier3_text + tier4_text + 
+		values.call_lightning_text;
 		let roll_text = get_spell_info('Alteration (control weather)', casting_time, range + ' squares', base_duration, duration_bonus, area_types,
 		'Creature', 'Auto (willing)', tier1_effect + tier2_effect + tier3_effect + tier4_effect, desc);
 		startRoll(roll_text, (results) => {
